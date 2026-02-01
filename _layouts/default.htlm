@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="{{ '/css/style.css' | relative_url }}">
-  <link rel="stylesheet" href="{{ '/css/terminal.css' | relative_url }}">
+  <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+  <link rel="stylesheet" href="{{ '/assets/css/terminal.css' | relative_url }}">
   <title>{{ page.title }}</title>
 </head>
 
 <body>
 
-  {% include sidebar.html %}
+  {% include bar.html %}
 
   <div class="main">
     {{ content }}
