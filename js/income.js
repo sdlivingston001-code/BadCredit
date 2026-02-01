@@ -3,7 +3,7 @@
 // -----------------------------
 
 import { settlementRule } from "./territories/settlement.js";
-import { gamblingDenRule } from "./territories/gambling-den.js";
+import { gamblingDenRule } from "./territories/gamblingDen.js";
 
 // -----------------------------
 // Dice Helpers
