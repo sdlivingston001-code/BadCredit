@@ -1,4 +1,23 @@
-// Rules for each territory
+// -----------------------------
+// Dice Helpers
+// -----------------------------
+
+function rollD6() {
+  return Math.floor(Math.random() * 6) + 1;
+}
+
+function rollND6(n) {
+  let rolls = [];
+  for (let i = 0; i < n; i++) {
+    rolls.push(rollD6());
+  }
+  return rolls;
+}
+
+// -----------------------------
+// Territory Rules
+// -----------------------------
+
 const territoryRules = {
   "Settlement": () => {
     // Income roll
@@ -18,6 +37,7 @@ const territoryRules = {
     }
 
     return {
+      type: "Settlement",
       incomeRoll,
       income,
       recruitRolls,
@@ -25,44 +45,68 @@ const territoryRules = {
     };
   },
 
-  "Gambling Den": () => rollD6(),
-  "Mine Workings": () => rollD6() * 10,
-  "Generatorium": () => rollD6() * 15,
-  "Slag Furnace": () => rollD6() * 20
+  "Gambling Den": () => {
+    return {
+      type: "Gambling Den",
+      income: rollD6()
+    };
+  },
+
+  "Mine Workings": () => {
+    return {
+      type: "Mine Workings",
+      income: rollD6() * 10
+    };
+  },
+
+  "Generatorium": () => {
+    return {
+      type: "Generatorium",
+      income: rollD6() * 15
+    };
+  },
+
+  "Slag Furnace": () => {
+    return {
+      type: "Slag Furnace",
+      income: rollD6() * 20
+    };
+  }
 };
 
+// -----------------------------
+// Main Generator Logic
+// -----------------------------
 
-// Basic D6 roller
-function rollD6() {
-  return Math.floor(Math.random() * 6) + 1;
-}
-
-// Multiple D6 roller
-function rollND6(n) {
-  let rolls = [];
-  for (let i = 0; i < n; i++) {
-    rolls.push(rollD6());
-  }
-  return rolls;
-}
-
-
-// Generate income for selected territories
 function generateIncome() {
   const selected = [...document.querySelectorAll("input[type=checkbox]:checked")];
   const log = document.getElementById("log");
 
   selected.forEach(t => {
-    const roll = rollD6();
-    const income = territoryRules[t.value]();
-
+    const result = territoryRules[t.value]();
     const entry = document.createElement("li");
-    entry.textContent = `${t.value}: Rolled ${roll} → ${income} credits`;
+
+    if (result.type === "Settlement") {
+      entry.innerHTML = `
+        <strong>Settlement</strong><br>
+        Income Roll: ${result.incomeRoll} → ${result.income} credits<br>
+        Recruitment Roll: ${result.recruitRolls.join(", ")} → ${result.recruitment}
+      `;
+    } else {
+      entry.innerHTML = `
+        <strong>${result.type}</strong><br>
+        Income: ${result.income} credits
+      `;
+    }
+
     log.appendChild(entry);
   });
 }
 
-// Clear log
+// -----------------------------
+// Clear Log
+// -----------------------------
+
 function clearLog() {
   document.getElementById("log").innerHTML = "";
 }
