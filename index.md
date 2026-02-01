@@ -4,5 +4,3 @@ title: Home
 ---
 
 # Welcome to the Necromunda Dominion Campaign
-
-This is your campaign hub. Use the bottom to navigate.
