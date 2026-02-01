@@ -20,11 +20,6 @@ body {
   gap: 1.5rem;
 }
 
-
-.bottom-bar h2 {
-  margin-top: 0;
-}
-
 .bottom-bar a {
   display: block;
   color: white;
@@ -39,7 +34,7 @@ body {
 
 /* MAIN CONTENT */
 .main {
-  margin-left: 250px;
   padding: 2rem;
   max-width: 900px;
+  margin: 0 auto;
 }
