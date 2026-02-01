@@ -2,24 +2,8 @@
 // Territory Rules
 // -----------------------------
 
-import { settlementRule } from "./territories/settlement.js";
-import { gamblingDenRule } from "./territories/gamblingDen.js";
-
-// -----------------------------
-// Dice Helpers
-// -----------------------------
-
-function rollDie(sides) {
-  return Math.floor(Math.random() * sides) + 1;
-}
-
-function rollNDice(n, sides) {
-  let rolls = [];
-  for (let i = 0; i < n; i++) {
-    rolls.push(rollDie(sides));
-  }
-  return rolls;
-}
+import { settlementRule } from ".archive/territories/settlement.js";
+import { gamblingDenRule } from ".archive/territories/gamblingDen.js";
 
 // -----------------------------
 // Territory Rule Map
