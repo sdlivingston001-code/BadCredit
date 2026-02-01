@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Home
+title: Advancements & Promotions
 ---
 
-#Advancements & Promotions
+Detail
