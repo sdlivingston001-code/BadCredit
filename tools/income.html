@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="../css/style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Territory Income Generator</title>
+</head>
+
+<body>
+
+<div class="sidebar">
+  <h2>Campaign Guide</h2>
+  <a href="../index.html">Home</a>
+  <a href="../setting.html">Setting</a>
+  <a href="../pre-battle.html">Pre-Battle</a>
+  <a href="../post-battle.html">Post-Battle</a>
+  <a href="../advancements.html">Advancements</a>
+  <hr style="border-color:#444;">
+  <h3>Tools</h3>
+  <a href="income.html">Territory Income</a>
+</div>
+
+<div class="main">
+  <h1>Territory Income Generator</h1>
+
+  <p>Select the territories you want to generate income from:</p>
+
+  <div id="territories">
+    <label><input type="checkbox" value="Settlement"> Settlement</label><br>
+    <label><input type="checkbox" value="Gambling Den"> Gambling Den</label><br>
+    <label><input type="checkbox" value="Mine Workings"> Mine Workings</label><br>
+    <label><input type="checkbox" value="Generatorium"> Generatorium</label><br>
+    <label><input type="checkbox" value="Slag Furnace"> Slag Furnace</label><br>
+  </div>
+
+  <button onclick="generateIncome()">Generate Income</button>
+
+  <h2>Log</h2>
+  <ul id="log"></ul>
+
+  <button onclick="clearLog()">Clear Log</button>
+</div>
+
+<script src="../js/income.js"></script>
+</body>
+</html>
