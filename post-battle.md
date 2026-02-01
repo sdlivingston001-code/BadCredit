@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Home
+title: Post Battle Sequence
 ---
 
-#Post Battle
+Steps
