@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
   <link rel="stylesheet" href="{{ '/assets/css/terminal.css' | relative_url }}">
-  <title>{{ page.title }}</title>
+  <title>{{ page.title | default: site.title }}</title>
 </head>
 
 <body>
@@ -16,5 +16,7 @@
     {{ content }}
   </div>
 
+  <script type="module" src="/assets/js/main.js"></script>
+  
 </body>
 </html>
