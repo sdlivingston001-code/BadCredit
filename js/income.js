@@ -37,40 +37,42 @@ const territoryRules = {
 // -----------------------------
 
 function generateIncome() {
-  const start = new Date(); // timestamp start
+  const start = new Date();
 
-  const selected = [...document.querySelectorAll("input[type=checkbox]:checked")];
-  const log = document.getElementById("log");
+  try {
+    const selected = [...document.querySelectorAll("input[type=checkbox]:checked")];
+    const log = document.getElementById("log");
 
-  selected.forEach(t => {
-    const result = territoryRules[t.value]();
-    const entry = document.createElement("li");
+    selected.forEach(t => {
+      const result = territoryRules[t.value]();
+      const entry = document.createElement("li");
 
-    if (result.type === "Settlement") {
-      entry.innerHTML = `
-        <strong>Settlement</strong><br>
-        Income Roll: ${result.incomeRoll} → ${result.income} credits<br>
-        Recruitment Roll: ${result.recruitRolls.join(", ")} → ${result.recruitment}
-      `;
-    } else {
-      entry.innerHTML = `
-        <strong>${result.type}</strong><br>
-        Income: ${result.income} credits
-      `;
-    }
+      if (result.type === "Settlement") {
+        entry.innerHTML = `
+          <strong>Settlement</strong><br>
+          Income Roll: ${result.incomeRoll} → ${result.income} credits<br>
+          Recruitment Roll: ${result.recruitRolls.join(", ")} → ${result.recruitment}
+        `;
+      } else {
+        entry.innerHTML = `
+          <strong>${result.type}</strong><br>
+          Income: ${result.income} credits
+        `;
+      }
 
-    log.appendChild(entry);
-  });
+      log.appendChild(entry);
+    });
 
-  const end = new Date(); // timestamp end
-
-  // Add timestamps to the log
-  const timeEntry = document.createElement("li");
-  timeEntry.innerHTML = `
-    <em>Started:</em> ${start.toLocaleTimeString()}<br>
-    <em>Finished:</em> ${end.toLocaleTimeString()}
-  `;
-  log.appendChild(timeEntry);
+  } finally {
+    // This ALWAYS runs, even if an error occurs above
+    const end = new Date();
+    const timeEntry = document.createElement("li");
+    timeEntry.innerHTML = `
+      <em>Started:</em> ${start.toLocaleTimeString()}<br>
+      <em>Finished:</em> ${end.toLocaleTimeString()}
+    `;
+    document.getElementById("log").appendChild(timeEntry);
+  }
 }
 
 // -----------------------------
