@@ -60,7 +60,7 @@ function generateIncome() {
         `;
       }
 
-      log.appendChild(entry);
+      log.prepend(entry);
     });
 
   } catch (err) {
@@ -69,7 +69,7 @@ function generateIncome() {
     errorEntry.innerHTML = `
       <strong style="color:red;">Error:</strong> ${err.message}
     `;
-    log.appendChild(errorEntry);
+    log.prepend(errorEntry);
 
   } finally {
     // This ALWAYS runs, even if an error occurred
@@ -79,7 +79,7 @@ function generateIncome() {
       <em>Started:</em> ${start.toLocaleTimeString()}<br>
       <em>Finished:</em> ${end.toLocaleTimeString()}
     `;
-    log.appendChild(timeEntry);
+    log.prepend(timeEntry);
   }
 }
 
