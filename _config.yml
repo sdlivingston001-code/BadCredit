@@ -2,3 +2,4 @@ collections:
   pages:
     output: true
     permalink: /:name/
+baseurl: "/BadCredit"
