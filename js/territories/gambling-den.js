@@ -1,6 +1,6 @@
-export function gamblingDenRule(rollD6) {
+export function gamblingDenRule(rollDie) {
   return {
     type: "Gambling Den",
-    income: rollD6()
+    income: rollDie(6)
   };
 }
