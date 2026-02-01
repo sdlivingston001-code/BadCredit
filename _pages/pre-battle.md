@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Pre Battle Sequence
+title: "Pre Battle Sequence"
 ---
 
 #Pre Battle Sequence
