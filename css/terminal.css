@@ -18,6 +18,9 @@
   padding: 6px 4px;
   border-bottom: 1px solid #222;
   text-shadow: 0 0 4px #33ff33;
+
+   /* Add blank space after each log entry */
+  margin-bottom: 12px;
 }
 
 /* Make new entries pop slightly */
