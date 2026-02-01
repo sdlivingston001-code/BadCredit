@@ -8,13 +8,15 @@ body {
 
 /* SIDEBAR */
 .sidebar {
-  width: 300px;
+  width: 250px;
+  padding: 1.5rem;
+  box-sizing: border-box;
   background: #222;
   color: white;
   height: 100vh;
   position: fixed;
-  padding: 1.5rem;
 }
+
 
 .sidebar h2 {
   margin-top: 0;
