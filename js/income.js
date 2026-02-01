@@ -3,6 +3,7 @@
 // -----------------------------
 
 import { settlementRule } from "./territories/settlement.js";
+import { gamblingdenRule } from "./territories/gambling-den.js";
 
 // -----------------------------
 // Dice Helpers
@@ -19,6 +20,17 @@ function rollNDice(n, sides) {
   }
   return rolls;
 }
+
+// -----------------------------
+// Territory Rule Map
+// -----------------------------
+
+const territoryRules = {
+  "Settlement": () => settlementRule(rollDie, rollNDice),
+  "Gambling Den": () => gamblingDenRule(rollDie),
+  // etc...
+};
+
 
 // -----------------------------
 // Main Generator Logic
