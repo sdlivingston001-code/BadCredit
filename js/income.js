@@ -90,3 +90,10 @@ function generateIncome() {
 function clearLog() {
   document.getElementById("log").innerHTML = "";
 }
+
+// -----------------------------
+// Expose functions to browser
+// -----------------------------
+
+window.generateIncome = generateIncome;
+window.clearLog = clearLog;
