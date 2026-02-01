@@ -37,6 +37,8 @@ const territoryRules = {
 // -----------------------------
 
 function generateIncome() {
+  const start = new Date(); // timestamp start
+
   const selected = [...document.querySelectorAll("input[type=checkbox]:checked")];
   const log = document.getElementById("log");
 
@@ -59,6 +61,16 @@ function generateIncome() {
 
     log.appendChild(entry);
   });
+
+  const end = new Date(); // timestamp end
+
+  // Add timestamps to the log
+  const timeEntry = document.createElement("li");
+  timeEntry.innerHTML = `
+    <em>Started:</em> ${start.toLocaleTimeString()}<br>
+    <em>Finished:</em> ${end.toLocaleTimeString()}
+  `;
+  log.appendChild(timeEntry);
 }
 
 // -----------------------------
