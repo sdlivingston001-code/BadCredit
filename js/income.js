@@ -38,10 +38,10 @@ const territoryRules = {
 
 function generateIncome() {
   const start = new Date();
+  const log = document.getElementById("log");
 
   try {
     const selected = [...document.querySelectorAll("input[type=checkbox]:checked")];
-    const log = document.getElementById("log");
 
     selected.forEach(t => {
       const result = territoryRules[t.value]();
@@ -63,15 +63,23 @@ function generateIncome() {
       log.appendChild(entry);
     });
 
+  } catch (err) {
+    // This logs the error visibly in the UI
+    const errorEntry = document.createElement("li");
+    errorEntry.innerHTML = `
+      <strong style="color:red;">Error:</strong> ${err.message}
+    `;
+    log.appendChild(errorEntry);
+
   } finally {
-    // This ALWAYS runs, even if an error occurs above
+    // This ALWAYS runs, even if an error occurred
     const end = new Date();
     const timeEntry = document.createElement("li");
     timeEntry.innerHTML = `
       <em>Started:</em> ${start.toLocaleTimeString()}<br>
       <em>Finished:</em> ${end.toLocaleTimeString()}
     `;
-    document.getElementById("log").appendChild(timeEntry);
+    log.appendChild(timeEntry);
   }
 }
 
