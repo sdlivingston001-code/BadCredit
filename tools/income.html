@@ -7,16 +7,19 @@ title: Territory Income
 
 <p>Select the territories you want to generate income from:</p>
 
+<!-- Checkboxes -->
 <div id="territories">
   <label><input type="checkbox" value="Settlement"> Settlement</label><br>
   <label><input type="checkbox" value="Gambling Den"> Gambling Den</label><br>
 </div>
 
+<!-- Buttons -->
 <button onclick="generateIncome()">Generate Income</button>
+<button onclick="clearLog()">Clear Log</button>
 
+<!-- Log output -->
 <h2>Log</h2>
 <ul id="log"></ul>
 
-<button onclick="clearLog()">Clear Log</button>
-
+<!-- Function location -->
 <script type="module" src="../js/income.js"></script>
