@@ -3,37 +3,23 @@ layout: default
 title: Territory Income
 ---
 
-<!DOCTYPE html>
-<html>
-<head>
-  <link rel="stylesheet" href="../css/style.css">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Territory Income Generator</title>
-</head>
+<h1>Territory Income Generator</h1>
 
-<body>
+<p>Select the territories you want to generate income from:</p>
 
-<div class="main">
-  <h1>Territory Income Generator</h1>
-
-  <p>Select the territories you want to generate income from:</p>
-
-  <div id="territories">
-    <label><input type="checkbox" value="Settlement"> Settlement</label><br>
-    <label><input type="checkbox" value="Gambling Den"> Gambling Den</label><br>
-    <label><input type="checkbox" value="Mine Workings"> Mine Workings</label><br>
-    <label><input type="checkbox" value="Generatorium"> Generatorium</label><br>
-    <label><input type="checkbox" value="Slag Furnace"> Slag Furnace</label><br>
-  </div>
-
-  <button onclick="generateIncome()">Generate Income</button>
-
-  <h2>Log</h2>
-  <ul id="log"></ul>
-
-  <button onclick="clearLog()">Clear Log</button>
+<div id="territories">
+  <label><input type="checkbox" value="Settlement"> Settlement</label><br>
+  <label><input type="checkbox" value="Gambling Den"> Gambling Den</label><br>
+  <label><input type="checkbox" value="Mine Workings"> Mine Workings</label><br>
+  <label><input type="checkbox" value="Generatorium"> Generatorium</label><br>
+  <label><input type="checkbox" value="Slag Furnace"> Slag Furnace</label><br>
 </div>
 
+<button onclick="generateIncome()">Generate Income</button>
+
+<h2>Log</h2>
+<ul id="log"></ul>
+
+<button onclick="clearLog()">Clear Log</button>
+
 <script src="../js/income.js"></script>
-</body>
-</html>
