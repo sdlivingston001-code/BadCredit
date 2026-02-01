@@ -1,1 +1,28 @@
+{
+  "gamblingDen": {
+    "type": "Gambling Den",
+    "income": {
+      "die": 6,
+      "multiplier": 10
+    }
+  },
 
+  "settlement": {
+    "type": "Settlement",
+    "income": {
+      "die": 6,
+      "multiplier": 10
+    },
+    "recruitment": {
+      "dice": {
+        "count": 2,
+        "sides": 6
+      },
+      "outcomes": {
+        "2_sixes": "Recruit a ganger OR two juves",
+        "1_six": "Recruit a juve",
+        "0_sixes": "No new recruits"
+      }
+    }
+  }
+}
