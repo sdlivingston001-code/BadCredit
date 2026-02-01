@@ -22,8 +22,8 @@ Use the interactive tools to run simulations and explore outcomes.
 
 Learn more about the rules, world, and design behind the system.
 
-- [Advancements and Promotions](/_pages/advancements.html)
-- [Pre-Battle Sequence](/_pages/pre-battle.html)
-- [Post-Battle Sequence](/_pages/post-battle.html)
+- [Advancements and Promotions](/advancements.html)
+- [Pre-Battle Sequence](/pre-battle.html)
+- [Post-Battle Sequence](/post-battle.html)
 
 ---
