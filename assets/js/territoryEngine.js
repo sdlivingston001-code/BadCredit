@@ -1,83 +1,45 @@
-// -----------------------------
-// Territory Rules
-// -----------------------------
+import { rollDie, rollNDice } from './dice.js';
 
-import { settlementRule } from ".archive/territories/settlement.js";
-import { gamblingDenRule } from ".archive/territories/gamblingDen.js";
+export async function loadTerritories() {
+  const response = await fetch('/data/territories.json');
+  return await response.json();
+}
 
-// -----------------------------
-// Territory Rule Map
-// -----------------------------
+export function resolveIncome(territory) {
+  const die = territory.income.die;
+  const multiplier = territory.income.multiplier;
 
-const territoryRules = {
-  "Settlement": () => settlementRule(rollDie, rollNDice),
-  "Gambling Den": () => gamblingDenRule(rollDie),
-  // etc...
-};
+  const roll = rollDie(die);
+  return {
+    roll,
+    income: roll * multiplier
+  };
+}
 
-
-// -----------------------------
-// Main Generator Logic
-// -----------------------------
-
-function generateIncome() {
-  const start = new Date();
-  const log = document.getElementById("log");
-
-  try {
-    const selected = [...document.querySelectorAll("input[type=checkbox]:checked")];
-
-    selected.forEach(t => {
-      const result = territoryRules[t.value]();
-      const entry = document.createElement("li");
-
-      if (result.type === "Settlement") {
-        entry.innerHTML = `
-          <strong>Settlement</strong><br>
-          Income Roll: ${result.incomeRoll} → ${result.income} credits<br>
-          Recruitment Roll: ${result.recruitRolls.join(", ")} → ${result.recruitment}
-        `;
-      } else {
-        entry.innerHTML = `
-          <strong>${result.type}</strong><br>
-          Income: ${result.income} credits
-        `;
-      }
-
-      log.prepend(entry);
-    });
-
-  } catch (err) {
-    // This logs the error visibly in the UI
-    const errorEntry = document.createElement("li");
-    errorEntry.innerHTML = `
-      <strong style="color:red;">Error:</strong> ${err.message}
-    `;
-    log.prepend(errorEntry);
-
-  } finally {
-    // This ALWAYS runs, even if an error occurred
-    const end = new Date();
-    const timeEntry = document.createElement("li");
-    timeEntry.innerHTML = `
-      <em>Started:</em> ${start.toLocaleTimeString()}<br>
-      <em>Finished:</em> ${end.toLocaleTimeString()}
-    `;
-    log.prepend(timeEntry);
+export function resolveRecruitment(territory) {
+  if (!territory.recruitment) {
+    return { recruitment: null };
   }
+
+  const { count, sides } = territory.recruitment.dice;
+  const rolls = rollNDice(count, sides);
+  const sixes = rolls.filter(r => r === 6).length;
+
+  let result = territory.recruitment.outcomes["0_sixes"];
+  if (sixes === 1) result = territory.recruitment.outcomes["1_six"];
+  if (sixes === 2) result = territory.recruitment.outcomes["2_sixes"];
+
+  return {
+    rolls,
+    sixes,
+    recruitment: result
+  };
 }
 
-// -----------------------------
-// Clear Log
-// -----------------------------
-
-function clearLog() {
-  document.getElementById("log").innerHTML = "";
+export function resolveTerritory(territory) {
+  return {
+    type: territory.type,
+    ...resolveIncome(territory),
+    ...resolveRecruitment(territory)
+  };
 }
-
-// -----------------------------
-// Expose functions to browser
-// -----------------------------
-
-window.generateIncome = generateIncome;
-window.clearLog = clearLog;
