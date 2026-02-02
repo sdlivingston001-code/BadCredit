@@ -1,57 +1,43 @@
-// assets/js/territoriesInterface.js
+const TerritoryUI = {
+  data: null,
 
-import { loadTerritories, resolveTerritory } from './territoryEngine.js';
+  async init(jsonPath) {
+    const response = await fetch(jsonPath);
+    this.data = await response.json();
+    this.renderCheckboxes();
+    this.bindEvents();
+  },
 
-let territories = {};
+  renderCheckboxes() {
+    const container = document.getElementById("territory-container");
 
-// Load territories on page load
-export async function initTerritoriesInterface() {
-  territories = await loadTerritories();
-  populateTerritoryDropdown();
-}
+    this.data.forEach(territory => {
+      const div = document.createElement("div");
 
-// Populate a <select> element with territory names
-function populateTerritoryDropdown() {
-  const select = document.getElementById("territorySelect");
-  if (!select) return;
+      div.innerHTML = `
+        <label>
+          <input type="checkbox" class="territory-checkbox" value="${territory.id}">
+          ${territory.name}
+        </label>
+      `;
 
-  Object.keys(territories).forEach(key => {
-    const option = document.createElement("option");
-    option.value = key;
-    option.textContent = territories[key].type;
-    select.appendChild(option);
-  });
-}
+      container.appendChild(div);
+    });
+  },
 
-// Run the selected territory's rules
-export function runTerritory() {
-  const select = document.getElementById("territorySelect");
-  const output = document.getElementById("territoryOutput");
+  bindEvents() {
+    document.getElementById("resolve-territories")
+      .addEventListener("click", () => {
+        const selected = [...document.querySelectorAll(".territory-checkbox:checked")]
+          .map(cb => cb.value);
 
-  if (!select || !output) return;
+        const results = TerritoryEngine.resolve(selected);
+        this.displayResults(results);
+      });
+  },
 
-  const key = select.value;
-  const territory = territories[key];
-
-  const result = resolveTerritory(territory);
-
-  output.innerHTML = formatResult(result);
-}
-
-// Format the result into HTML
-function formatResult(result) {
-  let html = `
-    <h3>${result.type}</h3>
-    <p><strong>Income Roll:</strong> ${result.roll}</p>
-    <p><strong>Income:</strong> ${result.income}</p>
-  `;
-
-  if (result.recruitment) {
-    html += `
-      <p><strong>Recruitment Rolls:</strong> ${result.rolls.join(", ")}</p>
-      <p><strong>Outcome:</strong> ${result.recruitment}</p>
-    `;
+  displayResults(results) {
+    console.log(results);
+    // You can expand this to update the DOM
   }
-
-  return html;
-}
+};
