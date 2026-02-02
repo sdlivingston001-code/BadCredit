@@ -4,25 +4,34 @@ const TerritoryUI = {
   territories: [],
   territoryMap: {},
 
-  async init(jsonPath) {
-    try {
-      const response = await fetch(jsonPath);
-      if (!response.ok) {
-        throw new Error(`Failed to load territories: ${response.status}`);
-      }
-
-      this.territories = await response.json();
-      this.buildTerritoryMap();
-      this.renderCheckboxes();
-      this.bindEvents();
-    } catch (err) {
-      console.error(err);
-      const container = document.getElementById("territory-container");
-      if (container) {
-        container.textContent = "Error loading territories data.";
-      }
+ async init(jsonPath) {
+  try {
+    const response = await fetch(jsonPath);
+    if (!response.ok) {
+      throw new Error(`Failed to load territories: ${response.status}`);
     }
-  },
+
+    this.territories = await response.json();
+
+    // ✅ Convert object → array if needed
+    if (!Array.isArray(this.territories)) {
+      this.territories = Object.entries(this.territories).map(([id, data]) => ({
+        id,
+        ...data
+      }));
+    }
+
+    this.buildTerritoryMap();
+    this.renderCheckboxes();
+    this.bindEvents();
+  } catch (err) {
+    console.error(err);
+    const container = document.getElementById("territory-container");
+    if (container) {
+      container.textContent = "Error loading territories data.";
+    }
+  }
+},
 
   buildTerritoryMap() {
     this.territories.forEach(t => {
