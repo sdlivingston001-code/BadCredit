@@ -1,45 +1,45 @@
-import { rollDie, rollNDice } from './dice.js';
+// territoryEngine.js
 
-export async function loadTerritories() {
-  const response = await fetch('/data/territories.json');
-  return await response.json();
-}
+// TerritoryEngine expects an array of full territory objects:
+// [{ id, name, type, income, ... }, ...]
 
-export function resolveIncome(territory) {
-  const die = territory.income.die;
-  const multiplier = territory.income.multiplier;
+const TerritoryEngine = {
+  resolve(territories) {
+    if (!Array.isArray(territories)) return [];
 
-  const roll = rollDie(die);
-  return {
-    roll,
-    income: roll * multiplier
-  };
-}
+    return territories.map(territory => {
+      const roll = Dice.d6();
+      const effect = this.applyRules(territory, roll);
 
-export function resolveRecruitment(territory) {
-  if (!territory.recruitment) {
-    return { recruitment: null };
+      return {
+        id: territory.id,
+        territory,
+        roll,
+        effect
+      };
+    });
+  },
+
+  // This is where you encode Dominion / BadCredit‑specific rules.
+  // You can branch on territory.type, tags, income, etc.
+  applyRules(territory, roll) {
+    // Example scaffolding – tweak to match your actual rules.
+    // You can expand this with a big switch or lookup table.
+
+    // Simple example:
+    // - On 1–2: no effect
+    // - On 3–4: base income
+    // - On 5–6: boosted income
+
+    const baseIncome = territory.income || 0;
+
+    if (roll <= 2) {
+      return "No effect this cycle.";
+    } else if (roll <= 4) {
+      return `Gain ${baseIncome} credits.`;
+    } else {
+      const boosted = baseIncome + Math.ceil(baseIncome * 0.5);
+      return `Great haul! Gain ${boosted} credits.`;
+    }
   }
-
-  const { count, sides } = territory.recruitment.dice;
-  const rolls = rollNDice(count, sides);
-  const sixes = rolls.filter(r => r === 6).length;
-
-  let result = territory.recruitment.outcomes["0_sixes"];
-  if (sixes === 1) result = territory.recruitment.outcomes["1_six"];
-  if (sixes === 2) result = territory.recruitment.outcomes["2_sixes"];
-
-  return {
-    rolls,
-    sixes,
-    recruitment: result
-  };
-}
-
-export function resolveTerritory(territory) {
-  return {
-    type: territory.type,
-    ...resolveIncome(territory),
-    ...resolveRecruitment(territory)
-  };
-}
+};
