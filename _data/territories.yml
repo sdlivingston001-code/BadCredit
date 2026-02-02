@@ -1,5 +1,5 @@
 settlement:
-  type: Settlement
+  name: Settlement
   income:
     die: 6
     multiplier: 10
@@ -13,7 +13,7 @@ settlement:
       "0_sixes": No new recruits
       
 gamblingDen:
-  type: Gambling Den
+  name: Gambling Den
   income:
     die: 6
     multiplier: 5
