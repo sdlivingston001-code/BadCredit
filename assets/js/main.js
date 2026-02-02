@@ -1,6 +1,4 @@
-import { loadTerritories, resolveTerritory } from './territoryEngine.js';
+console.log("main.js loaded");
 
-const territories = await loadTerritories();
-
-const result = resolveTerritory(territories.gamblingDen);
-console.log(result);
+// Use the global TerritoryEngine and TerritoryUI objects
+// No imports needed
