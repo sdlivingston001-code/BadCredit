@@ -3,6 +3,13 @@ layout: default
 title: Roll for territories
 ---
 
-<select id="territorySelect"></select>
-<button onclick="runTerritory()">Run</button>
-<div id="territoryOutput"></div>
+<div id="territory-container"></div>
+
+<button id="resolve-territories">Resolve Territories</button>
+
+<script src="/js/dice.js"></script>
+<script src="/js/territoryEngine.js"></script>
+<script src="/js/territoryUI.js"></script>
+<script>
+  TerritoryUI.init("/assets/json/territories.json");
+</script>
