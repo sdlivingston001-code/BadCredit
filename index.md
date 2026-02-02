@@ -12,9 +12,9 @@ title: BadCredit
 
 Use the interactive tools to run simulations and explore outcomes.
 
-[Territory Tool]({{ site.baseurl }}/tools/territoryPage.html)
-[Lasting Injury Tool]({{ site.baseurl }}/tools/territoryPage.html)
-[XP Spend]({{ site.baseurl }}/tools/territoryPage.html)
+[Territory Tool]({{ site.baseurl }}/tools/territoryPage/)
+[Lasting Injury Tool]({{ site.baseurl }}/tools/territoryPage/)
+[XP Spend]({{ site.baseurl }}/tools/territoryPage/)
 
 ---
 
