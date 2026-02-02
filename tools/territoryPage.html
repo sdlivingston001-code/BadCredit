@@ -1,15 +1,21 @@
 ---
 layout: default
-title: Roll for territories
+title: Territories
 ---
+
+<h1>Territories</h1>
 
 <div id="territory-container"></div>
 
 <button id="resolve-territories">Resolve Territories</button>
 
+<div id="territory-results"></div>
+
+<!-- Adjust this path if your built JSON lives elsewhere -->
 <script src="/js/dice.js"></script>
 <script src="/js/territoryEngine.js"></script>
 <script src="/js/territoryUI.js"></script>
 <script>
+  // Adjust JSON path to match your Jekyll output
   TerritoryUI.init("/assets/json/territories.json");
 </script>
