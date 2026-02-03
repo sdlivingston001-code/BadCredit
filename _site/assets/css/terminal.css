@@ -1,0 +1,50 @@
+/* Underhive Terminal Log */
+
+#log {
+  background: #0d0d0d;
+  border: 2px solid #333;
+  padding: 10px;
+  margin-top: 10px;
+  list-style: none;
+  font-family: "Share Tech Mono", monospace;
+  color: #33ff33; /* toxic green terminal text */
+  max-height: 400px;
+  overflow-y: auto;
+  box-shadow: 0 0 15px #000 inset;
+}
+
+/* Each log entry */
+#log li {
+  padding: 6px 4px;
+  border-bottom: 1px solid #222;
+  text-shadow: 0 0 4px #33ff33;
+
+   /* Add blank space after each log entry */
+  margin-bottom: 12px;
+}
+
+/* Make new entries pop slightly */
+#log li:first-child {
+  background: rgba(50, 255, 50, 0.05);
+}
+
+/* Flicker effect for the whole terminal */
+@keyframes flicker {
+  0% { opacity: 1; }
+  50% { opacity: 0.97; }
+  100% { opacity: 1; }
+}
+
+#log {
+  animation: flicker 0.15s infinite;
+}
+
+/* Optional: glitchy header text */
+.terminal-title {
+  font-family: "Share Tech Mono", monospace;
+  color: #ff9933;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 0 0 6px #ff9933;
+  margin-bottom: 6px;
+}

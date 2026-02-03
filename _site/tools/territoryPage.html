@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/BadCredit/assets/css/style.css">
+  <link rel="stylesheet" href="/BadCredit/assets/css/terminal.css">
+  <title>Territories</title>
+</head>
+
+<body>
+
+
+
+  <div class="main">
+    <h1>Territories</h1>
+
+<div id="territory-container"></div>
+
+<button id="resolve-territories">Resolve Territories</button>
+
+<div id="territory-results"></div>
+
+<!-- Adjust this path if your built JSON lives elsewhere -->
+<script src="/BadCredit/assets/js/dice.js"></script>
+<script src="/BadCredit/assets/js/territoryEngine.js"></script>
+<script src="/BadCredit/assets/js/territoryUI.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    TerritoryUI.init("/BadCredit/data/territories.json");
+  });
+</script>
+
+  </div>
+
+  <script type="module" src="/BadCredit/assets/js/main.js"></script>
+  <hr style="border-color:#444;">
+
+<div class="bottom-bar">
+  <a href="/BadCredit/">Home</a>
+  <a href="/BadCredit/tools/territoryPage.html">Inc</a>
+  <a href="/BadCredit/tools/territoryPage.html">Inj</a>
+  <a href="/BadCredit/tools/territoryPage.html">XP</a>
+</div>
+
+  
+</body>
+</html>

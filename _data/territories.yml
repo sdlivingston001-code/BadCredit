@@ -1,19 +1,34 @@
 settlement:
   name: Settlement
+  level: 1
   income:
-    die: 6
+    sides: 6
     multiplier: 10
-  recruitment:
-    dice:
-      count: 2
-      sides: 6
+  recruit:
+    count: 2
+    sides: 6
+    target: 6
     outcomes:
-      "2_sixes": Recruit a ganger OR two juves
-      "1_six": Recruit a juve
-      "0_sixes": No new recruits
+      "0": No new recruits.
+      "1": Recruit a juve for free.
+      "2": Recruit either two juves or one ganger for free.
+  reputation:
+    effect:  "<br><strong>Special:</strong> Whilst it controls this Territory, the gang adds +1 to its Reputation."
       
-gamblingDen:
-  name: Gambling Den
+old_ruins:
+  name: Old Ruins
+  level: 2
   income:
-    die: 6
-    multiplier: 5
+    sides: 3
+    multiplier: 10
+    effect: "<br><strong>Special:</strong> Generate an additional 10 credits for each Dome Runner recruited by the gang."
+
+rogue_doc_shop:
+  name: Rogue Doc Shop
+  level: 2
+  income:
+    sides: 6
+    multiplier: 10
+  recruit:
+    outcomes:
+      effect: "<br><strong>Special:</strong> Whilst it controls this Territory, the gang adds may recruit a single Rogue Doc for free."
