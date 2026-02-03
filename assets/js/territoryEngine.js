@@ -4,22 +4,35 @@
 
 const TerritoryEngine = {
   // Main function that processes all territories and applies all rules
+  // Processes by rule type: all income rolls first, then all recruit rolls, etc.
   resolveAll(territories) {
     if (!Array.isArray(territories)) return [];
 
-    return territories.map(territory => {
-      const income = this.resolveIncome(territory);
-      const recruit = this.resolveRecruit(territory);
-      // Add more rule types here as needed
-      // const special = this.resolveSpecial(territory);
+    // First, do all income rolls
+    const incomeResults = territories.map(territory => ({
+      id: territory.id,
+      result: this.resolveIncome(territory)
+    }));
 
-      return {
-        id: territory.id,
-        territory,
-        income,
-        recruit
-      };
-    });
+    // Then, do all recruit rolls
+    const recruitResults = territories.map(territory => ({
+      id: territory.id,
+      result: this.resolveRecruit(territory)
+    }));
+
+    // Add more rule types here as needed
+    // const specialResults = territories.map(territory => ({
+    //   id: territory.id,
+    //   result: this.resolveSpecial(territory)
+    // }));
+
+    // Combine all results by territory
+    return territories.map((territory, index) => ({
+      id: territory.id,
+      territory,
+      income: incomeResults[index].result,
+      recruit: recruitResults[index].result
+    }));
   },
 
   // Income rules - determines credits earned from a territory

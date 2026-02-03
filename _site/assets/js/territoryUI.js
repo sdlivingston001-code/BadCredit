@@ -93,28 +93,73 @@ const TerritoryUI = {
       return;
     }
 
-    const list = document.createElement("ul");
-
-    results.forEach(result => {
-      const li = document.createElement("li");
-      const name = result.territory?.name || result.id || "Unknown territory";
-
-      // Build display text with income and recruitment info
-      let text = `<strong>${name}:</strong><br>`;
-      
-      if (result.income) {
-        text += `&nbsp;&nbsp;💰 ${result.income.description}<br>`;
-      }
-      
-      if (result.recruit) {
-        text += `&nbsp;&nbsp;👥 ${result.recruit.description}`;
-      }
-
-      li.innerHTML = text;
-      list.appendChild(li);
-    });
-
     resultsContainer.innerHTML = "";
-    resultsContainer.appendChild(list);
+
+    // Display all income rolls first
+    const incomeSection = document.createElement("div");
+    incomeSection.innerHTML = "<h3>💰 Income Rolls</h3>";
+    const incomeList = document.createElement("ul");
+    
+    let totalCredits = 0;
+    const specialEffects = [];
+    
+    results.forEach(result => {
+      if (result.income) {
+        const li = document.createElement("li");
+        const name = result.territory?.name || result.id || "Unknown territory";
+        li.innerHTML = `<strong>${name}:</strong> ${result.income.description}`;
+        incomeList.appendChild(li);
+        
+        // Add to total credits
+        if (result.income.credits) {
+          totalCredits += result.income.credits;
+        }
+        
+        // Collect special effects
+        if (result.territory?.income?.effect) {
+          specialEffects.push(`<strong>${name}:</strong> ${result.territory.income.effect}`);
+        }
+      }
+    });
+    
+    incomeSection.appendChild(incomeList);
+    
+    // Add total credits
+    const totalDiv = document.createElement("div");
+    totalDiv.innerHTML = `<p><strong>Total Credits: ${totalCredits}</strong></p>`;
+    incomeSection.appendChild(totalDiv);
+    
+    // Add special effects if any
+    if (specialEffects.length > 0) {
+      const effectsDiv = document.createElement("div");
+      effectsDiv.innerHTML = "<p><em>Special Effects:</em></p>";
+      const effectsList = document.createElement("ul");
+      specialEffects.forEach(effect => {
+        const li = document.createElement("li");
+        li.innerHTML = effect;
+        effectsList.appendChild(li);
+      });
+      effectsDiv.appendChild(effectsList);
+      incomeSection.appendChild(effectsDiv);
+    }
+    
+    resultsContainer.appendChild(incomeSection);
+
+    // Then display all recruit rolls
+    const recruitSection = document.createElement("div");
+    recruitSection.innerHTML = "<h3>👥 Recruit Rolls</h3>";
+    const recruitList = document.createElement("ul");
+    
+    results.forEach(result => {
+      if (result.recruit) {
+        const li = document.createElement("li");
+        const name = result.territory?.name || result.id || "Unknown territory";
+        li.innerHTML = `<strong>${name}:</strong> ${result.recruit.description}`;
+        recruitList.appendChild(li);
+      }
+    });
+    
+    recruitSection.appendChild(recruitList);
+    resultsContainer.appendChild(recruitSection);
   }
 };
