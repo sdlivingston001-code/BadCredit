@@ -60,5 +60,17 @@ const Dice = {
 
   countValue(rolls, value) {
     return rolls.filter(roll => roll === value).length;
+  },
+
+  // Check if an array of dice rolls contains any duplicate values
+  hasDuplicates(rolls) {
+    const seen = new Set();
+    for (const roll of rolls) {
+      if (seen.has(roll)) {
+        return true;
+      }
+      seen.add(roll);
+    }
+    return false;
   }
 };
