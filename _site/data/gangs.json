@@ -1,13 +1,1 @@
-[
-  "Cawdor",
-  "Escher",
-  "Goliath",
-  "Van Saar",
-  "Orlock",
-  "Delaque",
-  "Corpse Grinder Cult",
-  "Chaos Cult",
-  "Genestealer Cult",
-  "Palanite Enforcers",
-  "Squat Prospects"
-]
+{"cawdor":{"name":"House Cawdor"},"delaque":{"name":"House Delaque"},"escher":{"name":"House Escher"},"goliath":{"name":"House Goliath"},"orlock":{"name":"House Orlock"},"van_saar":{"name":"House Van Saar"},"enforcers":{"name":"Palanite Enforcers"},"badzone_enforcers":{"name":"Badzone Enforcers"},"corpse_grinder_cult":{"name":"Corpse Grinder Cult"},"genestealer_cult":{"name":"Genestealer Cult"},"ash_waste_nomads":{"name":"Ash Waste Nomads"},"squats":{"name":"Ironhead Squat Prospectors"},"outcasts":{"name":"Underhive Outcasts"},"ogryns":{"name":"Slave Ogryns"},"venators":{"name":"Venators"},"spyrers":{"name":"Spyre Hunters"},"malstrain":{"name":"Malstrain"}}

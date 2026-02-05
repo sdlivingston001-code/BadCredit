@@ -1,13 +1,5 @@
-[
-  "Cawdor",
-  "Escher",
-  "Goliath",
-  "Van Saar",
-  "Orlock",
-  "Delaque",
-  "Corpse Grinder Cult",
-  "Chaos Cult",
-  "Genestealer Cult",
-  "Palanite Enforcers",
-  "Squat Prospects"
-]
+---
+layout: null
+permalink: /data/gangs.json
+---
+{{ site.data.gangs | jsonify }}

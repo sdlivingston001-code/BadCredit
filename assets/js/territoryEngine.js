@@ -3,211 +3,147 @@
 // TerritoryEngine handles all territory-related rules and calculations
 
 const TerritoryEngine = {
+  // Helper: Get gang-specific property or fall back to base property
+  getPropertyWithGangOverride(territory, propertyName, selectedGang) {
+    if (selectedGang) {
+      const gangKey = `${propertyName}_${selectedGang}`;
+      if (territory[gangKey]) {
+        return territory[gangKey];
+      }
+    }
+    return territory[propertyName];
+  },
+
+  // Helper: Resolve a simple text-based rule (reputation, fixed gear, etc.)
+  resolveSimpleRule(territory, propertyName, selectedGang) {
+    const value = this.getPropertyWithGangOverride(territory, propertyName, selectedGang);
+    return {
+      description: value || null
+    };
+  },
+
+  // Helper: Process a single rule type across all territories
+  processRuleType(territories, propertyName, resolveFunction, selectedGang, userInputCounts = {}) {
+    const results = [];
+    const territoriesWithout = [];
+    
+    territories.forEach(territory => {
+      const hasProperty = territory[propertyName] || 
+        (selectedGang && territory[`${propertyName}_${selectedGang}`]);
+      
+      if (!hasProperty) {
+        territoriesWithout.push(territory.name || territory.id);
+      }
+      
+      const result = resolveFunction.call(this, territory, selectedGang, userInputCounts[territory.id]);
+      results.push({ id: territory.id, result });
+    });
+    
+    return { results, territoriesWithout };
+  },
+  // Event trigger test functions
+  eventTriggers: {
+    hasDuplicates: (rolls) => Dice.hasDuplicates(rolls),
+    // Add more trigger functions as needed
+    // allSameValue: (rolls) => rolls.every(r => r === rolls[0]),
+    // containsValue: (rolls, value) => rolls.includes(value),
+  },
+
   // Main function that processes all territories and applies all rules
-  // Processes by rule type: all income rolls first, then all recruit rolls, etc.
   resolve_all(territories, userInputCounts = {}, selectedGang = null) {
     if (!Array.isArray(territories)) return [];
 
-    // Track territories without rules
-    const territoriesWithoutIncome = [];
-    const territoriesWithoutRecruit = [];
-    const territoriesWithoutFixedRecruit = [];
-    const territoriesWithoutReputation = [];
-    const territoriesWithoutFixedGear = [];
-    const territoriesWithoutBattleSpecialRules = [];
-    const territoriesWithoutScenarioSelectionSpecialRules = [];
-    const territoriesWithNilEvents = [];
+    const territoriesWithEvents = [];
+    const ruleTypes = [
+      { name: 'income', property: 'income', resolver: this.resolve_income },
+      { name: 'recruit', property: 'random_recruit', resolver: this.resolve_randomrecruit },
+      { name: 'fixedRecruit', property: 'fixed_recruit', resolver: this.resolve_fixedrecruit },
+      { name: 'reputation', property: 'reputation', resolver: this.resolve_reputation },
+      { name: 'fixedGear', property: 'fixed_gear', resolver: this.resolve_fixedgear },
+      { name: 'battleSpecialRules', property: 'battle_special_rules', resolver: this.resolve_battlespecialrules },
+      { name: 'scenarioSelectionSpecialRules', property: 'scenario_selection_special_rules', resolver: this.resolve_scenarioselectionspecialrules }
+    ];
 
-    // First, do all income rolls
-    const incomeResults = territories.map(territory => {
-      const userCount = userInputCounts[territory.id];
-      const result = this.resolve_income(territory, userCount, selectedGang);
-      if (!territory.income) {
-        territoriesWithoutIncome.push(territory.name || territory.id);
-      }
-      if (result.nilEventTriggered) {
-        territoriesWithNilEvents.push({
-          id: territory.id,
-          name: territory.name || territory.id,
-          description: result.description
+    // Process all rule types
+    const processedRules = {};
+    ruleTypes.forEach(({ name, property, resolver }) => {
+      const { results, territoriesWithout } = this.processRuleType(
+        territories, property, resolver, selectedGang, userInputCounts
+      );
+      processedRules[name] = { results, territoriesWithout };
+      
+      // Collect events from income results
+      if (name === 'income') {
+        results.forEach((item, index) => {
+          if (item.result.eventTriggered) {
+            territoriesWithEvents.push({
+              id: territories[index].id,
+              name: territories[index].name || territories[index].id,
+              description: item.result.eventText || item.result.description
+            });
+          }
         });
       }
-      return {
-        id: territory.id,
-        result
-      };
     });
-
-    // Then, do all recruit rolls
-    const recruitResults = territories.map(territory => {
-      const result = this.resolve_randomrecruit(territory);
-      if (!territory.random_recruit) {
-        territoriesWithoutRecruit.push(territory.name || territory.id);
-      }
-      return {
-        id: territory.id,
-        result
-      };
-    });
-
-    // Then, do all fixed recruit checks
-    const fixedRecruitResults = territories.map(territory => {
-      const result = this.resolve_fixedrecruit(territory);
-      if (!territory.fixed_recruit) {
-        territoriesWithoutFixedRecruit.push(territory.name || territory.id);
-      }
-      return {
-        id: territory.id,
-        result
-      };
-    });
-
-    // Then, do all reputation checks
-    const reputationResults = territories.map(territory => {
-      const result = this.resolve_reputation(territory);
-      if (!territory.reputation) {
-        territoriesWithoutReputation.push(territory.name || territory.id);
-      }
-      return {
-        id: territory.id,
-        result
-      };
-    });
-
-    // Then, do all fixed gear checks
-    const fixedGearResults = territories.map(territory => {
-      const result = this.resolve_fixedgear(territory);
-      if (!territory.fixed_gear) {
-        territoriesWithoutFixedGear.push(territory.name || territory.id);
-      }
-      return {
-        id: territory.id,
-        result
-      };
-    });
-
-    // Then, do all battle special rules checks
-    const battleSpecialRulesResults = territories.map(territory => {
-      const result = this.resolve_battlespecialrules(territory);
-      if (!territory.battle_special_rules) {
-        territoriesWithoutBattleSpecialRules.push(territory.name || territory.id);
-      }
-      return {
-        id: territory.id,
-        result
-      };
-    });
-
-    // Then, do all scenario selection special rules checks
-    const scenarioSelectionSpecialRulesResults = territories.map(territory => {
-      const result = this.resolve_scenarioselectionspecialrules(territory);
-      if (!territory.scenario_selection_special_rules) {
-        territoriesWithoutScenarioSelectionSpecialRules.push(territory.name || territory.id);
-      }
-      return {
-        id: territory.id,
-        result
-      };
-    });
-
-    // Add more rule types here as needed
-    // const specialResults = territories.map(territory => ({
-    //   id: territory.id,
-    //   result: this.resolveSpecial(territory)
-    // }));
 
     // Combine all results by territory
     return {
       territories: territories.map((territory, index) => ({
         id: territory.id,
         territory,
-        income: incomeResults[index].result,
-        recruit: recruitResults[index].result,
-        fixedRecruit: fixedRecruitResults[index].result,
-        reputation: reputationResults[index].result,
-        fixedGear: fixedGearResults[index].result,
-        battleSpecialRules: battleSpecialRulesResults[index].result,
-        scenarioSelectionSpecialRules: scenarioSelectionSpecialRulesResults[index].result
+        ...Object.fromEntries(
+          ruleTypes.map(({ name }) => [name, processedRules[name].results[index].result])
+        )
       })),
-      territoriesWithoutIncome,
-      territoriesWithoutRecruit,
-      territoriesWithoutFixedRecruit,
-      territoriesWithoutReputation,
-      territoriesWithoutFixedGear,
-      territoriesWithoutBattleSpecialRules,
-      territoriesWithoutScenarioSelectionSpecialRules,
-      territoriesWithNilEvents
+      ...Object.fromEntries(
+        ruleTypes.map(({ name, property }) => [
+          `territoriesWithout${name.charAt(0).toUpperCase() + name.slice(1)}`,
+          processedRules[name].territoriesWithout
+        ])
+      ),
+      territoriesWithEvents
     };
   },
 
   // Income rules - determines credits earned from a territory
-  resolve_income(territory, userCount, selectedGang) {
-    // Check for gang-specific variant first, then fall back to base income
-    let income = territory.income;
-    if (selectedGang) {
-      const gangKey = `income_${selectedGang.toLowerCase().replace(/\s+/g, '_')}`;
-      if (territory[gangKey]) {
-        income = territory[gangKey];
-      }
-    }
+  resolve_income(territory, selectedGang, userCount) {
+    const income = this.getPropertyWithGangOverride(territory, 'income', selectedGang);
     
-    // Check if territory has income configuration
     if (!income) {
-      return {
-        roll: null,
-        credits: 0,
-        description: null
-      };
-    }
-    const multiplier = income.multiplier || 1;
-    const sides = income.sides || 6;
-    const addition = income.addition || 0;
-    
-    // Determine count: use user input for variable range, otherwise use fixed count
-    let count;
-    let countDescription = '';
-    if (income.count_min !== undefined && income.count_max !== undefined) {
-      count = userCount;
-      countDescription = ` (user selected ${count} from ${income.count_min}-${income.count_max}d${sides})`;
-    } else {
-      count = income.count || 1;
-      countDescription = '';
+      return { roll: null, credits: 0, description: null };
     }
 
-    // Roll dice based on configuration: multiplier × count × d(sides)
+    const { multiplier = 0, sides = 6, addition = 0, count_min, count_max, count_multiplier = 1 } = income;
+    
+    // Determine dice count
+    const count = (count_min !== undefined && count_max !== undefined) 
+      ? userCount 
+      : (income.count || 1);
+    const countDescription = (count_min !== undefined && count_max !== undefined)
+      ? (count_multiplier > 1 ? ` (user selected ${userCount / count_multiplier}, x${count_multiplier} = ${count})` : ` (user selected ${count})`)
+      : '';
+
+    // Roll dice
     const rolls = Dice.rollMany(count, null, sides);
     const total = rolls.reduce((sum, roll) => sum + roll, 0);
     
-    // Check for duplicates if nil_event is configured as 'hasDuplicates'
-    let credits;
-    let hasDuplicates = false;
-    let nilTextApplied = false;
+    // Check for events and apply overrides
+    const eventTriggered = income.event?.trigger && 
+      this.eventTriggers[income.event.trigger] && 
+      this.eventTriggers[income.event.trigger](rolls);
+    const effectiveMultiplier = eventTriggered && income.event.multiplier !== undefined
+      ? income.event.multiplier
+      : multiplier;
+    const effectiveAddition = eventTriggered && income.event.addition !== undefined
+      ? income.event.addition
+      : addition;
     
-    if (income.nil_event === 'hasDuplicates' && Dice.hasDuplicates(rolls)) {
-      credits = 0;
-      hasDuplicates = true;
-      nilTextApplied = true;
-    } else {
-      credits = multiplier * total + addition;
-    }
+    const credits = effectiveMultiplier * total + effectiveAddition;
 
-    let description;
-    if (nilTextApplied) {
-      const sortedRolls = [...rolls].sort((a, b) => a - b);
-      description = `Rolled ${count}d${sides}${countDescription}: ${sortedRolls.join(', ')}. ${income.nil_text}`;
-    } else {
-      let calculationPart;
-      if (multiplier !== 1 && addition !== 0) {
-        calculationPart = `(${multiplier} × ${total}) + ${addition}`;
-      } else if (multiplier !== 1) {
-        calculationPart = `${multiplier} × ${total}`;
-      } else if (addition !== 0) {
-        calculationPart = `${total} + ${addition}`;
-      } else {
-        calculationPart = `${total}`;
-      }
-      description = `Rolled ${count}d${sides}${countDescription}: ${rolls.join('+')} = ${total}. Income: ${calculationPart} = ${credits} credits.`;
-    }
+    // Build description
+    const sortedRolls = [...rolls].sort((a, b) => a - b);
+    const calculationPart = this.formatCalculation(effectiveMultiplier, total, effectiveAddition);
+    const description = `Rolled ${count}d${sides}${countDescription}: ${sortedRolls.join(', ')} = ${total}. Income: ${calculationPart} = ${credits} credits.`;
     
     return {
       rolls,
@@ -216,52 +152,45 @@ const TerritoryEngine = {
       addition,
       credits,
       description,
-      nilEventTriggered: nilTextApplied
+      eventTriggered,
+      eventTrigger: eventTriggered ? income.event.trigger : null,
+      eventText: eventTriggered && income.event.text ? income.event.text : null
     };
   },
 
+  // Helper: Format calculation display
+  formatCalculation(multiplier, total, addition) {
+    if (multiplier !== 1 && addition !== 0) {
+      return `(${multiplier} × ${total}) + ${addition}`;
+    } else if (multiplier !== 1) {
+      return `${multiplier} × ${total}`;
+    } else if (addition !== 0) {
+      return `${total} + ${addition}`;
+    }
+    return `${total}`;
+  },
+
   // Randomised recruitment rules
-  resolve_randomrecruit(territory) {
-    // Check if territory has recruitment configuration
-    if (!territory.random_recruit) {
-      return {
-        rolls: null,
-        count: 0,
-        description: null
-      };
+  resolve_randomrecruit(territory, selectedGang) {
+    const recruit = this.getPropertyWithGangOverride(territory, 'random_recruit', selectedGang);
+    
+    if (!recruit) {
+      return { rolls: null, count: 0, description: null };
     }
 
     try {
-      const recruit = territory.random_recruit;
-      const diceCount = recruit.count || 1;
-      const diceSides = recruit.sides || 6;
-      const targetValue = recruit.target || 6;
+      const { count = 1, sides = 6, target = 6, outcomes = {}, effect } = recruit;
 
-      // Roll the specified dice
-      const rolls = Dice.rollMany(diceCount, null, diceSides);
+      const rolls = Dice.rollMany(count, null, sides);
+      const matchCount = Dice.countValue(rolls, target);
+      const outcome = outcomes[matchCount.toString()] || "No result defined for this roll.";
 
-      // Count how many dice match the target value
-      const matchCount = Dice.countValue(rolls, targetValue);
-
-      // Look up the outcome based on match count
-      const outcomes = recruit.outcomes || {};
-      const outcomeKey = matchCount.toString();
-      const outcome = outcomes[outcomeKey] || "No result defined for this roll.";
-
-      let description = `Rolled ${diceCount}d${diceSides}: ${rolls.join(', ')}. ${matchCount} matching ${targetValue}(s). ${outcome}`;
-      
-      // Add any additional effect text if provided
-      if (recruit.effect) {
-        description += ` ${recruit.effect}`;
+      let description = `Rolled ${count}d${sides}: ${rolls.join(', ')}. ${matchCount} matching ${target}(s). ${outcome}`;
+      if (effect) {
+        description += ` ${effect}`;
       }
 
-      return {
-        rolls,
-        target: targetValue,
-        matchCount,
-        outcome,
-        description
-      };
+      return { rolls, target, matchCount, outcome, description };
     } catch (error) {
       console.error("Error in resolveRecruit:", error);
       return {
@@ -272,83 +201,24 @@ const TerritoryEngine = {
     }
   },
 
-  // Fixed recruitment rules - simple text-based recruitment benefit
-  resolve_fixedrecruit(territory) {
-    // Check if territory has fixed recruitment configuration
-    if (!territory.fixed_recruit) {
-      return {
-        description: null
-      };
-    }
-
-    // Return the text description directly
-    return {
-      description: territory.fixed_recruit
-    };
+  // Simple text-based rules (all follow the same pattern)
+  resolve_fixedrecruit(territory, selectedGang) {
+    return this.resolveSimpleRule(territory, 'fixed_recruit', selectedGang);
   },
 
-  // Reputation rules - simple text-based reputation benefit/penalty
-  resolve_reputation(territory) {
-    // Check if territory has reputation configuration
-    if (!territory.reputation) {
-      return {
-        description: null
-      };
-    }
-
-    // Return the text description directly
-    return {
-      description: territory.reputation
-    };
+  resolve_reputation(territory, selectedGang) {
+    return this.resolveSimpleRule(territory, 'reputation', selectedGang);
   },
 
-  // Fixed gear rules - simple text-based gear benefit
-  resolve_fixedgear(territory) {
-    // Check if territory has fixed gear configuration
-    if (!territory.fixed_gear) {
-      return {
-        description: null
-      };
-    }
-
-    // Return the text description directly
-    return {
-      description: territory.fixed_gear
-    };
+  resolve_fixedgear(territory, selectedGang) {
+    return this.resolveSimpleRule(territory, 'fixed_gear', selectedGang);
   },
 
-  // Battle special rules - simple text-based special rules for battles
-  resolve_battlespecialrules(territory) {
-    // Check if territory has battle special rules configuration
-    if (!territory.battle_special_rules) {
-      return {
-        description: null
-      };
-    }
-
-    // Return the text description directly
-    return {
-      description: territory.battle_special_rules
-    };
+  resolve_battlespecialrules(territory, selectedGang) {
+    return this.resolveSimpleRule(territory, 'battle_special_rules', selectedGang);
   },
 
-  // Scenario selection special rules - simple text-based special rules for scenario selection
-  resolve_scenarioselectionspecialrules(territory) {
-    // Check if territory has scenario selection special rules configuration
-    if (!territory.scenario_selection_special_rules) {
-      return {
-        description: null
-      };
-    }
-
-    // Return the text description directly
-    return {
-      description: territory.scenario_selection_special_rules
-    };
-  },
-
-  // Add more rule functions as needed:
-  // resolveSpecial(territory) { ... }
-  // resolveProduction(territory) { ... }
-  // resolveEvent(territory) { ... }
+  resolve_scenarioselectionspecialrules(territory, selectedGang) {
+    return this.resolveSimpleRule(territory, 'scenario_selection_special_rules', selectedGang);
+  }
 };

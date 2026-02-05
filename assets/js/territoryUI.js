@@ -6,7 +6,7 @@ const TerritoryUI = {
 
  async init(jsonPath) {
   try {
-    const response = await fetch(jsonPath);
+    const response = await fetch(`${jsonPath}?t=${Date.now()}`, { cache: 'no-store' });
     if (!response.ok) {
       throw new Error(`Failed to load territories: ${response.status}`);
     }
@@ -23,9 +23,10 @@ const TerritoryUI = {
 
     // Load gangs data
     const baseUrl = window.location.pathname.includes('/BadCredit/') ? '/BadCredit' : '';
-    const gangsResponse = await fetch(`${baseUrl}/data/gangs.json`);
+    const gangsResponse = await fetch(`${baseUrl}/data/gangs.json?t=${Date.now()}`, { cache: 'no-store' });
     if (gangsResponse.ok) {
       this.gangs = await gangsResponse.json();
+      console.log('Loaded gangs:', this.gangs);
     } else {
       this.gangs = [];
     }
@@ -79,11 +80,11 @@ const TerritoryUI = {
     select.appendChild(defaultOption);
 
     // Add gang options
-    if (this.gangs && this.gangs.length > 0) {
-      this.gangs.forEach(gang => {
+    if (this.gangs && typeof this.gangs === 'object') {
+      Object.entries(this.gangs).forEach(([id, gangData]) => {
         const option = document.createElement("option");
-        option.value = gang;
-        option.textContent = gang;
+        option.value = id;
+        option.textContent = gangData.name;
         select.appendChild(option);
       });
     }
@@ -133,30 +134,65 @@ const TerritoryUI = {
       const gangSelect = document.getElementById("gang-select");
       const selectedGang = gangSelect ? gangSelect.value : null;
 
+      // Validate gang selection
+      const warningDiv = document.getElementById("gang-selection-warning") || this.createWarningDiv();
+      if (!selectedGang) {
+        warningDiv.innerHTML = "<p style='color: red; font-weight: bold;'>⚠️ Please select a gang from the dropdown before resolving territories.</p>";
+        warningDiv.style.display = "block";
+        return;
+      }
+      warningDiv.style.display = "none";
+
       // Check if any territories have variable dice counts and collect user input
       const userInputCounts = {};
       let needsInput = false;
       
       for (const territory of selectedTerritories) {
-        if (territory.income && territory.income.count_min !== undefined && territory.income.count_max !== undefined) {
-          const count = prompt(`${territory.name}: How many dice to roll for income? (${territory.income.count_min}-${territory.income.count_max})`);
+        // Check for gang-specific income override first
+        let incomeConfig = territory.income;
+        if (selectedGang) {
+          const gangKey = `income_${selectedGang}`;
+          if (territory[gangKey]) {
+            incomeConfig = territory[gangKey];
+          }
+        }
+        
+        // Only prompt if this income config has count_min/count_max (not fixed count)
+        if (incomeConfig && incomeConfig.count_min !== undefined && incomeConfig.count_max !== undefined) {
+          const count = prompt(`${territory.name}: ${incomeConfig.count_message || `How many dice to roll for income? (${incomeConfig.count_min}-${incomeConfig.count_max})`}`);
           if (count === null) {
             // User cancelled
             return;
           }
           const parsedCount = parseInt(count);
-          if (isNaN(parsedCount) || parsedCount < territory.income.count_min || parsedCount > territory.income.count_max) {
-            alert(`Invalid input. Please enter a number between ${territory.income.count_min} and ${territory.income.count_max}.`);
+          if (isNaN(parsedCount) || parsedCount < incomeConfig.count_min || parsedCount > incomeConfig.count_max) {
+            alert(`Invalid input. Please enter a number between ${incomeConfig.count_min} and ${incomeConfig.count_max}.`);
             return;
           }
-          userInputCounts[territory.id] = parsedCount;
+          // Apply count_multiplier if it exists
+          const finalCount = incomeConfig.count_multiplier ? parsedCount * incomeConfig.count_multiplier : parsedCount;
+          userInputCounts[territory.id] = finalCount;
           needsInput = true;
         }
       }
 
       const allResults = TerritoryEngine.resolve_all(selectedTerritories, userInputCounts, selectedGang);
-      this.displayResults(allResults.territories, allResults.territoriesWithoutIncome, allResults.territoriesWithoutRecruit, allResults.territoriesWithoutFixedRecruit, allResults.territoriesWithoutReputation, allResults.territoriesWithoutFixedGear, allResults.territoriesWithoutBattleSpecialRules, allResults.territoriesWithoutScenarioSelectionSpecialRules, allResults.territoriesWithNilEvents);
+      this.displayResults(allResults.territories, allResults.territoriesWithoutIncome, allResults.territoriesWithoutRecruit, allResults.territoriesWithoutFixedRecruit, allResults.territoriesWithoutReputation, allResults.territoriesWithoutFixedGear, allResults.territoriesWithoutBattleSpecialRules, allResults.territoriesWithoutScenarioSelectionSpecialRules, allResults.territoriesWithEvents);
     });
+  },
+
+  createWarningDiv() {
+    const warningDiv = document.createElement("div");
+    warningDiv.id = "gang-selection-warning";
+    warningDiv.style.display = "none";
+    warningDiv.style.marginTop = "10px";
+    
+    const button = document.getElementById("resolve-territories");
+    if (button && button.parentNode) {
+      button.parentNode.insertBefore(warningDiv, button.nextSibling);
+    }
+    
+    return warningDiv;
   },
 
   getSelectedTerritoryIds() {
@@ -164,7 +200,41 @@ const TerritoryUI = {
     return Array.from(checkboxes).map(cb => cb.value);
   },
 
-  displayResults(results, territoriesWithoutIncome, territoriesWithoutRecruit, territoriesWithoutFixedRecruit, territoriesWithoutReputation, territoriesWithoutFixedGear, territoriesWithoutBattleSpecialRules, territoriesWithoutScenarioSelectionSpecialRules, territoriesWithNilEvents) {
+  // Helper: Create a results section with title and list of items
+  createResultSection(title, icon, results, propertyName, formatter = null) {
+    const section = document.createElement("div");
+    section.innerHTML = `<h3>${icon} ${title}</h3>`;
+    const list = document.createElement("ul");
+    
+    results.forEach(result => {
+      const data = result[propertyName];
+      if (data && data.description) {
+        const li = document.createElement("li");
+        const name = result.territory?.name || result.id || "Unknown territory";
+        const description = formatter ? formatter(data, result) : data.description;
+        li.innerHTML = `<strong>${name}:</strong> ${description}`;
+        list.appendChild(li);
+      }
+    });
+    
+    section.appendChild(list);
+    return section;
+  },
+
+  // Helper: Create "without rules" list items
+  createWithoutRulesItems(categoriesWithout) {
+    const items = [];
+    categoriesWithout.forEach(({ label, territories }) => {
+      if (territories && territories.length > 0) {
+        const li = document.createElement("li");
+        li.innerHTML = `<strong>${label}:</strong> ${territories.join(', ')}`;
+        items.push(li);
+      }
+    });
+    return items;
+  },
+
+  displayResults(results, territoriesWithoutIncome, territoriesWithoutRecruit, territoriesWithoutFixedRecruit, territoriesWithoutReputation, territoriesWithoutFixedGear, territoriesWithoutBattleSpecialRules, territoriesWithoutScenarioSelectionSpecialRules, territoriesWithEvents) {
     const resultsContainer = document.getElementById("territory-results");
     if (!resultsContainer) return;
 
@@ -175,61 +245,37 @@ const TerritoryUI = {
 
     resultsContainer.innerHTML = "";
 
-    // Display Special Events to resolve first
-    if (territoriesWithNilEvents && territoriesWithNilEvents.length > 0) {
-      const specialEventsSection = document.createElement("div");
-      specialEventsSection.innerHTML = "<h3>\u26a0\ufe0f Special Events to Resolve</h3>";
-      const specialEventsList = document.createElement("ul");
-      
-      territoriesWithNilEvents.forEach(event => {
-        const li = document.createElement("li");
-        li.innerHTML = `<strong>${event.name}:</strong> ${event.description}`;
-        specialEventsList.appendChild(li);
-      });
-      
-      specialEventsSection.appendChild(specialEventsList);
-      resultsContainer.appendChild(specialEventsSection);
+    // Special Events section
+    if (territoriesWithEvents && territoriesWithEvents.length > 0) {
+      const section = this.createResultSection("Special Events to Resolve", "⚠️", 
+        territoriesWithEvents.map(e => ({ id: e.id, territory: { name: e.name }, event: { description: e.description } })),
+        'event'
+      );
+      resultsContainer.appendChild(section);
     }
 
-    // Display all income rolls
-    const incomeSection = document.createElement("div");
-    incomeSection.innerHTML = "<h3>💰 Income Rolls</h3>";
-    const incomeList = document.createElement("ul");
+    // Income section with total and special effects
+    const incomeSection = this.createResultSection("Income Rolls", "💰", results, 'income');
     
     let totalCredits = 0;
     const specialEffects = [];
-    
     results.forEach(result => {
-      // Skip territories with nil events - they'll be shown in Special Events section
-      if (result.income && result.income.description && !result.income.nilEventTriggered) {
-        const li = document.createElement("li");
-        const name = result.territory?.name || result.id || "Unknown territory";
-        li.innerHTML = `<strong>${name}:</strong> ${result.income.description}`;
-        incomeList.appendChild(li);
-        
-        // Add to total credits
-        if (result.income.credits) {
-          totalCredits += result.income.credits;
-        }
-        
-        // Collect special effects
-        if (result.territory?.income?.effect) {
-          specialEffects.push(`<strong>${name}:</strong> ${result.territory.income.effect}`);
-        }
+      if (result.income && result.income.credits) {
+        totalCredits += result.income.credits;
+      }
+      if (result.territory?.income?.effect) {
+        const name = result.territory?.name || result.id;
+        specialEffects.push(`<strong>${name}:</strong> ${result.territory.income.effect}`);
       }
     });
     
-    incomeSection.appendChild(incomeList);
-    
-    // Add total credits
     const totalDiv = document.createElement("div");
     totalDiv.innerHTML = `<p><strong>Total Credits: ${totalCredits}</strong></p>`;
     incomeSection.appendChild(totalDiv);
     
-    // Add special effects if any
     if (specialEffects.length > 0) {
       const effectsDiv = document.createElement("div");
-      effectsDiv.innerHTML = "<p><em><strong>Special Effects to apply:</strong></em></p>";
+      effectsDiv.innerHTML = "<p><em><strong>Special Effects to apply manually:</strong></em></p>";
       const effectsList = document.createElement("ul");
       specialEffects.forEach(effect => {
         const li = document.createElement("li");
@@ -242,173 +288,39 @@ const TerritoryUI = {
     
     resultsContainer.appendChild(incomeSection);
 
-    // Then display all recruit rolls
-    const recruitSection = document.createElement("div");
-    recruitSection.innerHTML = "<h3>👥 Random Recruit Rolls</h3>";
-    const recruitList = document.createElement("ul");
-    
-    results.forEach(result => {
-      if (result.recruit && result.recruit.description) {
-        const li = document.createElement("li");
-        const name = result.territory?.name || result.id || "Unknown territory";
-        li.innerHTML = `<strong>${name}:</strong> ${result.recruit.description}`;
-        recruitList.appendChild(li);
-      }
-    });
-    
-    recruitSection.appendChild(recruitList);
-    
-    resultsContainer.appendChild(recruitSection);
+    // All other sections
+    const sections = [
+      { title: "Random Recruit Rolls", icon: "👥", property: "recruit" },
+      { title: "Fixed Recruit Benefits", icon: "🎖️", property: "fixedRecruit" },
+      { title: "Reputation", icon: "⭐", property: "reputation" },
+      { title: "Fixed Gear", icon: "⚔️", property: "fixedGear" },
+      { title: "Battle Special Rules", icon: "🛡️", property: "battleSpecialRules" },
+      { title: "Scenario Selection Special Rules", icon: "🎲", property: "scenarioSelectionSpecialRules" }
+    ];
 
-    // Then display all fixed recruit benefits
-    const fixedRecruitSection = document.createElement("div");
-    fixedRecruitSection.innerHTML = "<h3>🎖️ Fixed Recruit Benefits</h3>";
-    const fixedRecruitList = document.createElement("ul");
-    
-    results.forEach(result => {
-      if (result.fixedRecruit && result.fixedRecruit.description) {
-        const li = document.createElement("li");
-        const name = result.territory?.name || result.id || "Unknown territory";
-        li.innerHTML = `<strong>${name}:</strong> ${result.fixedRecruit.description}`;
-        fixedRecruitList.appendChild(li);
-      }
+    sections.forEach(({ title, icon, property }) => {
+      resultsContainer.appendChild(this.createResultSection(title, icon, results, property));
     });
-    
-    fixedRecruitSection.appendChild(fixedRecruitList);
-    
-    resultsContainer.appendChild(fixedRecruitSection);
 
-    // Then display all reputation benefits/penalties
-    const reputationSection = document.createElement("div");
-    reputationSection.innerHTML = "<h3>⭐ Reputation</h3>";
-    const reputationList = document.createElement("ul");
-    
-    results.forEach(result => {
-      if (result.reputation && result.reputation.description) {
-        const li = document.createElement("li");
-        const name = result.territory?.name || result.id || "Unknown territory";
-        li.innerHTML = `<strong>${name}:</strong> ${result.reputation.description}`;
-        reputationList.appendChild(li);
-      }
-    });
-    
-    reputationSection.appendChild(reputationList);
-    
-    resultsContainer.appendChild(reputationSection);
+    // Territories without rules section
+    const withoutRulesCategories = [
+      { label: "No income", territories: territoriesWithoutIncome },
+      { label: "No random recruit benefit", territories: territoriesWithoutRecruit },
+      { label: "No fixed recruit benefit", territories: territoriesWithoutFixedRecruit },
+      { label: "No reputation effect", territories: territoriesWithoutReputation },
+      { label: "No fixed gear", territories: territoriesWithoutFixedGear },
+      { label: "No battle special rules", territories: territoriesWithoutBattleSpecialRules },
+      { label: "No scenario selection special rules", territories: territoriesWithoutScenarioSelectionSpecialRules }
+    ];
 
-    // Then display all fixed gear benefits
-    const fixedGearSection = document.createElement("div");
-    fixedGearSection.innerHTML = "<h3>⚔️ Fixed Gear</h3>";
-    const fixedGearList = document.createElement("ul");
-    
-    results.forEach(result => {
-      if (result.fixedGear && result.fixedGear.description) {
-        const li = document.createElement("li");
-        const name = result.territory?.name || result.id || "Unknown territory";
-        li.innerHTML = `<strong>${name}:</strong> ${result.fixedGear.description}`;
-        fixedGearList.appendChild(li);
-      }
-    });
-    
-    fixedGearSection.appendChild(fixedGearList);
-    
-    resultsContainer.appendChild(fixedGearSection);
-
-    // Then display all battle special rules
-    const battleSpecialRulesSection = document.createElement("div");
-    battleSpecialRulesSection.innerHTML = "<h3>🛡️ Battle Special Rules</h3>";
-    const battleSpecialRulesList = document.createElement("ul");
-    
-    results.forEach(result => {
-      if (result.battleSpecialRules && result.battleSpecialRules.description) {
-        const li = document.createElement("li");
-        const name = result.territory?.name || result.id || "Unknown territory";
-        li.innerHTML = `<strong>${name}:</strong> ${result.battleSpecialRules.description}`;
-        battleSpecialRulesList.appendChild(li);
-      }
-    });
-    
-    battleSpecialRulesSection.appendChild(battleSpecialRulesList);
-    
-    resultsContainer.appendChild(battleSpecialRulesSection);
-
-    // Then display all scenario selection special rules
-    const scenarioSelectionSpecialRulesSection = document.createElement("div");
-    scenarioSelectionSpecialRulesSection.innerHTML = "<h3>🎲 Scenario Selection Special Rules</h3>";
-    const scenarioSelectionSpecialRulesList = document.createElement("ul");
-    
-    results.forEach(result => {
-      if (result.scenarioSelectionSpecialRules && result.scenarioSelectionSpecialRules.description) {
-        const li = document.createElement("li");
-        const name = result.territory?.name || result.id || "Unknown territory";
-        li.innerHTML = `<strong>${name}:</strong> ${result.scenarioSelectionSpecialRules.description}`;
-        scenarioSelectionSpecialRulesList.appendChild(li);
-      }
-    });
-    
-    scenarioSelectionSpecialRulesSection.appendChild(scenarioSelectionSpecialRulesList);
-    
-    resultsContainer.appendChild(scenarioSelectionSpecialRulesSection);
-
-    // Display all territories without rules in a single section at the bottom
-    const hasAnyWithoutRules = (territoriesWithoutIncome && territoriesWithoutIncome.length > 0) ||
-                               (territoriesWithoutRecruit && territoriesWithoutRecruit.length > 0) ||
-                               (territoriesWithoutFixedRecruit && territoriesWithoutFixedRecruit.length > 0) ||
-                               (territoriesWithoutReputation && territoriesWithoutReputation.length > 0) ||
-                               (territoriesWithoutFixedGear && territoriesWithoutFixedGear.length > 0) ||
-                               (territoriesWithoutBattleSpecialRules && territoriesWithoutBattleSpecialRules.length > 0) ||
-                               (territoriesWithoutScenarioSelectionSpecialRules && territoriesWithoutScenarioSelectionSpecialRules.length > 0);
-    
-    if (hasAnyWithoutRules) {
-      const nullResponsesSection = document.createElement("div");
-      nullResponsesSection.innerHTML = "<br><br><br><h3>📋 Territories Without Rules</h3>";
-      const nullResponsesList = document.createElement("ul");
-      
-      if (territoriesWithoutIncome && territoriesWithoutIncome.length > 0) {
-        const li = document.createElement("li");
-        li.innerHTML = `<strong>No income:</strong> ${territoriesWithoutIncome.join(', ')}`;
-        nullResponsesList.appendChild(li);
-      }
-      
-      if (territoriesWithoutRecruit && territoriesWithoutRecruit.length > 0) {
-        const li = document.createElement("li");
-        li.innerHTML = `<strong>No random recruit benefit:</strong> ${territoriesWithoutRecruit.join(', ')}`;
-        nullResponsesList.appendChild(li);
-      }
-      
-      if (territoriesWithoutFixedRecruit && territoriesWithoutFixedRecruit.length > 0) {
-        const li = document.createElement("li");
-        li.innerHTML = `<strong>No fixed recruit benefit:</strong> ${territoriesWithoutFixedRecruit.join(', ')}`;
-        nullResponsesList.appendChild(li);
-      }
-      
-      if (territoriesWithoutReputation && territoriesWithoutReputation.length > 0) {
-        const li = document.createElement("li");
-        li.innerHTML = `<strong>No reputation effect:</strong> ${territoriesWithoutReputation.join(', ')}`;
-        nullResponsesList.appendChild(li);
-      }
-      
-      if (territoriesWithoutFixedGear && territoriesWithoutFixedGear.length > 0) {
-        const li = document.createElement("li");
-        li.innerHTML = `<strong>No fixed gear:</strong> ${territoriesWithoutFixedGear.join(', ')}`;
-        nullResponsesList.appendChild(li);
-      }
-      
-      if (territoriesWithoutBattleSpecialRules && territoriesWithoutBattleSpecialRules.length > 0) {
-        const li = document.createElement("li");
-        li.innerHTML = `<strong>No battle special rules:</strong> ${territoriesWithoutBattleSpecialRules.join(', ')}`;
-        nullResponsesList.appendChild(li);
-      }
-      
-      if (territoriesWithoutScenarioSelectionSpecialRules && territoriesWithoutScenarioSelectionSpecialRules.length > 0) {
-        const li = document.createElement("li");
-        li.innerHTML = `<strong>No scenario selection special rules:</strong> ${territoriesWithoutScenarioSelectionSpecialRules.join(', ')}`;
-        nullResponsesList.appendChild(li);
-      }
-      
-      nullResponsesSection.appendChild(nullResponsesList);
-      resultsContainer.appendChild(nullResponsesSection);
+    const withoutRulesItems = this.createWithoutRulesItems(withoutRulesCategories);
+    if (withoutRulesItems.length > 0) {
+      const section = document.createElement("div");
+      section.innerHTML = "<br><br><br><h3>📋 Territories Without Rules</h3>";
+      const list = document.createElement("ul");
+      withoutRulesItems.forEach(item => list.appendChild(item));
+      section.appendChild(list);
+      resultsContainer.appendChild(section);
     }
-
   }
 };
