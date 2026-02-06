@@ -21,6 +21,20 @@ const TerritoryUI = {
       }));
     }
 
+    // Validate territories data if schema validation is available
+    if (typeof TerritorySchemas !== 'undefined' && TerritorySchemas.validateAll) {
+      const validation = TerritorySchemas.validateAll(this.territories);
+      if (!validation.valid) {
+        console.warn('Territory validation errors:', validation.errors);
+        // Optionally show errors to user in development
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+          alert(`Territory data validation errors:\n${validation.errors.join('\n')}`);
+        }
+      } else {
+        console.log('✓ All territories validated successfully');
+      }
+    }
+
     // Load gangs data
     const baseUrl = window.location.pathname.includes('/BadCredit/') ? '/BadCredit' : '';
     const gangsResponse = await fetch(`${baseUrl}/data/gangs.json?t=${Date.now()}`, { cache: 'no-store' });
@@ -143,7 +157,7 @@ const TerritoryUI = {
       }
       warningDiv.style.display = "none";
 
-      // Check if any territories have variable dice counts and collect user input
+      // Check if any territories need user input and collect it
       const userInputCounts = {};
       let needsInput = false;
       
@@ -157,9 +171,28 @@ const TerritoryUI = {
           }
         }
         
-        // Only prompt if this income config has count_min/count_max (not fixed count)
-        if (incomeConfig && incomeConfig.count_min !== undefined && incomeConfig.count_max !== undefined) {
-          const count = prompt(`${territory.name}: ${incomeConfig.count_message || `How many dice to roll for income? (${incomeConfig.count_min}-${incomeConfig.count_max})`}`);
+        // Handle deck-based income (suit guessing)
+        if (incomeConfig && incomeConfig.draw_from_deck) {
+          const suitChoice = prompt(`${territory.name}: Pick a suit:\n1 = ♠ (Spades)\n2 = ♥ (Hearts)\n3 = ♦ (Diamonds)\n4 = ♣ (Clubs)`);
+          if (suitChoice === null) {
+            return;
+          }
+          const suits = { '1': '♠', '2': '♥', '3': '♦', '4': '♣' };
+          const guessedSuit = suits[suitChoice];
+          if (!guessedSuit) {
+            alert('Invalid suit selection. Please enter 1, 2, 3, or 4.');
+            return;
+          }
+          userInputCounts[territory.id] = guessedSuit;
+          needsInput = true;
+        }
+        // Handle variable dice count income
+        else if (incomeConfig && incomeConfig.count_min !== undefined && incomeConfig.count_max !== undefined) {
+          // Replace template variables in message
+          let message = incomeConfig.count_message || `How many dice to roll for income? ({count_min} to {count_max})`;
+          message = message.replace('{count_min}', incomeConfig.count_min).replace('{count_max}', incomeConfig.count_max);
+          
+          const count = prompt(`${territory.name}: ${message}`);
           if (count === null) {
             // User cancelled
             return;

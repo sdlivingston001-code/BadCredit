@@ -2,29 +2,24 @@ settlement:
   name: Settlement
   level: 1
   income:
-    multiplier: 10
+    schema: standard
   random_recruit:
-    count: 2
-    target: 6
-    outcomes:
-      "0": No new recruits.
-      "1": Recruit a juve for free.
-      "2": Recruit either two juves or one ganger for free.
+    schema: standard
   reputation: "Whilst it controls this Territory, the gang adds +1 to its Reputation."
       
 old_ruins:
   name: Old Ruins
   level: 2
   income:
-    sides: 3
-    multiplier: 10
+    schema: standard
+    sides: 3 # d3 not d6
     effect: "Generate an additional 10 credits for each Dome Runner recruited by the gang."
 
 rogue_doc_shop:
   name: Rogue Doc Shop
   level: 2
   income:
-    multiplier: 10
+    schema: standard
   fixed_recruit: "Whilst it controls this Territory, the gang may add one <strong>Rogue Doc</strong> to its roster for free."
 
 promethium_cache:
@@ -47,16 +42,16 @@ workshop:
   name: Workshop
   level: 2
   income:
-    multiplier: 10
+    schema: standard
   fixed_recruit: "Whilst it controls this Territory, the gang may add one <strong>Ammo-jack</strong> to its roster for free."
 
 collapsed_dome:
   name: Collapsed Dome
   level: 2
   income:
-    count_min: 2
-    count_max: 6
-    count_message: "How many dice to roll for income?\n(Enter a number between 2 and 6)"
+    schema: userDefinedNumber
+    count_max: 6 # Choose up to 6 dice
+    count_message: "How many dice to roll for income?\n(Enter a number between {count_min} and {count_max})"
     multiplier: 10
     event:
       trigger: "hasDuplicates"
@@ -67,41 +62,39 @@ refuse_drift:
   name: Refuse Drift (Cawdor)
   level: 3
   income:
-    count: 2
-    multiplier: 5
+    schema: withDuplicateEvent  # Use at least 2 dice and trigger on any duplicates
+    multiplier: 5  # Override default multiplier of 10
     event:
-      trigger: "hasDuplicates"
       text: "<br><span style='color: red; font-weight: bold;'>⚠️ DISASTER!</span> Duplicates rolled -> Attacked by a waste-lurker!<br> Keep the income from this territory BUT a random fighter must miss the next battle."
   income_cawdor:
-    count: 2
-    multiplier: 5
+    schema: standard  # No duplicates event for Cawdor
+    count: 2  # Override default single die
+    multiplier: 5  # Override default multiplier of 10
   reputation_cawdor: "Whilst it controls this Territory, the gang adds +1 to its Reputation."
 
 corpse_farm:
   name: Corpse Farm (Cawdor)
   level: 3
   income:
-    count_min: 0
-    count_max: 100
+    schema: userDefinedNumber  # Provides count_min: 0, count_max: 100
     count_message: "How many bodies do you have?\n\nThat is, (approximately) how many fighters were deleted from either your or your opponents gang rosters' during the Update Roster post battle step over the last month?"
-    multiplier: 10
   income_cawdor:
-    count_min: 0
-    count_max: 100
-    count_message: "How many bodies do you have?\n\nThat is, (approximately) how many fighters were deleted from either your or your opponents gang rosters' during the Update Roster post battle step over the last month?\n\nFor House Cawdor this value will be doubled."
+    schema: userDefinedNumber  # Provides count_min: 0, count_max: 100
+    count_message: "How many corpses do you have for the grinders?\n\nThat is, (approximately) how many fighters were deleted from either your or your opponents gang rosters' during the Update Roster post battle step over the last month?\n\nFor House Cawdor this value will be doubled."
     count_multiplier: 2
-    multiplier: 10
   reputation_cawdor: "Whilst it controls this Territory, the gang adds +1 to its Reputation."
 
 bone_shrine:
   name: Bone Shrine (Cawdor)
   level: 3
   income:
-    count: 2
-    multiplier: 5
+    schema: standard
+    count: 2 # Override default single die
+    multiplier: 5 # Override default multiplier of 10
   income_cawdor:
-    count: 4
-    multiplier: 5
+    schema: standard
+    count: 4 # Override default single die
+    multiplier: 5 # Override default multiplier of 10
   reputation_cawdor: "Whilst it controls this Territory, the gang adds +1 to its Reputation."
 
 drinking_hole:
@@ -117,6 +110,7 @@ gambling_den:
   level: 3
   reputation: "Whilst it controls this Territory, the gang adds +1 to its Reputation."
   income:
+    schema: deckBased
     draw_from_deck: 1
-  battle_special_rules_delaque: "The gang that controls this Territory may nominate a single enemy fighter at the start of the battle before the first roll for Priority. The gang have called in the fighter’s debt marker, and in return for keeping all of their limbs intact, the fighter agrees to take no part in the coming battle. The nominated fighter misses the battle."
+  battle_special_rules_delaque: "The gang that controls this Territory may nominate a single enemy fighter at the start of the battle before the first roll for Priority. The gang have called in the fighter’s debt marker, and in return for keeping all of their limbs intact, the fighter agrees to take no part in the coming battle. The nominated fighter misses the battle."
   reputation_delaque: "Whilst it controls this Territory, the gang adds +2 to its Reputation."

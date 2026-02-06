@@ -3,7 +3,18 @@
 // TerritoryEngine handles all territory-related rules and calculations
 
 const TerritoryEngine = {
+  // Resolve territory with schema before processing
+  // This applies schema defaults and gang-specific modifiers
+  resolveWithSchema(territory, selectedGang) {
+    if (typeof TerritorySchemas !== 'undefined') {
+      return TerritorySchemas.resolveTerritory(territory, selectedGang);
+    }
+    // Fallback to original territory if schemas not loaded
+    return territory;
+  },
+
   // Helper: Get gang-specific property or fall back to base property
+  // NOTE: This is now primarily handled by schema resolution, but kept for backward compatibility
   getPropertyWithGangOverride(territory, propertyName, selectedGang) {
     if (selectedGang) {
       const gangKey = `${propertyName}_${selectedGang}`;
@@ -16,7 +27,7 @@ const TerritoryEngine = {
 
   // Helper: Resolve a simple text-based rule (reputation, fixed gear, etc.)
   resolveSimpleRule(territory, propertyName, selectedGang) {
-    const value = this.getPropertyWithGangOverride(territory, propertyName, selectedGang);
+    const value = territory[propertyName];  // Schema layer already applied gang overrides
     return {
       description: value || null
     };
@@ -53,6 +64,11 @@ const TerritoryEngine = {
   resolve_all(territories, userInputCounts = {}, selectedGang = null) {
     if (!Array.isArray(territories)) return [];
 
+    // Resolve all territories with schema before processing
+    const resolvedTerritories = territories.map(territory => 
+      this.resolveWithSchema(territory, selectedGang)
+    );
+
     const territoriesWithEvents = [];
     const ruleTypes = [
       { name: 'income', property: 'income', resolver: this.resolve_income },
@@ -68,7 +84,7 @@ const TerritoryEngine = {
     const processedRules = {};
     ruleTypes.forEach(({ name, property, resolver }) => {
       const { results, territoriesWithout } = this.processRuleType(
-        territories, property, resolver, selectedGang, userInputCounts
+        resolvedTerritories, property, resolver, selectedGang, userInputCounts
       );
       processedRules[name] = { results, territoriesWithout };
       
@@ -77,8 +93,8 @@ const TerritoryEngine = {
         results.forEach((item, index) => {
           if (item.result.eventTriggered) {
             territoriesWithEvents.push({
-              id: territories[index].id,
-              name: territories[index].name || territories[index].id,
+              id: resolvedTerritories[index].id,
+              name: resolvedTerritories[index].name || resolvedTerritories[index].id,
               description: item.result.eventText || item.result.description
             });
           }
@@ -88,7 +104,7 @@ const TerritoryEngine = {
 
     // Combine all results by territory
     return {
-      territories: territories.map((territory, index) => ({
+      territories: resolvedTerritories.map((territory, index) => ({
         id: territory.id,
         territory,
         ...Object.fromEntries(
@@ -106,19 +122,28 @@ const TerritoryEngine = {
   },
 
   // Income rules - determines credits earned from a territory
-  resolve_income(territory, selectedGang, userCount) {
-    const income = this.getPropertyWithGangOverride(territory, 'income', selectedGang);
+  resolve_income(territory, selectedGang, userInput) {
+    const income = territory.income;  // Schema layer already applied gang overrides
     
     if (!income) {
       return { roll: null, credits: 0, description: null };
     }
 
-    const { multiplier = 0, sides = 6, addition = 0, count_min, count_max, count_multiplier = 1 } = income;
+    // Handle deck-based income (gambling den)
+    if (income.draw_from_deck) {
+      return this.resolve_deckIncome(income, userInput);
+    }
+
+    // Schema layer provides all defaults, just destructure
+    const { multiplier, sides, addition, count_min, count_max, count_multiplier = 1 } = income;
+    
+    // userInput is the count for dice-based income
+    const userCount = userInput;
     
     // Determine dice count
     const count = (count_min !== undefined && count_max !== undefined) 
       ? userCount 
-      : (income.count || 1);
+      : income.count;
     const countDescription = (count_min !== undefined && count_max !== undefined)
       ? (count_multiplier > 1 ? ` (user selected ${userCount / count_multiplier}, x${count_multiplier} = ${count})` : ` (user selected ${count})`)
       : '';
@@ -138,12 +163,12 @@ const TerritoryEngine = {
       ? income.event.addition
       : addition;
     
-    const credits = effectiveMultiplier * total + effectiveAddition;
+    const credits = total * effectiveMultiplier + effectiveAddition;
 
     // Build description
     const sortedRolls = [...rolls].sort((a, b) => a - b);
     const calculationPart = this.formatCalculation(effectiveMultiplier, total, effectiveAddition);
-    const description = `Rolled ${count}d${sides}${countDescription}: ${sortedRolls.join(', ')} = ${total}. Income: ${calculationPart} = ${credits} credits.`;
+    const description = `Rolled ${count}d${sides}${countDescription}: ${sortedRolls.join('+')} = ${total}. Income: ${calculationPart} = ${credits} credits.`;
     
     return {
       rolls,
@@ -161,31 +186,71 @@ const TerritoryEngine = {
   // Helper: Format calculation display
   formatCalculation(multiplier, total, addition) {
     if (multiplier !== 1 && addition !== 0) {
-      return `(${multiplier} × ${total}) + ${addition}`;
+      return `(${total} × ${multiplier}) + ${addition}`;
     } else if (multiplier !== 1) {
-      return `${multiplier} × ${total}`;
+      return `${total} × ${multiplier}`;
     } else if (addition !== 0) {
       return `${total} + ${addition}`;
     }
     return `${total}`;
   },
 
+  // Deck-based income (gambling den)
+  resolve_deckIncome(income, guessedSuit) {
+    const card = Dice.drawCards(1)[0];
+    const suitColors = {
+      '♠': 'black', '♣': 'black',
+      '♥': 'red', '♦': 'red'
+    };
+    
+    const cardColor = suitColors[card.suit];
+    const guessedColor = suitColors[guessedSuit];
+    
+    let multiplier = 0;
+    let outcome = '';
+    
+    if (card.suit === guessedSuit) {
+      multiplier = 10;
+      outcome = '✓ Correct suit!';
+    } else if (cardColor === guessedColor) {
+      multiplier = 5;
+      outcome = '~ Correct color, wrong suit';
+    } else {
+      multiplier = 0;
+      outcome = '✗ Wrong color and suit';
+    }
+    
+    const credits = card.value * multiplier;
+    const description = `Drew ${card.display}. Guessed ${guessedSuit}. ${outcome} Income: ${card.value} × ${multiplier} = ${credits} credits.`;
+    
+    return {
+      card: card.display,
+      cardValue: card.value,
+      guessedSuit,
+      outcome,
+      multiplier,
+      credits,
+      description
+    };
+  },
+
   // Randomised recruitment rules
   resolve_randomrecruit(territory, selectedGang) {
-    const recruit = this.getPropertyWithGangOverride(territory, 'random_recruit', selectedGang);
+    const recruit = territory.random_recruit;  // Schema layer already applied gang overrides
     
     if (!recruit) {
       return { rolls: null, count: 0, description: null };
     }
 
     try {
-      const { count = 1, sides = 6, target = 6, outcomes = {}, effect } = recruit;
+      // Schema layer provides all defaults, just destructure
+      const { count, sides, target, outcomes, effect } = recruit;
 
       const rolls = Dice.rollMany(count, null, sides);
       const matchCount = Dice.countValue(rolls, target);
       const outcome = outcomes[matchCount.toString()] || "No result defined for this roll.";
 
-      let description = `Rolled ${count}d${sides}: ${rolls.join(', ')}. ${matchCount} matching ${target}(s). ${outcome}`;
+      let description = `Rolled ${count}d${sides}: ${rolls.join('+')}. ${matchCount} matching ${target}(s). ${outcome}`;
       if (effect) {
         description += ` ${effect}`;
       }

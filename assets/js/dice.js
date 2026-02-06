@@ -72,5 +72,37 @@ const Dice = {
       seen.add(roll);
     }
     return false;
+  },
+
+  // Draw cards from a 54-card deck (52 standard + 2 jokers)
+  // Returns array of card objects with rank, suit, value, and display
+  drawCards(count = 1) {
+    const suits = ['♠', '♥', '♦', '♣'];
+    const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+    const values = [14, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]; // Ace=14, face cards=11,12,13
+    
+    // Build full deck: 52 regular cards + 2 jokers
+    const fullDeck = [];
+    for (const suit of suits) {
+      for (let i = 0; i < ranks.length; i++) {
+        fullDeck.push({
+          rank: ranks[i],
+          suit: suit,
+          value: values[i],
+          display: `${ranks[i]}${suit}`
+        });
+      }
+    }
+    // Add two jokers with value 0
+    fullDeck.push({ rank: 'Joker', suit: '🃏', value: 0, display: '🃏' });
+    fullDeck.push({ rank: 'Joker', suit: '🃏', value: 0, display: '🃏' });
+    
+    // Draw random cards from deck
+    const cards = [];
+    for (let i = 0; i < count; i++) {
+      const randomIndex = Math.floor(Math.random() * fullDeck.length);
+      cards.push(fullDeck[randomIndex]);
+    }
+    return cards;
   }
 };
