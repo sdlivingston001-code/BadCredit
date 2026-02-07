@@ -112,27 +112,64 @@ const TerritoryUI = {
     const container = document.getElementById("territory-container");
     if (!container) return;
 
-    // Don't clear the entire container - just remove old checkboxes
+    // Don't clear the entire container - just remove old checkboxes and sections
     const oldCheckboxes = container.querySelectorAll(".territory-item");
+    const oldSections = container.querySelectorAll(".territory-level-section");
     oldCheckboxes.forEach(item => item.remove());
+    oldSections.forEach(section => section.remove());
 
-    this.territories.forEach(territory => {
-      const wrapper = document.createElement("div");
-      wrapper.className = "territory-item";
+    // Filter territories where campaign = 1 and group by level
+    const territoriesByLevel = {};
+    this.territories
+      .filter(territory => territory.campaign === 1)
+      .forEach(territory => {
+        const level = territory.level || 1;
+        if (!territoriesByLevel[level]) {
+          territoriesByLevel[level] = [];
+        }
+        territoriesByLevel[level].push(territory);
+      });
 
-      const id = `territory-${territory.id}`;
+    // Sort territories alphabetically within each level
+    Object.keys(territoriesByLevel).forEach(level => {
+      territoriesByLevel[level].sort((a, b) => a.name.localeCompare(b.name));
+    });
 
-      wrapper.innerHTML = `
-        <label for="${id}">
-          <input type="checkbox"
-                 id="${id}"
-                 class="territory-checkbox"
-                 value="${territory.id}">
-          ${territory.name}
-        </label>
-      `;
+    // Render each level section
+    const levels = Object.keys(territoriesByLevel).sort((a, b) => a - b);
+    levels.forEach((level, index) => {
+      // Create section
+      const section = document.createElement("div");
+      section.className = "territory-level-section";
+      section.style.marginBottom = "20px";
+      section.style.paddingBottom = "20px";
+      
+      // Add dividing line (except for the last section)
+      if (index < levels.length - 1) {
+        section.style.borderBottom = "2px solid #ccc";
+      }
 
-      container.appendChild(wrapper);
+      // Add territories for this level
+      territoriesByLevel[level].forEach(territory => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "territory-item";
+
+        const id = `territory-${territory.id}`;
+
+        wrapper.innerHTML = `
+          <label for="${id}">
+            <input type="checkbox"
+                   id="${id}"
+                   class="territory-checkbox"
+                   value="${territory.id}">
+            ${territory.name}
+          </label>
+        `;
+
+        section.appendChild(wrapper);
+      });
+
+      container.appendChild(section);
     });
   },
 
@@ -140,7 +177,7 @@ const TerritoryUI = {
     const button = document.getElementById("resolve-territories");
     if (!button) return;
 
-    button.addEventListener("click", () => {
+    button.addEventListener("click", async () => {
       const selectedIds = this.getSelectedTerritoryIds();
       const selectedTerritories = selectedIds.map(id => this.territoryMap[id]);
 
@@ -171,16 +208,15 @@ const TerritoryUI = {
           }
         }
         
+        // Resolve schema to get default values like count_min and count_max
+        if (incomeConfig && typeof TerritorySchemas !== 'undefined' && TerritorySchemas.resolveProperty) {
+          incomeConfig = TerritorySchemas.resolveProperty(incomeConfig, 'income');
+        }
+        
         // Handle deck-based income (suit guessing)
         if (incomeConfig && incomeConfig.draw_from_deck) {
-          const suitChoice = prompt(`${territory.name}: Pick a suit:\n1 = ♠ (Spades)\n2 = ♥ (Hearts)\n3 = ♦ (Diamonds)\n4 = ♣ (Clubs)`);
-          if (suitChoice === null) {
-            return;
-          }
-          const suits = { '1': '♠', '2': '♥', '3': '♦', '4': '♣' };
-          const guessedSuit = suits[suitChoice];
-          if (!guessedSuit) {
-            alert('Invalid suit selection. Please enter 1, 2, 3, or 4.');
+          const guessedSuit = await this.showSuitSelectionDialog(territory.name);
+          if (guessedSuit === null) {
             return;
           }
           userInputCounts[territory.id] = guessedSuit;
@@ -210,7 +246,7 @@ const TerritoryUI = {
       }
 
       const allResults = TerritoryEngine.resolve_all(selectedTerritories, userInputCounts, selectedGang);
-      this.displayResults(allResults.territories, allResults.territoriesWithoutIncome, allResults.territoriesWithoutRecruit, allResults.territoriesWithoutFixedRecruit, allResults.territoriesWithoutReputation, allResults.territoriesWithoutFixedGear, allResults.territoriesWithoutBattleSpecialRules, allResults.territoriesWithoutScenarioSelectionSpecialRules, allResults.territoriesWithEvents);
+      this.displayResults(allResults.territories, allResults.territoriesWithoutIncome, allResults.territoriesWithoutRecruit, allResults.territoriesWithoutFixedRecruit, allResults.territoriesWithoutReputation, allResults.territoriesWithoutFixedGear, allResults.territoriesWithoutBattleSpecialRules, allResults.territoriesWithoutTradingSpecialRules, allResults.territoriesWithoutScenarioSelectionSpecialRules, allResults.territoriesWithEvents);
     });
   },
 
@@ -231,6 +267,71 @@ const TerritoryUI = {
   getSelectedTerritoryIds() {
     const checkboxes = document.querySelectorAll(".territory-checkbox:checked");
     return Array.from(checkboxes).map(cb => cb.value);
+  },
+
+  // Show a custom dialog for suit selection with colored suits
+  showSuitSelectionDialog(territoryName) {
+    return new Promise((resolve) => {
+      // Create modal overlay
+      const overlay = document.createElement('div');
+      overlay.className = 'suit-dialog-overlay';
+
+      // Create dialog box
+      const dialog = document.createElement('div');
+      dialog.className = 'suit-dialog';
+
+      dialog.innerHTML = `
+        <h2>${territoryName}</h2>
+        <p>Pick a suit:</p>
+        <div class="suit-button-grid">
+          <button class="suit-button" data-suit="♠">
+            <span class="suit-symbol black">♠</span>
+            <span class="suit-name">Spades</span>
+          </button>
+          <button class="suit-button" data-suit="♥">
+            <span class="suit-symbol red">♥</span>
+            <span class="suit-name">Hearts</span>
+          </button>
+          <button class="suit-button" data-suit="♦">
+            <span class="suit-symbol red">♦</span>
+            <span class="suit-name">Diamonds</span>
+          </button>
+          <button class="suit-button" data-suit="♣">
+            <span class="suit-symbol black">♣</span>
+            <span class="suit-name">Clubs</span>
+          </button>
+        </div>
+        <button class="cancel-button">Cancel</button>
+      `;
+
+      overlay.appendChild(dialog);
+      document.body.appendChild(overlay);
+
+      // Suit button click handlers
+      const suitButtons = dialog.querySelectorAll('.suit-button');
+      suitButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const suit = btn.getAttribute('data-suit');
+          document.body.removeChild(overlay);
+          resolve(suit);
+        });
+      });
+
+      // Cancel button
+      const cancelButton = dialog.querySelector('.cancel-button');
+      cancelButton.addEventListener('click', () => {
+        document.body.removeChild(overlay);
+        resolve(null);
+      });
+
+      // Close on overlay click
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+          document.body.removeChild(overlay);
+          resolve(null);
+        }
+      });
+    });
   },
 
   // Helper: Create a results section with title and list of items
@@ -267,7 +368,7 @@ const TerritoryUI = {
     return items;
   },
 
-  displayResults(results, territoriesWithoutIncome, territoriesWithoutRecruit, territoriesWithoutFixedRecruit, territoriesWithoutReputation, territoriesWithoutFixedGear, territoriesWithoutBattleSpecialRules, territoriesWithoutScenarioSelectionSpecialRules, territoriesWithEvents) {
+  displayResults(results, territoriesWithoutIncome, territoriesWithoutRecruit, territoriesWithoutFixedRecruit, territoriesWithoutReputation, territoriesWithoutFixedGear, territoriesWithoutBattleSpecialRules, territoriesWithoutTradingSpecialRules, territoriesWithoutScenarioSelectionSpecialRules, territoriesWithEvents) {
     const resultsContainer = document.getElementById("territory-results");
     if (!resultsContainer) return;
 
@@ -326,9 +427,10 @@ const TerritoryUI = {
       { title: "Random Recruit Rolls", icon: "👥", property: "recruit" },
       { title: "Fixed Recruit Benefits", icon: "🎖️", property: "fixedRecruit" },
       { title: "Reputation", icon: "⭐", property: "reputation" },
+      { title: "Scenario Selection Special Rules", icon: "🎲", property: "scenarioSelectionSpecialRules" },
       { title: "Fixed Gear", icon: "⚔️", property: "fixedGear" },
       { title: "Battle Special Rules", icon: "🛡️", property: "battleSpecialRules" },
-      { title: "Scenario Selection Special Rules", icon: "🎲", property: "scenarioSelectionSpecialRules" }
+      { title: "Trading / Post Battle Action Special Rules", icon: "💼", property: "tradingSpecialRules" }
     ];
 
     sections.forEach(({ title, icon, property }) => {
@@ -341,9 +443,10 @@ const TerritoryUI = {
       { label: "No random recruit benefit", territories: territoriesWithoutRecruit },
       { label: "No fixed recruit benefit", territories: territoriesWithoutFixedRecruit },
       { label: "No reputation effect", territories: territoriesWithoutReputation },
+      { label: "No scenario selection special rules", territories: territoriesWithoutScenarioSelectionSpecialRules },
       { label: "No fixed gear", territories: territoriesWithoutFixedGear },
       { label: "No battle special rules", territories: territoriesWithoutBattleSpecialRules },
-      { label: "No scenario selection special rules", territories: territoriesWithoutScenarioSelectionSpecialRules }
+      { label: "No trading / post battle action special rules", territories: territoriesWithoutTradingSpecialRules }
     ];
 
     const withoutRulesItems = this.createWithoutRulesItems(withoutRulesCategories);

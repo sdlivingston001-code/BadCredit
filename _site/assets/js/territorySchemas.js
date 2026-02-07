@@ -45,7 +45,11 @@ const TerritorySchemas = {
     // Deck-based income (gambling den)
     deckBased: {
       draw_from_deck: 1
-    }
+    },
+
+    // Conditional: Parameters change if another territory is selected
+    // Territory must define: required_territory, conditional_count/multiplier/sides/addition
+    conditional: {}
   },
 
   // Random recruit schema types
@@ -80,7 +84,15 @@ const TerritorySchemas = {
         : this.getRecruitSchema(property.schema);
       
       // Three-way merge: base -> schema -> property overrides
-      return { ...baseDefaults, ...schemaDefaults, ...property };
+      // Special handling for event object to do deep merge
+      const merged = { ...baseDefaults, ...schemaDefaults, ...property };
+      if (schemaDefaults.event || property.event) {
+        merged.event = { 
+          ...schemaDefaults.event, 
+          ...property.event 
+        };
+      }
+      return merged;
     }
     
     // Always merge base defaults, even without a schema reference
@@ -116,7 +128,7 @@ const TerritorySchemas = {
       }
       
       // Handle simple property overrides (no schema resolution needed)
-      ['reputation', 'battle_special_rules', 'fixed_recruit', 'fixed_gear'].forEach(prop => {
+      ['reputation', 'battle_special_rules', 'trading_special_rules', 'scenario_selection_special_rules', 'fixed_recruit', 'fixed_gear'].forEach(prop => {
         const gangProp = `${prop}${gangSuffix}`;
         if (resolved[gangProp]) {
           resolved[prop] = resolved[gangProp];

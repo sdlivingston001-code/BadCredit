@@ -76,26 +76,35 @@ const Dice = {
 
   // Draw cards from a 54-card deck (52 standard + 2 jokers)
   // Returns array of card objects with rank, suit, value, and display
+  // Set Dice.forceJoker = true to always draw jokers (for testing)
   drawCards(count = 1) {
     const suits = ['♠', '♥', '♦', '♣'];
     const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
     const values = [14, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]; // Ace=14, face cards=11,12,13
+    const suitColors = { '♠': 'black', '♥': 'red', '♦': 'red', '♣': 'black' };
     
     // Build full deck: 52 regular cards + 2 jokers
     const fullDeck = [];
     for (const suit of suits) {
       for (let i = 0; i < ranks.length; i++) {
+        const color = suitColors[suit];
         fullDeck.push({
           rank: ranks[i],
           suit: suit,
           value: values[i],
-          display: `${ranks[i]}${suit}`
+          display: `${ranks[i]}<span style="color: ${color};">${suit}</span>`
         });
       }
     }
     // Add two jokers with value 0
-    fullDeck.push({ rank: 'Joker', suit: '🃏', value: 0, display: '🃏' });
-    fullDeck.push({ rank: 'Joker', suit: '🃏', value: 0, display: '🃏' });
+    const joker = { rank: 'Joker', suit: '🃏', value: 0, display: 'a <span style="color: #9c27b0; font-weight: bold;">🎭 JOKER</span>' };
+    fullDeck.push(joker);
+    fullDeck.push({ rank: 'Joker', suit: '🃏', value: 0, display: 'a <span style="color: #9c27b0; font-weight: bold;">🎭 JOKER</span>' });
+    
+    // Testing: force joker draw
+    if (this.forceJoker) {
+      return Array(count).fill(joker);
+    }
     
     // Draw random cards from deck
     const cards = [];

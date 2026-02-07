@@ -46,7 +46,7 @@ const TerritoryEngine = {
         territoriesWithout.push(territory.name || territory.id);
       }
       
-      const result = resolveFunction.call(this, territory, selectedGang, userInputCounts[territory.id]);
+      const result = resolveFunction.call(this, territory, selectedGang, userInputCounts[territory.id], territories);
       results.push({ id: territory.id, result });
     });
     
@@ -55,6 +55,7 @@ const TerritoryEngine = {
   // Event trigger test functions
   eventTriggers: {
     hasDuplicates: (rolls) => Dice.hasDuplicates(rolls),
+    isJoker: (card) => card && card.rank === 'Joker',
     // Add more trigger functions as needed
     // allSameValue: (rolls) => rolls.every(r => r === rolls[0]),
     // containsValue: (rolls, value) => rolls.includes(value),
@@ -77,6 +78,7 @@ const TerritoryEngine = {
       { name: 'reputation', property: 'reputation', resolver: this.resolve_reputation },
       { name: 'fixedGear', property: 'fixed_gear', resolver: this.resolve_fixedgear },
       { name: 'battleSpecialRules', property: 'battle_special_rules', resolver: this.resolve_battlespecialrules },
+      { name: 'tradingSpecialRules', property: 'trading_special_rules', resolver: this.resolve_tradingspecialrules },
       { name: 'scenarioSelectionSpecialRules', property: 'scenario_selection_special_rules', resolver: this.resolve_scenarioselectionspecialrules }
     ];
 
@@ -122,7 +124,7 @@ const TerritoryEngine = {
   },
 
   // Income rules - determines credits earned from a territory
-  resolve_income(territory, selectedGang, userInput) {
+  resolve_income(territory, selectedGang, userInput, allTerritories = []) {
     const income = territory.income;  // Schema layer already applied gang overrides
     
     if (!income) {
@@ -134,16 +136,33 @@ const TerritoryEngine = {
       return this.resolve_deckIncome(income, userInput);
     }
 
-    // Schema layer provides all defaults, just destructure
-    const { multiplier, sides, addition, count_min, count_max, count_multiplier = 1 } = income;
+    // Check for conditional parameters based on other territories
+    let multiplier = income.multiplier;
+    let sides = income.sides;
+    let count = income.count;
+    let addition = income.addition;
+    
+    if (income.required_territory) {
+      const hasDependency = allTerritories.some(t => t.id === income.required_territory);
+      if (hasDependency) {
+        // Apply conditional overrides if the required territory is present
+        if (income.conditional_multiplier !== undefined) multiplier = income.conditional_multiplier;
+        if (income.conditional_sides !== undefined) sides = income.conditional_sides;
+        if (income.conditional_count !== undefined) count = income.conditional_count;
+        if (income.conditional_addition !== undefined) addition = income.conditional_addition;
+      }
+    }
+
+    // Handle user-defined count parameters
+    const { count_min, count_max, count_multiplier = 1 } = income;
     
     // userInput is the count for dice-based income
     const userCount = userInput;
     
-    // Determine dice count
-    const count = (count_min !== undefined && count_max !== undefined) 
-      ? userCount 
-      : income.count;
+    // Determine dice count (user input overrides conditional overrides)
+    if (count_min !== undefined && count_max !== undefined) {
+      count = userCount;
+    }
     const countDescription = (count_min !== undefined && count_max !== undefined)
       ? (count_multiplier > 1 ? ` (user selected ${userCount / count_multiplier}, x${count_multiplier} = ${count})` : ` (user selected ${count})`)
       : '';
@@ -173,8 +192,8 @@ const TerritoryEngine = {
     return {
       rolls,
       total,
-      multiplier,
-      addition,
+      multiplier: effectiveMultiplier,
+      addition: effectiveAddition,
       credits,
       description,
       eventTriggered,
@@ -205,6 +224,12 @@ const TerritoryEngine = {
     
     const cardColor = suitColors[card.suit];
     const guessedColor = suitColors[guessedSuit];
+    const guessedSuitColored = `<span style="color: ${guessedColor};">${guessedSuit}</span>`;
+    
+    // Check for events (e.g., drawing a joker)
+    const eventTriggered = income.event?.trigger && 
+      this.eventTriggers[income.event.trigger] && 
+      this.eventTriggers[income.event.trigger](card);
     
     let multiplier = 0;
     let outcome = '';
@@ -214,23 +239,31 @@ const TerritoryEngine = {
       outcome = '✓ Correct suit!';
     } else if (cardColor === guessedColor) {
       multiplier = 5;
-      outcome = '~ Correct color, wrong suit';
+      outcome = '~ Correct color, but wrong suit.';
     } else {
       multiplier = 0;
-      outcome = '✗ Wrong color and suit';
+      outcome = '✗ Bad guess!';
     }
     
-    const credits = card.value * multiplier;
-    const description = `Drew ${card.display}. Guessed ${guessedSuit}. ${outcome} Income: ${card.value} × ${multiplier} = ${credits} credits.`;
+    // Apply event overrides if triggered
+    const effectiveMultiplier = eventTriggered && income.event.multiplier !== undefined
+      ? income.event.multiplier
+      : multiplier;
+    
+    const credits = card.value * effectiveMultiplier;
+    const description = `Drew ${card.display}. Guessed ${guessedSuitColored}. ${outcome} Income: ${card.value} × ${effectiveMultiplier} = ${credits} credits.`;
     
     return {
       card: card.display,
       cardValue: card.value,
       guessedSuit,
       outcome,
-      multiplier,
+      multiplier: effectiveMultiplier,
       credits,
-      description
+      description,
+      eventTriggered,
+      eventTrigger: eventTriggered ? income.event.trigger : null,
+      eventText: eventTriggered && income.event.text ? income.event.text : null
     };
   },
 
@@ -247,10 +280,11 @@ const TerritoryEngine = {
       const { count, sides, target, outcomes, effect } = recruit;
 
       const rolls = Dice.rollMany(count, null, sides);
+      const sortedRolls = [...rolls].sort((a, b) => a - b);
       const matchCount = Dice.countValue(rolls, target);
       const outcome = outcomes[matchCount.toString()] || "No result defined for this roll.";
 
-      let description = `Rolled ${count}d${sides}: ${rolls.join('+')}. ${matchCount} matching ${target}(s). ${outcome}`;
+      let description = `Rolled ${count}d${sides}: ${sortedRolls.join(', ')}. ${matchCount} matching ${target}(s). ${outcome}`;
       if (effect) {
         description += ` ${effect}`;
       }
@@ -281,6 +315,10 @@ const TerritoryEngine = {
 
   resolve_battlespecialrules(territory, selectedGang) {
     return this.resolveSimpleRule(territory, 'battle_special_rules', selectedGang);
+  },
+
+  resolve_tradingspecialrules(territory, selectedGang) {
+    return this.resolveSimpleRule(territory, 'trading_special_rules', selectedGang);
   },
 
   resolve_scenarioselectionspecialrules(territory, selectedGang) {
