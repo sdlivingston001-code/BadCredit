@@ -87,7 +87,8 @@ collapsed_dome:
   level: 2
   income:
     schema: userDefinedNumber
-    count_max: 6 # Choose up to 6 dice
+    count_min: 2 # Choose from 2 dice
+    count_max: 6 # ...up to 6 dice
     count_message: "How many dice to roll for income?\n(Enter a number between {count_min} and {count_max})"
     multiplier: 10
     event:
