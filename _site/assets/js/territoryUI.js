@@ -106,6 +106,86 @@ const TerritoryUI = {
     selectorWrapper.appendChild(label);
     selectorWrapper.appendChild(select);
     container.appendChild(selectorWrapper);
+
+    // Add event listener to show legacy selector when needed
+    select.addEventListener('change', () => {
+      this.updateLegacySelector(select.value);
+    });
+  },
+
+  updateLegacySelector(selectedGangKey) {
+    const container = document.getElementById("territory-container");
+    if (!container) return;
+
+    // Remove existing legacy selector if present
+    const existingLegacySelector = document.getElementById("legacy-selector-wrapper");
+    if (existingLegacySelector) {
+      existingLegacySelector.remove();
+    }
+
+    // Check if selected gang has legacy dominionGangId
+    if (!selectedGangKey || !this.gangs || !this.gangs[selectedGangKey]) return;
+
+    const selectedGangData = this.gangs[selectedGangKey];
+    if (selectedGangData.dominionGangId !== 'legacy') return;
+
+    // Find which legacy type this gang uses
+    let legacyType = null;
+    if (selectedGangData.legacy_venator === 1) legacyType = 'legacy_venator';
+    else if (selectedGangData.legacy_outcast === 1) legacyType = 'legacy_outcast';
+    else if (selectedGangData.legacy_secundan_incursion === 1) legacyType = 'legacy_secundan_incursion';
+
+    if (!legacyType) return;
+
+    // Find all gangs that have this legacy type
+    const compatibleGangs = Object.entries(this.gangs)
+      .filter(([id, gangData]) => gangData[legacyType] === 1 && gangData.dominionGangId !== 'legacy')
+      .map(([id, gangData]) => ({ id, name: gangData.name, dominionGangId: gangData.dominionGangId }));
+
+    if (compatibleGangs.length === 0) return;
+
+    // Create legacy selector
+    const legacyWrapper = document.createElement("div");
+    legacyWrapper.id = "legacy-selector-wrapper";
+    legacyWrapper.style.marginBottom = "20px";
+    legacyWrapper.style.paddingBottom = "20px";
+    legacyWrapper.style.borderBottom = "2px solid #ccc";
+
+    const legacyLabel = document.createElement("label");
+    legacyLabel.setAttribute("for", "legacy-gang-select");
+    legacyLabel.textContent = "Select House Affiliation: ";
+    legacyLabel.style.fontWeight = "bold";
+    legacyLabel.style.marginRight = "10px";
+
+    const legacySelect = document.createElement("select");
+    legacySelect.id = "legacy-gang-select";
+    legacySelect.style.padding = "5px";
+    legacySelect.style.fontSize = "14px";
+
+    // Add default option
+    const defaultOption = document.createElement("option");
+    defaultOption.value = "";
+    defaultOption.textContent = "-- Select House --";
+    legacySelect.appendChild(defaultOption);
+
+    // Add compatible gang options
+    compatibleGangs.forEach(gang => {
+      const option = document.createElement("option");
+      option.value = gang.dominionGangId;
+      option.textContent = gang.name;
+      legacySelect.appendChild(option);
+    });
+
+    legacyWrapper.appendChild(legacyLabel);
+    legacyWrapper.appendChild(legacySelect);
+
+    // Insert after the gang selector
+    const gangSelector = container.querySelector('.gang-selector-wrapper');
+    if (gangSelector && gangSelector.nextSibling) {
+      container.insertBefore(legacyWrapper, gangSelector.nextSibling);
+    } else {
+      container.appendChild(legacyWrapper);
+    }
   },
 
   renderCheckboxes() {
@@ -183,14 +263,31 @@ const TerritoryUI = {
 
       // Get selected gang
       const gangSelect = document.getElementById("gang-select");
-      const selectedGang = gangSelect ? gangSelect.value : null;
+      const selectedGangKey = gangSelect ? gangSelect.value : null;
 
       // Validate gang selection
       const warningDiv = document.getElementById("gang-selection-warning") || this.createWarningDiv();
-      if (!selectedGang) {
+      if (!selectedGangKey) {
         warningDiv.innerHTML = "<p style='color: red; font-weight: bold;'>⚠️ Please select a gang from the dropdown before resolving territories.</p>";
         warningDiv.style.display = "block";
         return;
+      }
+
+      // Get the dominionGangId for the selected gang
+      let selectedGang = this.gangs && this.gangs[selectedGangKey] && this.gangs[selectedGangKey].dominionGangId 
+        ? this.gangs[selectedGangKey].dominionGangId 
+        : selectedGangKey;
+
+      // If legacy gang, check for legacy gang selection
+      if (selectedGang === 'legacy') {
+        const legacySelect = document.getElementById("legacy-gang-select");
+        const legacyGangId = legacySelect ? legacySelect.value : null;
+        if (!legacyGangId) {
+          warningDiv.innerHTML = "<p style='color: red; font-weight: bold;'>⚠️ Please select a house affiliation from the dropdown before resolving territories.</p>";
+          warningDiv.style.display = "block";
+          return;
+        }
+        selectedGang = legacyGangId;
       }
       warningDiv.style.display = "none";
 

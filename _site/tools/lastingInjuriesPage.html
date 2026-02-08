@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="/BadCredit/assets/css/style.css">
   <link rel="stylesheet" href="/BadCredit/assets/css/terminal.css">
-  <title>Territories</title>
+  <title>Lasting Injuries</title>
 </head>
 
 <body>
@@ -13,22 +13,21 @@
 
 
   <div class="main">
-    <h1>Territories</h1>
+    <h1>Lasting Injuries</h1>
 
-<div id="territory-container"></div>
+<div id="lasting-injuries-container"></div>
 
-<button id="resolve-territories">Resolve Territories</button>
+<button id="resolve-lasting-injuries">Resolve Lasting Injuries</button>
 
-<div id="territory-results"></div>
+<div id="lasting-injuries-results"></div>
 
 <!-- Adjust this path if your built JSON lives elsewhere -->
 <script src="/BadCredit/assets/js/dice.js"></script>
-<script src="/BadCredit/assets/js/territorySchemas.js"></script>
-<script src="/BadCredit/assets/js/territoryEngine.js"></script>
-<script src="/BadCredit/assets/js/territoryUI.js"></script>
+<script src="/BadCredit/assets/js/lastingInjuriesEngine.js"></script>
+<script src="/BadCredit/assets/js/lastingInjuriesUI.js"></script>
 <script>
   document.addEventListener("DOMContentLoaded", () => {
-    TerritoryUI.init("/BadCredit/data/territories.json");
+    LastingInjuriesUI.init("/BadCredit/data/lastingInjuries.json");
   });
 </script>
 
