@@ -2,4 +2,4 @@
 layout: null
 permalink: /data/lastingInjuries.json
 ---
-{{ site.data.lastinginjuries | jsonify }}
+{{ site.data.lastingInjuries | jsonify }}

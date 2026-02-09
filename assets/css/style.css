@@ -11,25 +11,45 @@ body {
 /* BOTTOM-BAR */
 .bottom-bar {
   width: 100%;
-  padding: 1rem 1.5rem;
+  padding: 0.75rem 1.5rem;
   background: #222;
   color: white;
-  margin-top: auto;
   display: flex;
   justify-content: center;
   gap: 1.5rem;
+  /* Make it sticky at bottom */
+  position: sticky;
+  bottom: 0;
+  z-index: 100;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
 }
 
 .bottom-bar a {
-  display: block;
+  display: flex;
+  align-items: center;
   color: white;
   text-decoration: none;
-  padding: 0.5rem 0;
+  /* Larger tap targets for mobile */
+  padding: 0.75rem 1rem;
+  min-height: 44px;
   font-weight: bold;
 }
 
 .bottom-bar a:hover {
   text-decoration: underline;
+}
+
+/* Mobile optimization */
+@media (max-width: 600px) {
+  .bottom-bar {
+    gap: 0.5rem;
+    padding: 0.5rem;
+  }
+  
+  .bottom-bar a {
+    padding: 1rem 0.75rem;
+    font-size: 0.9rem;
+  }
 }
 
 /* MAIN CONTENT */
