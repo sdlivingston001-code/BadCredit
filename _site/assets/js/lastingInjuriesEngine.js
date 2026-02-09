@@ -244,8 +244,15 @@ const LastingInjuriesEngine = {
   },
 
   calculateRogueDocCost(mode) {
+    if (!this.injuriesData) {
+      console.error('Injuries data not loaded');
+      return null;
+    }
     const modeData = this.injuriesData[mode];
-    if (!modeData || !modeData.cost) return null;
+    if (!modeData || !modeData.cost) {
+      console.error(`Mode data not found for: ${mode}`);
+      return null;
+    }
 
     const costConfig = modeData.cost;
     let total = 0;

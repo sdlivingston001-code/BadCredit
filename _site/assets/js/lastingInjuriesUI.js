@@ -175,12 +175,14 @@ const LastingInjuriesUI = {
 
   async init(jsonPath) {
     try {
+      console.log('Loading injuries from:', jsonPath);
       const response = await fetch(`${jsonPath}?t=${Date.now()}`, { cache: 'no-store' });
       if (!response.ok) {
-        throw new Error(`Failed to load lasting injuries: ${response.status}`);
+        throw new Error(`Failed to load lasting injuries: ${response.status} from ${jsonPath}`);
       }
 
       this.injuriesData = await response.json();
+      console.log('Injuries data loaded successfully');
 
       // Pass data to engine
       LastingInjuriesEngine.loadInjuries(this.injuriesData);
@@ -349,6 +351,12 @@ const LastingInjuriesUI = {
     if (!resultsContainer) return;
 
     resultsContainer.innerHTML = "";
+
+    // Check if data failed to load
+    if (cost === null) {
+      resultsContainer.innerHTML = '<div style="color: red; padding: 20px; border: 2px solid red; border-radius: 4px;">Error: Injury data not loaded. Please refresh the page.</div>';
+      return;
+    }
 
     const costDiv = document.createElement("div");
     costDiv.style.marginTop = "20px";
