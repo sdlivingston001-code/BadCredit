@@ -175,17 +175,24 @@ const LastingInjuriesUI = {
 
   async init(jsonPath) {
     try {
-      console.log('Loading injuries from:', jsonPath);
-      const response = await fetch(`${jsonPath}?t=${Date.now()}`, { cache: 'no-store' });
+      console.log('🔍 Loading injuries from:', jsonPath);
+      const fullPath = `${jsonPath}?t=${Date.now()}`;
+      console.log('🔍 Full fetch URL:', fullPath);
+      
+      const response = await fetch(fullPath, { cache: 'no-store' });
+      console.log('🔍 Response status:', response.status, response.statusText);
+      
       if (!response.ok) {
         throw new Error(`Failed to load lasting injuries: ${response.status} from ${jsonPath}`);
       }
 
       this.injuriesData = await response.json();
-      console.log('Injuries data loaded successfully');
+      console.log('✅ Injuries data loaded successfully');
+      console.log('🔍 Data keys:', Object.keys(this.injuriesData));
 
       // Pass data to engine
       LastingInjuriesEngine.loadInjuries(this.injuriesData);
+      console.log('✅ Data passed to engine');
 
       // Render mode selector
       this.renderModeSelector();
@@ -213,10 +220,16 @@ const LastingInjuriesUI = {
       console.log('Use: testInjury(roll) - e.g., testInjury(11) for Standard mode or testInjury(6) for Ironman mode');
       console.log('Use: testRogueDoc(mode) - e.g., testRogueDoc("trading_post_rogue_doc") or testRogueDoc("hanger_on_rogue_doc")');
     } catch (err) {
-      console.error(err);
+      console.error('❌ Error in init:', err);
+      console.error('❌ Error message:', err.message);
+      console.error('❌ Error stack:', err.stack);
       const container = document.getElementById("lasting-injuries-container");
       if (container) {
-        container.textContent = "Error loading lasting injuries data.";
+        container.innerHTML = `<div style="color: red; padding: 20px; border: 2px solid red; border-radius: 4px;">
+          <strong>Error loading lasting injuries data:</strong><br>
+          ${err.message}<br>
+          <em>Check console for details</em>
+        </div>`;
       }
     }
   },
