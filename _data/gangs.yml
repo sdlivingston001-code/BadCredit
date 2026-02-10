@@ -28,7 +28,7 @@ goliath: #House of chains
 
 ogryns: #House of chains
   name: Slave Ogryns
-  dominionGangId: goliath
+  dominionGangId: unaffiliated
   legacy_venator: 1
 
 orlock: #House of iron

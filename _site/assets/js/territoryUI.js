@@ -49,6 +49,7 @@ const TerritoryUI = {
     this.renderGangSelector();
     this.renderCheckboxes();
     this.bindEvents();
+    this.initTimer();
   } catch (err) {
     console.error(err);
     const container = document.getElementById("territory-container");
@@ -258,6 +259,12 @@ const TerritoryUI = {
     if (!button) return;
 
     button.addEventListener("click", async () => {
+      // Mark the run time and show timer
+      if (typeof TimerUtil !== 'undefined') {
+        TimerUtil.markRun('territoryLastRun');
+        TimerUtil.showTimer('territory-timer');
+      }
+      
       const selectedIds = this.getSelectedTerritoryIds();
       const selectedTerritories = selectedIds.map(id => this.territoryMap[id]);
 
@@ -364,6 +371,21 @@ const TerritoryUI = {
   getSelectedTerritoryIds() {
     const checkboxes = document.querySelectorAll(".territory-checkbox:checked");
     return Array.from(checkboxes).map(cb => cb.value);
+  },
+
+  initTimer() {
+    // Create timer container below the button
+    const button = document.getElementById("resolve-territories");
+    if (button && typeof TimerUtil !== 'undefined') {
+      const timerContainer = document.createElement("div");
+      timerContainer.id = "territory-timer";
+      timerContainer.style.marginTop = "15px";
+      button.parentNode.insertBefore(timerContainer, button.nextSibling);
+      TimerUtil.init('territory-timer', 'territoryLastRun');
+      
+      // Setup page cleanup to reset timer on navigation
+      TimerUtil.setupPageCleanup();
+    }
   },
 
   // Show a custom dialog for suit selection with colored suits

@@ -199,6 +199,7 @@ const LastingInjuriesUI = {
       this.renderRogueDocSelector();
       
       this.bindEvents();
+      this.initTimers();
 
       // Expose test function to window for console testing
       window.testInjury = (roll) => {
@@ -340,7 +341,40 @@ const LastingInjuriesUI = {
     }
   },
 
+  initTimers() {
+    // Create timer container for lasting injuries button
+    const injuryButton = document.getElementById("resolve-lasting-injuries");
+    if (injuryButton && typeof TimerUtil !== 'undefined') {
+      const timerContainer = document.createElement("div");
+      timerContainer.id = "lasting-injuries-timer";
+      timerContainer.style.marginTop = "15px";
+      injuryButton.parentNode.insertBefore(timerContainer, injuryButton.nextSibling);
+      TimerUtil.init('lasting-injuries-timer', 'lastingInjuriesLastRun');
+    }
+
+    // Create timer container for rogue doc button
+    const rogueDocButton = document.getElementById("resolve-rogue-doc");
+    if (rogueDocButton && typeof TimerUtil !== 'undefined') {
+      const rogueTimerContainer = document.createElement("div");
+      rogueTimerContainer.id = "rogue-doc-timer";
+      rogueTimerContainer.style.marginTop = "15px";
+      rogueDocButton.parentNode.insertBefore(rogueTimerContainer, rogueDocButton.nextSibling);
+      TimerUtil.init('rogue-doc-timer', 'rogueDocLastRun');
+    }
+
+    // Setup page cleanup to reset timers on navigation
+    if (typeof TimerUtil !== 'undefined') {
+      TimerUtil.setupPageCleanup();
+    }
+  },
+
   resolveRogueDoc() {
+    // Mark the run time and show this timer
+    if (typeof TimerUtil !== 'undefined') {
+      TimerUtil.markRun('rogueDocLastRun');
+      TimerUtil.showTimer('rogue-doc-timer');
+    }
+    
     const modeSelector = document.getElementById("rogue-doc-mode-selector");
     const mode = modeSelector ? modeSelector.value : "trading_post_rogue_doc";
     
@@ -586,6 +620,12 @@ const LastingInjuriesUI = {
   },
 
   resolveInjury() {
+    // Mark the run time and show this timer
+    if (typeof TimerUtil !== 'undefined') {
+      TimerUtil.markRun('lastingInjuriesLastRun');
+      TimerUtil.showTimer('lasting-injuries-timer');
+    }
+    
     // Clear rogue doc results
     const rogueDocResults = document.getElementById("rogue-doc-results");
     if (rogueDocResults) rogueDocResults.innerHTML = "";
