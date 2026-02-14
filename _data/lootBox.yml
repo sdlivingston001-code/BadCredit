@@ -1,0 +1,78 @@
+#D6 roll for loot box rolls
+
+loot_box_roll:
+  sides: 6
+  results:
+    booby_trap:
+      values: [1]
+      name: Booby trap!
+      fixedeffect: "Kaboom! Blast(5) centred on Loot Casket. S3 D1 Ap -. Knockback"
+      colour: red
+    credits_cache:
+      values: [2-3]
+      name: Credit Cache
+      income:
+        schema: standard
+        sides: 3
+        multiplier: 5
+      colour: yellow
+    drugs_cache:
+      values: [4]
+      name: Drugs Cache
+      randomeffect: d66drugs
+      colour: purple
+    ammo_cache:
+      values: [5]
+      name: Ammo Cache
+      randomeffect: d6ammo
+      colour: blue
+    fancy_loot:
+      values: [6]
+      name: Fancy Loot
+      randomeffect: d6fancy
+      colour: green
+
+fancy_loot:
+  sides: 6
+  results:
+    mung_vase:
+      values: [1]
+      name: Mung Vase
+      fixedeffect: "Necromunda Core Rulebook (2023), p279.<br>Add Mung Vase to your stash.<br><br>It may contain the brain of a House Mung patriach, and be worth a lot of money to the right buyer."
+    opulent_jewellery:
+      values: [2]
+      name: Opulent Jewellery
+      fixedeffect: "Necromunda Core Rulebook (2023), p301.<br>Add Opulent Jewellery to your stash.<br><br>If equipped to a fighter making a post battle <strong>Medical Escort</strong> action, they can reroll the costs for a Rogue Doc to treat a Critical Injury. The second result must be accepted even if it is worse."
+    servo_skull:
+      values: [3]
+      name: Servo Skull
+      randomeffect: servo_skull_type
+      fixedeffect: "Necromunda Core Rulebook (2023), p302<br>Add a servo-skull to your stash."
+    suspensor_harness:
+      values: [4]
+      name: Suspensor Harness
+      fixedeffect: "Necromunda Core Rulebook (2023), p291.<br>Add Suspensor Harness to your stash.<br><br>This item can be used to allow a fighter to carry an addition weapon (i.e. 4 weapon slots instead of 3)."
+    isotropic_fuel_rod:
+      values: [5]
+      name: Isotropic Fuel Rod
+      fixedeffect: "Necromunda Core Rulebook (2023), p278.<br>A gang with an Isotropic Fuel Rod may permanently transform a single territory they control into a Settlement. Delete the Isotropic Fuel Rod after use."
+    ammo_cache:
+      values: [6]
+      name: Ammo Cache
+      fixedeffect: "Necromunda Core Rulebook (2023), p278.<br>Add Ammo Cache to your stash.<br>When this gang is the defender in the scenario they may be able to deploy ammo caches."
+
+servo_skull_type:
+  sides: 3
+  results:
+    sensor_servo_skull:
+      values: [1]
+      name: Sensor Skull
+      fixedeffect: "Necromunda Core Rulebook (2023), p303.<br>Add Sensor Skull to your stash.<br><br>This servo-skull acts as a bio-scanner and improves the Aim (basic) action"
+    medi_servo_skull:
+      values: [2]
+      name: Medi Skull
+      fixedeffect: "Necromunda Core Rulebook (2023), p303.<br>Add Medi Skull to your stash.<br><br>This servo-skull improves the Recovery roll of the fighter it is equipped to."
+    gun_servo_skull:
+      values: [3]
+      name: Gun Skull
+      fixedeffect: "Necromunda Core Rulebook (2023), p303.<br>Add Gun Skull to your stash.<br><br>BS 5+ miniature gun platform with a Compact autopistol (Necromunda Core Rulebook (2023), p264.)"

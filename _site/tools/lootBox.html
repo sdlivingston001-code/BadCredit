@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="/BadCredit/assets/css/style.css">
   <link rel="stylesheet" href="/BadCredit/assets/css/terminal.css">
-  <title>Advancements & Promotions</title>
+  <title>Loot Box</title>
 </head>
 
 <body>
@@ -13,7 +13,24 @@
 
 
   <div class="main">
-    <p>Detail</p>
+    <h1>Loot Box!</h1>
+
+<div id="loot-box-container"></div>
+
+<button id="resolve-loot-box">Open Loot Box</button>
+
+<div id="loot-box-results"></div>
+
+<!-- Adjust this path if your built JSON lives elsewhere -->
+<script src="/BadCredit/assets/js/dice.js"></script>
+<script src="/BadCredit/assets/js/timer.js"></script>
+<script src="/BadCredit/assets/js/lootBoxEngine.js"></script>
+<script src="/BadCredit/assets/js/lootBoxUI.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    LootBoxUI.init("/BadCredit/data/lootBox.json");
+  });
+</script>
 
   </div>
 

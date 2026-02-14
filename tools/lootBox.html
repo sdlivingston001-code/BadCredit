@@ -1,0 +1,23 @@
+---
+layout: default
+title: Loot Box
+---
+
+<h1>Loot Box!</h1>
+
+<div id="loot-box-container"></div>
+
+<button id="resolve-loot-box">Open Loot Box</button>
+
+<div id="loot-box-results"></div>
+
+<!-- Adjust this path if your built JSON lives elsewhere -->
+<script src="{{ '/assets/js/dice.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/timer.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/lootBoxEngine.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/lootBoxUI.js' | relative_url }}"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    LootBoxUI.init("{{ '/data/lootBox.json' | relative_url }}");
+  });
+</script>

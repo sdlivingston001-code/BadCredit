@@ -116,7 +116,7 @@ collapsed_dome:
     count_message: "How many dice to roll for income?\n(Enter a number between {count_min} and {count_max})"
     multiplier: 10
     event:
-      trigger: "hasDuplicates"
+      trigger: hasDuplicates
       multiplier: 0
       text: "<span style='color: red; font-weight: bold;'>⚠️ DISASTER!</span> Duplicates rolled -> Cave in!<br>Nil income from this territory AND a random fighter suffers a lasting injury."
   campaign: 1 # 1= include, 0 = exclude
@@ -200,7 +200,7 @@ gambling_den:
     schema: deckBased
     draw_from_deck: 1
     event:
-      trigger: "isJoker"
+      trigger: isJoker
       multiplier: 0
       text: "<span style='color: red; font-weight: bold;'>⚠️ DISASTER!</span> Joker pulled -> The House does not always win!<br>All income (from all territories not just the Gambling Den) is paid to another random gang... Talk to your arbitrator."
   battle_special_rules_delaque: "The gang that controls this Territory may nominate a single enemy fighter at the start of the battle before the first roll for Priority. The gang have called in the fighter’s debt marker, and in return for keeping all of their limbs intact, the fighter agrees to take no part in the coming battle. The nominated fighter misses the battle."
@@ -242,7 +242,7 @@ nacro_den:
     schema: conditional
     count: 2 # Override default single die
     multiplier: 5 # Override default multiplier of 10
-    required_territory: "synth_still"
+    required_territory: synth_still
     conditional_count: 2 # If required territory is also selected, roll 4 dice instead of 2
     conditional_multiplier: 10 # If required territory is also selected, double the income from this territory
   reputation_escher: "Whilst it controls this Territory, the gang adds +1 to its Reputation."
@@ -281,7 +281,7 @@ smelting_works:
     schema: conditional
     count: 2 # Override default single die
     multiplier: 5 # Override default multiplier of 10
-    required_territory: "slag_furnace"
+    required_territory: slag_furnace
     conditional_count: 2 # If required territory is also selected, roll 4 dice instead of 2
     conditional_multiplier: 10 # If required territory is also selected, double the income from this territory
   campaign: 1 # 1= include, 0 = exclude
@@ -339,7 +339,7 @@ tech_bazaar:
     schema: standard
   income_van_saar:
     schema: conditional
-    required_territory: "archaeotech_device"
+    required_territory: archaeotech_device
     conditional_count: 2 # If required territory is also selected, roll 2 dice instead of 1
   reputation_van_saar: "Whilst it controls this Territory, the gang adds +1 to its Reputation."
   trading_special_rules: "Select one Leader or Champion to make a Haggle post-battle action. Roll 2D6. The gang may immediately choose one Rare (X) item from the Trading Post where X is less than or equal to the dice roll and add it to their Stash for half of its usual value, rounded down. If the roll is lower than 7, pick a Common weapon or piece of equipment to add to the gang’s Stash for half of its usual value, rounded down. If the roll is 3 or lower, then the fighter proves to be very poor at haggling and no equipment is gained. If the fighter selected has Exotic Furs, add +1 to the result of the 2D6 dice roll."

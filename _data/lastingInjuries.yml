@@ -4,160 +4,160 @@ standard_lasting_injuries:
   sides: 66
   results:
     lesson_learned:
-      name: Lesson Learned
-      randomeffect: "d3xpgain"
       values: [11]
+      name: Lesson Learned
+      randomeffect: d3xpgain
       convalescence: 0
       intoRecovery: 0
-      colour: "green"
+      colour: green
     impressive_scars:
+      values: [12]
       name: Impressive Scars
       fixedeffect: "Increase <strong>Cool</strong> by 1.<br><br>This bonus only applies once, treat all further results as Out Cold."
-      values: [12]
       convalescence: 0
       intoRecovery: 0
-      colour: "green"
+      colour: green
     horrid_scars:
+      values: [13]
       name: Horrid Scars
       fixedeffect: "Gain <strong>Fearsome</strong> skill.<br><br>This bonus only applies once, treat all further results as Out Cold."
-      values: [13]
       convalescence: 0
       intoRecovery: 0
-      colour: "green"
+      colour: green
     bitter_emnity:
+      values: [14]
       name: Bitter Emnity
       fixedeffect: "When fighting a battle against the gang that inflicted this injury, the fighter gains the Berserker skill. If they already have the Berserker skill or roll this result a second time, treat it as Out Cold."
-      values: [14]
       convalescence: 0
       intoRecovery: 0
-      colour: "green"
+      colour: green
     out_cold:
-      name: Out Cold
       values: [15-26]
+      name: Out Cold
       convalescence: 0
       intoRecovery: 0
-      colour: "green"
+      colour: green
     convalescence:
-      name: Convalescence
       values: [31-36]
+      name: Convalescence
       convalescence: 1
       intoRecovery: 0
-      colour: "yellow"
+      colour: yellow
     old_battle_wound:
+      values: [41]
       name: Old Battle Wound
       fixedeffect: "At the end of each Battle this fighter participates in roll a D6, on a 1 the fighter goes into Convalescence."
-      values: [41]
       convalescence: 0
       intoRecovery: 0
-      colour: "blue"
+      colour: blue
     partially_defeaned:
+      values: [42]
       name: Partially Defeaned
       fixedeffect: "The fighter suffers no penalty if they are partially deafened, however, suffering this injury again reduces their Leadership by 1."
-      values: [42]
       convalescence: 0
       intoRecovery: 0
-      colour: "blue"
+      colour: blue
     humiliated:
+      values: [43]
       name: Humiliated
       fixedeffect: "Reduce Leadership and Cool by 1."
-      values: [43]
       convalescence: 1
       intoRecovery: 0
-      colour: "yellow"
+      colour: yellow
     eye_injury:
+      values: [44]
       name: Eye Injury
       fixedeffect: "Reduce Ballistic Skill by 1."
-      values: [44]
       convalescence: 0
       intoRecovery: 1
-      colour: "red"
+      colour: red
     hand_injury:
+      values: [45]
       name: Hand Injury
       fixedeffect: "Reduce Weapon Skill by 1."
-      values: [45]
       convalescence: 0
       intoRecovery: 1
-      colour: "red"
+      colour: red
     hobbled:
+      values: [46]
       name: Hobbled
       fixedeffect: "Reduce Movement by 1."
-      values: [46]
       convalescence: 0
       intoRecovery: 1
-      colour: "red"
+      colour: red
     spinal_injury:
+      values: [51]
       name: Spinal Injury
       fixedeffect: "Reduce Strength by 1."
-      values: [51]
       convalescence: 0
       intoRecovery: 1
-      colour: "red"
+      colour: red
     enfeebled:
+      values: [52]
       name: Enfeebled
       fixedeffect: "Reduce Toughness by 1."
-      values: [52]
       convalescence: 0
       intoRecovery: 1
-      colour: "red"
+      colour: red
     head_injury:
+      values: [53]
       name: Head Injury
       fixedeffect: "Reduce Intelligence and Willpower by 1."
-      values: [53]
       convalescence: 0
       intoRecovery: 1
-      colour: "red"
+      colour: red
     multiple_injuries:
+      values: [54]
       name: Multiple Injuries
       fixedeffect: "Suffer d3 injuries (ignoring Captured, Multiple Injuries, Memorable Death, Critical Injury, or Out Cold)!"
-      randomeffect: "d3multipleinjuries"
-      values: [54]
+      randomeffect: d3multipleinjuries
       convalescence: 0
       intoRecovery: 0
     captured:
+      values: [55-56]
       name: Captured
       fixedeffect: "In the wrap-up, test to see if this fighter was captured."
-      values: [55-56]
       convalescence: 0
       intoRecovery: 0
-      colour: "blue"
+      colour: blue
     critical_injury:
+      values: [61-65]
       name: Critical Injury
       fixedeffect: "Get these injuries treated in the Post Battle... or Die!"
-      values: [61-65]
       convalescence: 0
       intoRecovery: 0
-      colour: "grey"
+      colour: grey
     memorable_death:
+      values: [66]
       name: Memorable Death
       fixedeffect: " The fighter is killed instantly – not even the most talented Doc can save them.<br><br>If the injury was caused by an Attack action, the attacker gains 1 additional XP.<br><br>Equipment is only recovered if a friendly fighter is on the battlefield at the end of the game."
-      values: [66]
       convalescence: 0
       intoRecovery: 0
-      colour: "black"
+      colour: black
 
 ironman_lasting_injuries:
   sides: 6
   results:
     out_cold:
-      name: Out Cold
       values: [1-3]
+      name: Out Cold
       convalescence: 0
       intoRecovery: 0
-      colour: "green"
+      colour: green
     critical_injury:
+      values: [4-5]
       name: Critical Injury
       fixedeffect: "Get these injuries treated in the Post Battle... or Die!"
-      values: [4-5]
       convalescence: 0
       intoRecovery: 0
-      colour: "grey"
+      colour: grey
     memorable_death:
+      values: [6]
       name: Memorable Death
       fixedeffect: " The fighter is killed instantly – not even the most talented Doc can save them.<br><br>If the injury was caused by an Attack action, the attacker gains 1 additional XP.<br><br>Equipment is only recovered if a friendly fighter is on the battlefield at the end of the game."
-      values: [6]
       convalescence: 0
       intoRecovery: 0
-      colour: "black"
+      colour: black
 
 trading_post_rogue_doc:
   sides: 6
@@ -168,40 +168,40 @@ trading_post_rogue_doc:
     addition: 0
   results:
     complications:
+      values: [1]
       name: complications
       fixedeffect: "This fighter has died.<br><br>You recover all his equipment."
-      values: [1]
       convalescence: 0
       intoRecovery: 0
-      colour: "black"
+      colour: black
     stabilised:
-      name: stabilised
-      randomeffect: "stabilisedinjury"
       values: [2-5]
+      name: stabilised
+      randomeffect: stabilisedinjury
       convalescence: 0
       intoRecovery: 0
-      colour: "grey"
+      colour: grey
     out_cold:
-      name: Out Cold
       values: [6]
+      name: Out Cold
       convalescence: 0
       intoRecovery: 0
-      colour: "green"
+      colour: green
 
 hanger_on_rogue_doc:
   sides: 6
   results:
     complications:
+      values: [1]
       name: complications
       fixedeffect: "This fighter has died.<br><br>You recover all his equipment."
-      values: [1]
       convalescence: 0
       intoRecovery: 0
-      colour: "black"
+      colour: black
     stabilised:
-      name: stabilised
-      randomeffect: "stabilisedinjury"
       values: [2-6]
+      name: stabilised
+      randomeffect: stabilisedinjury
       convalescence: 0
       intoRecovery: 0
-      colour: "grey"
+      colour: grey

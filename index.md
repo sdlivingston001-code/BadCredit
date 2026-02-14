@@ -12,9 +12,9 @@ title: BadCredit
 
 Use the interactive tools to run simulations and explore outcomes.
 
-[Territory Tool]({{ site.baseurl }}/tools/territoryPage.html)
-[Lasting Injury Tool]({{ site.baseurl }}/tools/lastingInjuriesPage.html)
-[XP Spend]({{ site.baseurl }}/tools/territoryPage.html)
+[Territory Tool]({{ site.baseurl }}/tools/territoryPage.html)<br><br>
+[Lasting Injury Tool]({{ site.baseurl }}/tools/lastingInjuriesPage.html)<br><br>
+[Loot Box]({{ site.baseurl }}/tools/lootBox.html)<br>
 
 ---
 
@@ -22,6 +22,6 @@ Use the interactive tools to run simulations and explore outcomes.
 
 Learn more about the rules, world, and design behind the system.
 
-[Advancements and Promotions]({{ site.baseurl }}/advancements/)
-[Pre-Battle Sequence]({{ site.baseurl }}/pre-battle/)
-[Post-Battle Sequence]({{ site.baseurl }}/post-battle/)
+[Advancements and Promotions]({{ site.baseurl }}/advancements/)<br><br>
+[Pre-Battle Sequence]({{ site.baseurl }}/pre-battle/)<br><br>
+[Post-Battle Sequence]({{ site.baseurl }}/post-battle/)<br>
