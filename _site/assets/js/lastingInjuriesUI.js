@@ -3,62 +3,15 @@
 const LastingInjuriesUI = {
   injuriesData: null,
 
-  colorSchemes: {
-    green: {
-      bg: "#d4edda",
-      border: "#28a745",
-      text: "#155724",
-      heading: "#0c5c2c"
-    },
-    blue: {
-      bg: "#d1ecf1",
-      border: "#17a2b8",
-      text: "#0c5460",
-      heading: "#074b57"
-    },
-    yellow: {
-      bg: "#fff3cd",
-      border: "#ffc107",
-      text: "#856404",
-      heading: "#533f03"
-    },
-    red: {
-      bg: "#f8d7da",
-      border: "#dc3545",
-      text: "#721c24",
-      heading: "#491217"
-    },
-    grey: {
-      bg: "#e2e3e5",
-      border: "#6c757d",
-      text: "#383d41",
-      heading: "#1b1e21"
-    },
-    black: {
-      bg: "#000",
-      border: "#000",
-      text: "#fff",
-      heading: "#fff"
-    }
-  },
-
-  getColorScheme(colour) {
-    return this.colorSchemes[colour] || this.colorSchemes.grey;
-  },
-
   createWarningBox(type, message) {
     const configs = {
       convalescence: {
-        bg: "#fff3cd",
-        border: "#ffc107",
-        text: "#856404",
+        className: "warning-box",
         icon: "⚠️",
         label: "Convalescence"
       },
       recovery: {
-        bg: "#f8d7da",
-        border: "#dc3545",
-        text: "#721c24",
+        className: "recovery-box",
         icon: "🏥",
         label: "Into Recovery"
       }
@@ -66,42 +19,31 @@ const LastingInjuriesUI = {
 
     const config = configs[type];
     const div = document.createElement("div");
-    div.style.marginTop = "15px";
-    div.style.padding = "10px";
-    div.style.backgroundColor = config.bg;
-    div.style.border = `2px solid ${config.border}`;
-    div.style.borderRadius = "4px";
+    div.className = config.className;
     div.innerHTML = `${config.icon} <strong>${config.label}:</strong> ${message}`;
-    div.style.color = config.text;
     return div;
   },
 
-  createInjuryBox(injury, scheme, rollInfo = null) {
+  createInjuryBox(injury, colour, rollInfo = null) {
     const injDiv = document.createElement("div");
-    injDiv.style.padding = "12px";
-    injDiv.style.borderRadius = "4px";
-    injDiv.style.backgroundColor = scheme.bg;
-    injDiv.style.border = `2px solid ${scheme.border}`;
-    injDiv.style.color = scheme.text;
+    injDiv.className = `result-box result-box-${colour || 'grey'}`;
 
     if (rollInfo) {
       const rollText = document.createElement("div");
+      rollText.className = "result-heading result-roll";
       rollText.innerHTML = rollInfo;
-      rollText.style.color = scheme.heading;
       injDiv.appendChild(rollText);
     }
 
     const nameText = document.createElement("div");
+    nameText.className = `result-heading result-name ${rollInfo ? 'mt-5' : ''}`;
     nameText.innerHTML = `<strong>${injury.name}</strong>`;
-    nameText.style.marginTop = rollInfo ? "5px" : "0";
-    nameText.style.color = scheme.heading;
     injDiv.appendChild(nameText);
 
     if (injury.fixedeffect) {
       const effectDiv = document.createElement("div");
+      effectDiv.className = "result-effect";
       effectDiv.innerHTML = injury.fixedeffect;
-      effectDiv.style.marginTop = "5px";
-      effectDiv.style.lineHeight = "1.5";
       injDiv.appendChild(effectDiv);
     }
 
@@ -124,12 +66,10 @@ const LastingInjuriesUI = {
     if (!injuries || injuries.length === 0) return;
 
     const additionalContainer = document.createElement("div");
-    additionalContainer.style.marginTop = "20px";
+    additionalContainer.className = "additional-injuries-container";
 
     const additionalTitle = document.createElement("h4");
     additionalTitle.textContent = "Additional Injuries:";
-    additionalTitle.style.marginTop = "0";
-    additionalTitle.style.marginBottom = "10px";
     additionalContainer.appendChild(additionalTitle);
 
     // Track warnings to show once at the end
@@ -138,7 +78,6 @@ const LastingInjuriesUI = {
 
     injuries.forEach((injuryResult, index) => {
       const injColour = injuryResult.injury.colour || "grey";
-      const injScheme = this.getColorScheme(injColour);
 
       const rollLabel = rollLabelFormat === 'D66' 
         ? `<strong>D66 Roll:</strong> ${injuryResult.roll}`
@@ -146,10 +85,10 @@ const LastingInjuriesUI = {
 
       const injDiv = this.createInjuryBox(
         injuryResult.injury,
-        injScheme,
+        injColour,
         rollLabel
       );
-      injDiv.style.marginTop = index > 0 ? "10px" : "0";
+      if (index > 0) injDiv.classList.add('mt-10');
       additionalContainer.appendChild(injDiv);
 
       // Check flags
@@ -243,22 +182,16 @@ const LastingInjuriesUI = {
 
     // Create mode selector
     const selectorDiv = document.createElement("div");
-    selectorDiv.style.marginBottom = "20px";
+    selectorDiv.className = "selector-wrapper";
 
     const label = document.createElement("label");
+    label.className = "selector-label";
     label.textContent = "Select Injury Mode: ";
-    label.style.marginRight = "10px";
-    label.style.fontWeight = "bold";
     selectorDiv.appendChild(label);
 
     const select = document.createElement("select");
     select.id = "injury-mode-selector";
-    select.style.padding = "8px 12px";
-    select.style.fontSize = "16px";
-    select.style.borderRadius = "4px";
-    select.style.border = "2px solid #333";
-    select.style.backgroundColor = "white";
-    select.style.cursor = "pointer";
+    select.className = "select-input";
 
     // Add options
     const standardOption = document.createElement("option");
@@ -283,22 +216,16 @@ const LastingInjuriesUI = {
     container.innerHTML = '';
 
     const selectorDiv = document.createElement("div");
-    selectorDiv.style.marginBottom = "20px";
+    selectorDiv.className = "selector-wrapper";
 
     const label = document.createElement("label");
+    label.className = "selector-label";
     label.textContent = "Select Treatment Mode: ";
-    label.style.marginRight = "10px";
-    label.style.fontWeight = "bold";
     selectorDiv.appendChild(label);
 
     const select = document.createElement("select");
     select.id = "rogue-doc-mode-selector";
-    select.style.padding = "8px 12px";
-    select.style.fontSize = "16px";
-    select.style.borderRadius = "4px";
-    select.style.border = "2px solid #333";
-    select.style.backgroundColor = "white";
-    select.style.cursor = "pointer";
+    select.className = "select-input";
 
     const tradingPostOption = document.createElement("option");
     tradingPostOption.value = "trading_post_rogue_doc";
@@ -347,7 +274,7 @@ const LastingInjuriesUI = {
     if (injuryButton && typeof TimerUtil !== 'undefined') {
       const timerContainer = document.createElement("div");
       timerContainer.id = "lasting-injuries-timer";
-      timerContainer.style.marginTop = "15px";
+      timerContainer.className = "mt-15";
       injuryButton.parentNode.insertBefore(timerContainer, injuryButton.nextSibling);
       TimerUtil.init('lasting-injuries-timer', 'lastingInjuriesLastRun');
     }
@@ -357,7 +284,7 @@ const LastingInjuriesUI = {
     if (rogueDocButton && typeof TimerUtil !== 'undefined') {
       const rogueTimerContainer = document.createElement("div");
       rogueTimerContainer.id = "rogue-doc-timer";
-      rogueTimerContainer.style.marginTop = "15px";
+      rogueTimerContainer.className = "mt-15";
       rogueDocButton.parentNode.insertBefore(rogueTimerContainer, rogueDocButton.nextSibling);
       TimerUtil.init('rogue-doc-timer', 'rogueDocLastRun');
     }
@@ -401,52 +328,33 @@ const LastingInjuriesUI = {
 
     // Check if data failed to load
     if (cost === null) {
-      resultsContainer.innerHTML = '<div style="color: red; padding: 20px; border: 2px solid red; border-radius: 4px;">Error: Injury data not loaded. Please refresh the page.</div>';
+      resultsContainer.innerHTML = '<div class="error-box">Error: Injury data not loaded. Please refresh the page.</div>';
       return;
     }
 
     const costDiv = document.createElement("div");
-    costDiv.style.marginTop = "20px";
-    costDiv.style.padding = "20px";
-    costDiv.style.borderRadius = "4px";
-    costDiv.style.backgroundColor = "#fff3cd";
-    costDiv.style.border = "3px solid #ffc107";
-    costDiv.style.textAlign = "center";
+    costDiv.className = "cost-box";
 
     const costTitle = document.createElement("h2");
     costTitle.textContent = "Treatment Cost";
-    costTitle.style.marginTop = "0";
-    costTitle.style.color = "#856404";
     costDiv.appendChild(costTitle);
 
     const costAmount = document.createElement("h1");
     costAmount.textContent = `${cost} credits`;
-    costAmount.style.color = "#533f03";
-    costAmount.style.margin = "20px 0";
     costDiv.appendChild(costAmount);
 
     const warningText = document.createElement("p");
     warningText.textContent = "Do you want to proceed with treatment?";
     warningText.style.fontSize = "16px";
-    warningText.style.color = "#856404";
-    warningText.style.marginBottom = "20px";
+    warningText.classList.add('mb-20');
     costDiv.appendChild(warningText);
 
     const buttonContainer = document.createElement("div");
-    buttonContainer.style.display = "flex";
-    buttonContainer.style.gap = "15px";
-    buttonContainer.style.justifyContent = "center";
+    buttonContainer.className = "flex-center";
 
     const proceedButton = document.createElement("button");
     proceedButton.textContent = "Proceed with Treatment";
-    proceedButton.style.padding = "12px 24px";
-    proceedButton.style.fontSize = "16px";
-    proceedButton.style.backgroundColor = "#28a745";
-    proceedButton.style.color = "white";
-    proceedButton.style.border = "none";
-    proceedButton.style.borderRadius = "4px";
-    proceedButton.style.cursor = "pointer";
-    proceedButton.style.fontWeight = "bold";
+    proceedButton.className = "btn btn-success";
     proceedButton.addEventListener("click", () => {
       const result = LastingInjuriesEngine.resolveRogueDoc(mode, cost);
       this.displayRogueDocResult(result);
@@ -455,14 +363,7 @@ const LastingInjuriesUI = {
 
     const refuseButton = document.createElement("button");
     refuseButton.textContent = "Refuse Treatment";
-    refuseButton.style.padding = "12px 24px";
-    refuseButton.style.fontSize = "16px";
-    refuseButton.style.backgroundColor = "#dc3545";
-    refuseButton.style.color = "white";
-    refuseButton.style.border = "none";
-    refuseButton.style.borderRadius = "4px";
-    refuseButton.style.cursor = "pointer";
-    refuseButton.style.fontWeight = "bold";
+    refuseButton.className = "btn btn-danger";
     refuseButton.addEventListener("click", () => {
       this.displayFighterDeath();
     });
@@ -479,24 +380,17 @@ const LastingInjuriesUI = {
     resultsContainer.innerHTML = "";
 
     const deathDiv = document.createElement("div");
-    deathDiv.style.marginTop = "20px";
-    deathDiv.style.padding = "20px";
-    deathDiv.style.borderRadius = "4px";
-    deathDiv.style.backgroundColor = "#000";
-    deathDiv.style.border = "3px solid #000";
-    deathDiv.style.color = "#fff";
-    deathDiv.style.textAlign = "center";
+    deathDiv.className = "death-box";
 
     const deathTitle = document.createElement("h2");
     deathTitle.textContent = "💀 Fighter Dies 💀";
-    deathTitle.style.marginTop = "0";
-    deathTitle.style.color = "#fff";
+    deathTitle.classList.add('mt-0');
     deathDiv.appendChild(deathTitle);
 
     const deathText = document.createElement("p");
     deathText.innerHTML = "Without medical treatment, the fighter succumbs to their injuries and dies.<br><br>You recover their equipment.";
     deathText.style.fontSize = "16px";
-    deathText.style.marginBottom = "0";
+    deathText.classList.add('mb-0');
     deathDiv.appendChild(deathText);
 
     resultsContainer.appendChild(deathDiv);
@@ -509,45 +403,37 @@ const LastingInjuriesUI = {
     resultsContainer.innerHTML = "";
 
     const resultDiv = document.createElement("div");
-    resultDiv.style.marginTop = "20px";
-    resultDiv.style.padding = "15px";
-    resultDiv.style.borderRadius = "4px";
-
     const colour = result.outcome.colour || "grey";
-    const scheme = this.getColorScheme(colour);
-    
-    resultDiv.style.backgroundColor = scheme.bg;
-    resultDiv.style.border = `3px solid ${scheme.border}`;
-    resultDiv.style.color = scheme.text;
+    resultDiv.className = `result-box result-box-${colour} mt-20`;
+    resultDiv.style.padding = "15px";
+    resultDiv.style.borderWidth = "3px";
 
     // Display cost if applicable
     if (result.cost !== null) {
       const costText = document.createElement("h3");
+      costText.className = "result-heading mt-0";
       costText.textContent = `Cost: ${result.cost} credits`;
-      costText.style.marginTop = "0";
-      costText.style.color = scheme.heading;
       resultDiv.appendChild(costText);
     }
 
     // Display roll
     const rollText = document.createElement("h3");
+    rollText.className = `result-heading ${result.cost !== null ? 'mt-10' : 'mt-0'}`;
     rollText.textContent = `Treatment Roll: ${result.roll}`;
-    rollText.style.marginTop = result.cost !== null ? "10px" : "0";
-    rollText.style.color = scheme.heading;
     resultDiv.appendChild(rollText);
 
     // Display outcome name
     const nameText = document.createElement("h2");
+    nameText.className = "result-heading";
     nameText.textContent = result.outcome.name;
-    nameText.style.color = scheme.heading;
     nameText.style.textTransform = "capitalize";
     resultDiv.appendChild(nameText);
 
     // Display fixed effect
     if (result.outcome.fixedeffect) {
       const fixedEffectDiv = document.createElement("div");
+      fixedEffectDiv.className = "result-effect";
       fixedEffectDiv.style.marginTop = "10px";
-      fixedEffectDiv.style.lineHeight = "1.5";
       fixedEffectDiv.innerHTML = result.outcome.fixedeffect;
       resultDiv.appendChild(fixedEffectDiv);
     }
@@ -555,27 +441,24 @@ const LastingInjuriesUI = {
     // Display random effect
     if (result.outcome.randomeffect === 'stabilisedinjury') {
       const randomEffectDiv = document.createElement("div");
-      randomEffectDiv.style.marginTop = "10px";
+      randomEffectDiv.classList.add('mt-10');
       randomEffectDiv.innerHTML = "The fighter is stabilised and removed from recovery.";
       resultDiv.appendChild(randomEffectDiv);
 
       // Display the stabilised injury if present
       if (result.stabilisedInjury) {
         const injuryContainer = document.createElement("div");
-        injuryContainer.style.marginTop = "20px";
+        injuryContainer.className = "additional-injuries-container";
 
         const injuryTitle = document.createElement("h4");
         injuryTitle.textContent = "Stabilised Injury:";
-        injuryTitle.style.marginTop = "0";
-        injuryTitle.style.marginBottom = "10px";
         injuryContainer.appendChild(injuryTitle);
 
         const injColour = result.stabilisedInjury.injury.colour || "grey";
-        const injScheme = this.getColorScheme(injColour);
 
         const injDiv = this.createInjuryBox(
           result.stabilisedInjury.injury,
-          injScheme,
+          injColour,
           `<strong>D66 Roll:</strong> ${result.stabilisedInjury.roll}`
         );
 
@@ -585,7 +468,7 @@ const LastingInjuriesUI = {
         // Display random effects on the stabilised injury
         if (result.stabilisedInjury.injury.randomeffect && result.stabilisedInjury.randomRoll) {
           const randomDiv = document.createElement("div");
-          randomDiv.style.marginTop = "10px";
+          randomDiv.classList.add('mt-10');
           randomDiv.innerHTML = this.formatRandomEffect(
             result.stabilisedInjury.injury.randomeffect,
             result.stabilisedInjury.randomRoll
@@ -640,37 +523,29 @@ const LastingInjuriesUI = {
 
     resultsContainer.innerHTML = "";
 
-    const resultDiv = document.createElement("div");
-    resultDiv.style.marginTop = "20px";
-    resultDiv.style.padding = "15px";
-    resultDiv.style.borderRadius = "4px";
-
-    // Apply color scheme based on injury colour property
     const colour = result.injury.colour || "grey";
-    const scheme = this.getColorScheme(colour);
-    
-    resultDiv.style.backgroundColor = scheme.bg;
-    resultDiv.style.border = `3px solid ${scheme.border}`;
-    resultDiv.style.color = scheme.text;
+    const resultDiv = document.createElement("div");
+    resultDiv.className = `result-box result-box-${colour} mt-20`;
+    resultDiv.style.padding = "15px";
+    resultDiv.style.borderWidth = "3px";
 
     // Display roll
     const rollText = document.createElement("h2");
+    rollText.className = "result-heading mt-0";
     rollText.textContent = `Roll: ${result.roll}`;
-    rollText.style.marginTop = "0";
-    rollText.style.color = scheme.heading;
     resultDiv.appendChild(rollText);
 
     // Display injury name
     const nameText = document.createElement("h3");
+    nameText.className = "result-heading";
     nameText.textContent = colour === 'black' ? `💀 ${result.injury.name} 💀` : result.injury.name;
-    nameText.style.color = scheme.heading;
     resultDiv.appendChild(nameText);
 
     // Display fixed effect
     if (result.injury.fixedeffect) {
       const fixedEffectDiv = document.createElement("div");
+      fixedEffectDiv.className = "result-effect";
       fixedEffectDiv.style.marginTop = "10px";
-      fixedEffectDiv.style.lineHeight = "1.5";
       fixedEffectDiv.innerHTML = result.injury.fixedeffect;
       resultDiv.appendChild(fixedEffectDiv);
     }
@@ -678,7 +553,7 @@ const LastingInjuriesUI = {
     // Display random effect
     if (result.injury.randomeffect) {
       const randomEffectDiv = document.createElement("div");
-      randomEffectDiv.style.marginTop = "15px";
+      randomEffectDiv.classList.add('mt-15');
       randomEffectDiv.innerHTML = this.formatRandomEffect(result.injury.randomeffect, result.randomRoll);
       resultDiv.appendChild(randomEffectDiv);
     }

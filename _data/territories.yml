@@ -27,7 +27,7 @@ settlement:
   campaign: 1 # 1= include, 0 = exclude
 
 spyrer_base_camp:
-  name: Spyre Base Camp (Spyrers)
+  name: Spyrer Base Camp (Spyrers)
   level: 1
   trading_special_rules_spyrers: "<strong>Recovery Systems</strong>: During the Wrap-up of each battle the Spyre Hunting Party gang takes part in, one Spyrer may perform post-battle actions even if they are in Convalescence. A Spyre Hunting Party gang may never lose control of their Spyrer Base Camp Territory."
   campaign: 1 # 1= include, 0 = exclude
@@ -232,8 +232,8 @@ stinger_mould_sprawl:
   reputation_escher: "Whilst it controls this Territory, the gang adds +1 to its Reputation."
   campaign: 1 # 1= include, 0 = exclude
 
-nacro_den:
-  name: Nacro Den (Escher)
+narco_den:
+  name: Narco Den (Escher)
   level: 3
   income:
     schema: standard

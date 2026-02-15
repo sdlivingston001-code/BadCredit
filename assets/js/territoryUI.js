@@ -3,6 +3,11 @@
 const TerritoryUI = {
   territories: [],
   territoryMap: {},
+  campaignData: null,
+  playerGangMapping: null,
+  playerGangTerritories: null,
+  playerGangTerritoryCounts: null, // Track how many of each territory a gang owns
+  territoryNameToIdMap: {},
 
  async init(jsonPath) {
   try {
@@ -45,6 +50,9 @@ const TerritoryUI = {
       this.gangs = [];
     }
 
+    // Load campaign data if available
+    await this.loadCampaignData();
+
     this.buildTerritoryMap();
     this.renderGangSelector();
     this.renderCheckboxes();
@@ -63,7 +71,80 @@ const TerritoryUI = {
     this.territories.forEach(t => {
       // Expecting each territory to have a unique `id`
       this.territoryMap[t.id] = t;
+      
+      // Create normalized name mapping (strip gang-specific suffixes)
+      const normalizedName = this.normalizeTerritoryName(t.name);
+      this.territoryNameToIdMap[normalizedName] = t.id;
     });
+  },
+
+  /**
+   * Normalize territory name by removing gang-specific suffixes like (*), (AWN), etc.
+   * @param {string} name - Territory name from local data
+   * @returns {string} Normalized name
+   */
+  normalizeTerritoryName(name) {
+    // Remove patterns like (*), (AWN), (Pal Enf), etc.
+    return name.replace(/\s*\([^)]*\)\s*$/, '').trim();
+  },
+
+  async loadCampaignData() {
+    // Check if CampaignViewerEngine is available and has cached data
+    if (typeof CampaignViewerEngine === 'undefined') {
+      console.log('TerritoryUI: CampaignViewerEngine not available');
+      return;
+    }
+
+    // Try to get cached campaign data
+    let cached = CampaignViewerEngine.getCachedData();
+    
+    // If no cache exists, try to fetch from default campaign
+    if (!cached) {
+      console.log('TerritoryUI: No cached campaign data available. Fetching from default campaign...');
+      const result = await CampaignViewerEngine.fetchCampaignData(false);
+      
+      if (result.success) {
+        cached = result.data;
+        console.log('TerritoryUI: Successfully fetched campaign data');
+      } else {
+        console.log('TerritoryUI: Failed to fetch campaign data:', result.error);
+        return;
+      }
+    } else {
+      console.log('TerritoryUI: Using cached campaign data');
+    }
+
+    // Verify gangs data is loaded
+    if (!this.gangs || Object.keys(this.gangs).length === 0) {
+      console.warn('TerritoryUI: Gangs data not loaded yet');
+      return;
+    }
+
+    CampaignViewerEngine.campaignData = cached;
+    this.campaignData = cached;
+    
+    // Generate mappings
+    this.playerGangMapping = CampaignViewerEngine.getPlayerGangToIdMapping(this.gangs);
+    this.playerGangTerritories = CampaignViewerEngine.getPlayerGangTerritories();
+    
+    // Count territories for each gang (handle duplicates)
+    this.playerGangTerritoryCounts = {};
+    Object.entries(this.playerGangTerritories).forEach(([gangName, territoryNames]) => {
+      const counts = {};
+      territoryNames.forEach(name => {
+        const territoryId = this.territoryNameToIdMap[name];
+        if (territoryId) {
+          counts[territoryId] = (counts[territoryId] || 0) + 1;
+        }
+      });
+      this.playerGangTerritoryCounts[gangName] = counts;
+    });
+    
+    console.log('TerritoryUI: Loaded campaign data');
+    console.log('TerritoryUI: Player gang mapping:', this.playerGangMapping);
+    console.log('TerritoryUI: Player gang territories:', this.playerGangTerritories);
+    console.log('TerritoryUI: Player gang territory counts:', this.playerGangTerritoryCounts);
+    console.log('TerritoryUI: Number of player gangs:', Object.keys(this.playerGangMapping).length);
   },
 
   renderGangSelector() {
@@ -72,21 +153,16 @@ const TerritoryUI = {
 
     // Create gang selector wrapper
     const selectorWrapper = document.createElement("div");
-    selectorWrapper.className = "gang-selector-wrapper";
-    selectorWrapper.style.marginBottom = "20px";
-    selectorWrapper.style.paddingBottom = "20px";
-    selectorWrapper.style.borderBottom = "2px solid #ccc";
+    selectorWrapper.className = "selector-wrapper with-divider";
 
     const label = document.createElement("label");
+    label.className = "selector-label";
     label.setAttribute("for", "gang-select");
     label.textContent = "Select Gang: ";
-    label.style.fontWeight = "bold";
-    label.style.marginRight = "10px";
 
     const select = document.createElement("select");
     select.id = "gang-select";
-    select.style.padding = "5px";
-    select.style.fontSize = "14px";
+    select.className = "select-input select-input-small";
 
     // Add default option
     const defaultOption = document.createElement("option");
@@ -94,24 +170,107 @@ const TerritoryUI = {
     defaultOption.textContent = "-- Select Gang --";
     select.appendChild(defaultOption);
 
-    // Add gang options
-    if (this.gangs && typeof this.gangs === 'object') {
-      Object.entries(this.gangs).forEach(([id, gangData]) => {
+    // If campaign data is available, show player gangs
+    if (this.playerGangMapping && Object.keys(this.playerGangMapping).length > 0) {
+      // Add separator
+      const campaignOptGroup = document.createElement("optgroup");
+      campaignOptGroup.label = "Campaign Gangs";
+      
+      Object.entries(this.playerGangMapping).forEach(([playerGangName, gangId]) => {
         const option = document.createElement("option");
-        option.value = id;
-        option.textContent = gangData.name;
-        select.appendChild(option);
+        option.value = `player:${playerGangName}`;
+        option.textContent = playerGangName;
+        option.dataset.gangId = gangId;
+        campaignOptGroup.appendChild(option);
       });
+      
+      select.appendChild(campaignOptGroup);
+      
+      // Add separator before regular gangs
+      const regularOptGroup = document.createElement("optgroup");
+      regularOptGroup.label = "All Gang Types";
+      
+      // Add regular gang options
+      if (this.gangs && typeof this.gangs === 'object') {
+        Object.entries(this.gangs).forEach(([id, gangData]) => {
+          const option = document.createElement("option");
+          option.value = id;
+          option.textContent = gangData.name;
+          regularOptGroup.appendChild(option);
+        });
+      }
+      
+      select.appendChild(regularOptGroup);
+    } else {
+      // No campaign data - show regular gangs only
+      if (this.gangs && typeof this.gangs === 'object') {
+        Object.entries(this.gangs).forEach(([id, gangData]) => {
+          const option = document.createElement("option");
+          option.value = id;
+          option.textContent = gangData.name;
+          select.appendChild(option);
+        });
+      }
     }
 
     selectorWrapper.appendChild(label);
     selectorWrapper.appendChild(select);
     container.appendChild(selectorWrapper);
 
-    // Add event listener to show legacy selector when needed
+    // Add event listener to handle gang selection
     select.addEventListener('change', () => {
-      this.updateLegacySelector(select.value);
+      const selectedValue = select.value;
+      
+      // Check if this is a player gang
+      if (selectedValue.startsWith('player:')) {
+        const playerGangName = selectedValue.substring(7); // Remove 'player:' prefix
+        this.handlePlayerGangSelection(playerGangName);
+      } else {
+        // Regular gang selection
+        this.updateLegacySelector(selectedValue);
+        this.renderCheckboxes(); // Show all territories
+      }
     });
+  },
+
+  handlePlayerGangSelection(playerGangName) {
+    // Get the gang's territories (API names)
+    const controlledTerritoryNames = this.playerGangTerritories[playerGangName] || [];
+    const territoryCounts = this.playerGangTerritoryCounts[playerGangName] || {};
+    
+    // Convert API territory names to local territory IDs (preserving duplicates)
+    const controlledTerritoryIds = controlledTerritoryNames
+      .map(apiName => this.territoryNameToIdMap[apiName])
+      .filter(id => id); // Remove undefined values
+    
+    // Get unique territory IDs
+    const uniqueTerritoryIds = [...new Set(controlledTerritoryIds)];
+    
+    // Re-render checkboxes with filter and counts
+    this.renderCheckboxes(uniqueTerritoryIds, territoryCounts);
+    
+    // Auto-select the controlled territories
+    setTimeout(() => {
+      uniqueTerritoryIds.forEach(territoryId => {
+        const checkbox = document.getElementById(`territory-${territoryId}`);
+        const countInput = document.getElementById(`territory-count-${territoryId}`);
+        if (checkbox) {
+          checkbox.checked = true;
+          // Show and set the count input if the territory has multiple copies
+          if (countInput) {
+            const count = territoryCounts[territoryId] || 1;
+            countInput.value = count;
+            countInput.style.display = 'inline-block';
+          }
+        }
+      });
+    }, 100);
+    
+    // No legacy selector needed for player gangs
+    const existingLegacySelector = document.getElementById("legacy-selector-wrapper");
+    if (existingLegacySelector) {
+      existingLegacySelector.remove();
+    }
   },
 
   updateLegacySelector(selectedGangKey) {
@@ -148,20 +307,16 @@ const TerritoryUI = {
     // Create legacy selector
     const legacyWrapper = document.createElement("div");
     legacyWrapper.id = "legacy-selector-wrapper";
-    legacyWrapper.style.marginBottom = "20px";
-    legacyWrapper.style.paddingBottom = "20px";
-    legacyWrapper.style.borderBottom = "2px solid #ccc";
+    legacyWrapper.className = "selector-wrapper with-divider";
 
     const legacyLabel = document.createElement("label");
+    legacyLabel.className = "selector-label";
     legacyLabel.setAttribute("for", "legacy-gang-select");
     legacyLabel.textContent = "Select House Affiliation: ";
-    legacyLabel.style.fontWeight = "bold";
-    legacyLabel.style.marginRight = "10px";
 
     const legacySelect = document.createElement("select");
     legacySelect.id = "legacy-gang-select";
-    legacySelect.style.padding = "5px";
-    legacySelect.style.fontSize = "14px";
+    legacySelect.className = "select-input select-input-small";
 
     // Add default option
     const defaultOption = document.createElement("option");
@@ -189,7 +344,7 @@ const TerritoryUI = {
     }
   },
 
-  renderCheckboxes() {
+  renderCheckboxes(filterTerritoryIds = null, territoryCounts = null) {
     const container = document.getElementById("territory-container");
     if (!container) return;
 
@@ -199,17 +354,25 @@ const TerritoryUI = {
     oldCheckboxes.forEach(item => item.remove());
     oldSections.forEach(section => section.remove());
 
-    // Filter territories where campaign = 1 and group by level
+    // Filter territories
+    let territoriesToShow = this.territories.filter(territory => territory.campaign === 1);
+    
+    // Apply player gang filter if provided
+    if (filterTerritoryIds && Array.isArray(filterTerritoryIds) && filterTerritoryIds.length > 0) {
+      territoriesToShow = territoriesToShow.filter(territory => 
+        filterTerritoryIds.includes(territory.id)
+      );
+    }
+
+    // Group by level
     const territoriesByLevel = {};
-    this.territories
-      .filter(territory => territory.campaign === 1)
-      .forEach(territory => {
-        const level = territory.level || 1;
-        if (!territoriesByLevel[level]) {
-          territoriesByLevel[level] = [];
-        }
-        territoriesByLevel[level].push(territory);
-      });
+    territoriesToShow.forEach(territory => {
+      const level = territory.level || 1;
+      if (!territoriesByLevel[level]) {
+        territoriesByLevel[level] = [];
+      }
+      territoriesByLevel[level].push(territory);
+    });
 
     // Sort territories alphabetically within each level
     Object.keys(territoriesByLevel).forEach(level => {
@@ -222,12 +385,10 @@ const TerritoryUI = {
       // Create section
       const section = document.createElement("div");
       section.className = "territory-level-section";
-      section.style.marginBottom = "20px";
-      section.style.paddingBottom = "20px";
       
       // Add dividing line (except for the last section)
       if (index < levels.length - 1) {
-        section.style.borderBottom = "2px solid #ccc";
+        section.classList.add('section-divider');
       }
 
       // Add territories for this level
@@ -236,18 +397,42 @@ const TerritoryUI = {
         wrapper.className = "territory-item";
 
         const id = `territory-${territory.id}`;
+        const countInputId = `territory-count-${territory.id}`;
+        
+        // Check if this territory has multiple copies (from campaign data)
+        const count = territoryCounts && territoryCounts[territory.id] ? territoryCounts[territory.id] : null;
+        const countBadge = count && count > 1 ? ` <span style="color: #000000; font-weight: bold; background-color: rgba(255, 255, 255, 0.9); padding: 2px 6px; border-radius: 3px;">(x${count})</span>` : '';
 
         wrapper.innerHTML = `
-          <label for="${id}">
+          <label for="${id}" style="display: flex; align-items: center; gap: 8px;">
             <input type="checkbox"
                    id="${id}"
                    class="territory-checkbox"
                    value="${territory.id}">
-            ${territory.name}
+            <span>${territory.name}${countBadge}</span>
+            <input type="number"
+                   id="${countInputId}"
+                   class="territory-count-input"
+                   min="1"
+                   max="10"
+                   value="${count || 1}"
+                   style="width: 50px; margin-left: 4px; ${count ? '' : 'display: none;'}">
           </label>
         `;
 
         section.appendChild(wrapper);
+        
+        // Add event listener to show/hide count input
+        const checkbox = wrapper.querySelector(`#${id}`);
+        const countInput = wrapper.querySelector(`#${countInputId}`);
+        
+        checkbox.addEventListener('change', () => {
+          if (checkbox.checked) {
+            countInput.style.display = 'inline-block';
+          } else {
+            countInput.style.display = 'none';
+          }
+        });
       });
 
       container.appendChild(section);
@@ -265,7 +450,7 @@ const TerritoryUI = {
         TimerUtil.showTimer('territory-timer');
       }
       
-      const selectedIds = this.getSelectedTerritoryIds();
+      const selectedIds = this.getSelectedTerritoriesWithCounts();
       const selectedTerritories = selectedIds.map(id => this.territoryMap[id]);
 
       // Get selected gang
@@ -275,8 +460,8 @@ const TerritoryUI = {
       // Validate gang selection
       const warningDiv = document.getElementById("gang-selection-warning") || this.createWarningDiv();
       if (!selectedGangKey) {
-        warningDiv.innerHTML = "<p style='color: red; font-weight: bold;'>⚠️ Please select a gang from the dropdown before resolving territories.</p>";
-        warningDiv.style.display = "block";
+        warningDiv.innerHTML = "<p class='error-box'>⚠️ Please select a gang from the dropdown before resolving territories.</p>";
+        warningDiv.classList.remove('hidden');
         return;
       }
 
@@ -290,13 +475,13 @@ const TerritoryUI = {
         const legacySelect = document.getElementById("legacy-gang-select");
         const legacyGangId = legacySelect ? legacySelect.value : null;
         if (!legacyGangId) {
-          warningDiv.innerHTML = "<p style='color: red; font-weight: bold;'>⚠️ Please select a house affiliation from the dropdown before resolving territories.</p>";
-          warningDiv.style.display = "block";
+          warningDiv.innerHTML = "<p class='error-box'>⚠️ Please select a house affiliation from the dropdown before resolving territories.</p>";
+          warningDiv.classList.remove('hidden');
           return;
         }
         selectedGang = legacyGangId;
       }
-      warningDiv.style.display = "none";
+      warningDiv.classList.add('hidden');
 
       // Check if any territories need user input and collect it
       const userInputCounts = {};
@@ -357,8 +542,7 @@ const TerritoryUI = {
   createWarningDiv() {
     const warningDiv = document.createElement("div");
     warningDiv.id = "gang-selection-warning";
-    warningDiv.style.display = "none";
-    warningDiv.style.marginTop = "10px";
+    warningDiv.className = "hidden mt-10";
     
     const button = document.getElementById("resolve-territories");
     if (button && button.parentNode) {
@@ -373,13 +557,31 @@ const TerritoryUI = {
     return Array.from(checkboxes).map(cb => cb.value);
   },
 
+  getSelectedTerritoriesWithCounts() {
+    const checkboxes = document.querySelectorAll(".territory-checkbox:checked");
+    const result = [];
+    
+    checkboxes.forEach(checkbox => {
+      const territoryId = checkbox.value;
+      const countInput = document.getElementById(`territory-count-${territoryId}`);
+      const count = countInput ? parseInt(countInput.value) || 1 : 1;
+      
+      // Add the territory multiple times based on count
+      for (let i = 0; i < count; i++) {
+        result.push(territoryId);
+      }
+    });
+    
+    return result;
+  },
+
   initTimer() {
     // Create timer container below the button
     const button = document.getElementById("resolve-territories");
     if (button && typeof TimerUtil !== 'undefined') {
       const timerContainer = document.createElement("div");
       timerContainer.id = "territory-timer";
-      timerContainer.style.marginTop = "15px";
+      timerContainer.className = "mt-15";
       button.parentNode.insertBefore(timerContainer, button.nextSibling);
       TimerUtil.init('territory-timer', 'territoryLastRun');
       

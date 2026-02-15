@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/BadCredit/assets/css/style.css">
+  <link rel="stylesheet" href="/BadCredit/assets/css/terminal.css">
+  <title>Campaign Viewer</title>
+</head>
+
+<body>
+
+
+
+  <div class="main">
+    <h1>Munda Manager Campaign Viewer</h1>
+
+<p>View live data from your Necromunda campaign on Munda Manager.</p>
+
+<div class="selector-wrapper with-divider" style="margin-bottom: 15px;">
+  <label class="selector-label" for="campaign-id-input">Campaign ID:</label>
+  <input type="text" 
+         id="campaign-id-input" 
+         class="select-input" 
+         placeholder="e2785818-5736-4c50-bfb2-d243953541f8"
+         style="flex: 1; min-width: 300px;"
+  />
+  <button id="set-campaign-id" class="btn" style="margin-left: 10px;">Set Campaign</button>
+</div>
+
+<div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+  <button id="refresh-campaign" class="btn">🔄 Refresh Data</button>
+  <div id="campaign-timer" style="font-family: monospace; font-size: 14px;"></div>
+</div>
+
+<div id="campaign-data"></div>
+
+<script src="/BadCredit/assets/js/campaignViewerEngine.js"></script>
+<script src="/BadCredit/assets/js/campaignViewerUI.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    CampaignViewerUI.init("campaign-data", "refresh-campaign", "campaign-timer", "campaign-id-input", "set-campaign-id");
+  });
+</script>
+
+  </div>
+
+  <script type="module" src="/BadCredit/assets/js/main.js"></script>
+  <hr style="border-color:#444;">
+
+<div class="bottom-bar">
+  <a href="/BadCredit/">Home</a>
+  <a href="/BadCredit/tools/territoryPage.html">Inc</a>
+  <a href="/BadCredit/tools/lastingInjuriesPage.html">Inj</a>
+  <a href="/BadCredit/tools/lootBox.html">LOOT</a>
+</div>
+
+  
+</body>
+</html>

@@ -14,7 +14,8 @@ Use the interactive tools to run simulations and explore outcomes.
 
 [Territory Tool]({{ site.baseurl }}/tools/territoryPage.html)<br><br>
 [Lasting Injury Tool]({{ site.baseurl }}/tools/lastingInjuriesPage.html)<br><br>
-[Loot Box]({{ site.baseurl }}/tools/lootBox.html)<br>
+[Loot Box]({{ site.baseurl }}/tools/lootBox.html)<br><br>
+[Campaign Viewer]({{ site.baseurl }}/tools/campaignViewer.html)<br>
 
 ---
 

@@ -197,3 +197,371 @@ ol li, ul li {
 .suit-dialog .cancel-button:hover {
   background: #e5e5e5;
 }
+
+/* ======================
+   RESULT BOX COMPONENTS
+   ====================== */
+
+.result-box {
+  padding: 12px;
+  border-radius: 4px;
+  border: 2px solid;
+  margin-bottom: 10px;
+}
+
+.result-box-green {
+  background-color: #d4edda;
+  border-color: #28a745;
+  color: #155724;
+}
+
+.result-box-blue {
+  background-color: #d1ecf1;
+  border-color: #17a2b8;
+  color: #0c5460;
+}
+
+.result-box-yellow {
+  background-color: #fff3cd;
+  border-color: #ffc107;
+  color: #856404;
+}
+
+.result-box-red {
+  background-color: #f8d7da;
+  border-color: #dc3545;
+  color: #721c24;
+}
+
+.result-box-purple {
+  background-color: #e7d4f0;
+  border-color: #9c27b0;
+  color: #4a148c;
+}
+
+.result-box-grey {
+  background-color: #e2e3e5;
+  border-color: #6c757d;
+  color: #383d41;
+}
+
+.result-box-black {
+  background-color: #000;
+  border-color: #000;
+  color: #fff;
+}
+
+/* Result box heading colors */
+.result-box-green .result-heading { color: #0c5c2c; }
+.result-box-blue .result-heading { color: #074b57; }
+.result-box-yellow .result-heading { color: #533f03; }
+.result-box-red .result-heading { color: #491217; }
+.result-box-purple .result-heading { color: #311b92; }
+.result-box-grey .result-heading { color: #1b1e21; }
+.result-box-black .result-heading { color: #fff; }
+
+.result-name {
+  font-size: 1.1em;
+  margin-bottom: 5px;
+}
+
+.result-roll {
+  margin-bottom: 5px;
+}
+
+.result-effect {
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+/* ======================
+   INFO BOXES
+   ====================== */
+
+.info-box {
+  padding: 10px;
+  border-radius: 4px;
+  border: 2px solid;
+  margin-top: 10px;
+}
+
+.income-box {
+  background-color: #fff3cd;
+  border-color: #ffc107;
+  color: #856404;
+}
+
+.reroll-box {
+  background-color: #e7d4f0;
+  border-color: #9c27b0;
+  color: #4a148c;
+}
+
+.warning-box {
+  background-color: #fff3cd;
+  border-color: #ffc107;
+  color: #856404;
+  margin-top: 15px;
+}
+
+.recovery-box {
+  background-color: #f8d7da;
+  border-color: #dc3545;
+  color: #721c24;
+  margin-top: 15px;
+}
+
+.error-box {
+  background-color: #f8d7da;
+  border-color: #dc3545;
+  color: #721c24;
+  padding: 20px;
+}
+
+.death-box {
+  background-color: #000;
+  border-color: #000;
+  color: #fff;
+  text-align: center;
+  margin-top: 20px;
+  padding: 20px;
+}
+
+.cost-box {
+  background-color: #fff3cd;
+  border-color: #ffc107;
+  color: #856404;
+  text-align: center;
+  margin-top: 20px;
+  padding: 20px;
+  border-width: 3px;
+}
+
+.cost-box h2 {
+  margin-top: 0;
+  color: #856404;
+}
+
+.cost-box h1 {
+  color: #533f03;
+  margin: 20px 0;
+}
+
+/* ======================
+   FORM CONTROLS
+   ====================== */
+
+.selector-wrapper {
+  margin-bottom: 20px;
+}
+
+.selector-wrapper.with-divider {
+  padding-bottom: 20px;
+  border-bottom: 2px solid #ccc;
+}
+
+.selector-label {
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.select-input {
+  padding: 8px 12px;
+  font-size: 16px;
+  border-radius: 4px;
+  border: 2px solid #333;
+  background-color: white;
+  cursor: pointer;
+}
+
+.select-input-small {
+  padding: 5px;
+  font-size: 14px;
+}
+
+/* ======================
+   BUTTONS
+   ====================== */
+
+.btn {
+  padding: 12px 24px;
+  font-size: 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: opacity 0.2s;
+}
+
+.btn:hover {
+  opacity: 0.9;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-success {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+/* ======================
+   LAYOUT UTILITIES
+   ====================== */
+
+.flex-center {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.mt-5 { margin-top: 5px; }
+.mt-10 { margin-top: 10px; }
+.mt-15 { margin-top: 15px; }
+.mt-20 { margin-top: 20px; }
+
+.mb-5 { margin-bottom: 5px; }
+.mb-10 { margin-bottom: 10px; }
+.mb-15 { margin-bottom: 15px; }
+.mb-20 { margin-bottom: 20px; }
+
+.mt-0 { margin-top: 0; }
+.mb-0 { margin-bottom: 0; }
+
+/* ======================
+   NESTED CONTENT
+   ====================== */
+
+.nested-content {
+  margin-top: 15px;
+  padding-left: 15px;
+  border-left: 3px solid #6c757d;
+}
+
+.nested-title {
+  margin-bottom: 8px;
+  color: #495057;
+}
+
+.additional-injuries-container {
+  margin-top: 20px;
+}
+
+.additional-injuries-container h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+/* ======================
+   SECTION DIVIDERS
+   ====================== */
+
+.section-divider {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #ccc;
+}
+
+/* ======================
+   TIMER DISPLAY
+   ====================== */
+
+.timer-display {
+  padding: 10px;
+  margin-bottom: 15px;
+  margin-top: 15px;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 14px;
+  display: block;
+}
+
+.timer-display.hidden {
+  display: none;
+}
+
+.timer-green {
+  color: #28a745;
+}
+
+.timer-grey {
+  color: #6c757d;
+}
+
+/* ======================
+   TERRITORY ITEMS
+   ====================== */
+
+.territory-item {
+  margin-bottom: 8px;
+}
+
+.territory-item label {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+}
+
+.territory-item input[type="checkbox"] {
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+.territory-count-input {
+  padding: 2px 4px;
+  text-align: center;
+  font-size: 0.9em;
+  border: 1px solid #333;
+  background-color: #f5f5f5;
+  color: #000;
+  border-radius: 3px;
+}
+
+.territory-count-input::-webkit-inner-spin-button,
+.territory-count-input::-webkit-outer-spin-button {
+  opacity: 1;
+}
+
+.territory-level-section {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+}
+
+/* ======================
+   UTILITY CLASSES
+   ====================== */
+
+.hidden {
+  display: none;
+}
+
+.show {
+  display: block;
+}
+
+.bold {
+  font-weight: bold;
+}
+
+.monospace {
+  font-family: monospace;
+}

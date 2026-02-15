@@ -1,0 +1,34 @@
+---
+layout: default
+title: Campaign Viewer
+---
+
+<h1>Munda Manager Campaign Viewer</h1>
+
+<p>View live data from your Necromunda campaign on Munda Manager.</p>
+
+<div class="selector-wrapper with-divider" style="margin-bottom: 15px;">
+  <label class="selector-label" for="campaign-id-input">Campaign ID:</label>
+  <input type="text" 
+         id="campaign-id-input" 
+         class="select-input" 
+         placeholder="e2785818-5736-4c50-bfb2-d243953541f8"
+         style="flex: 1; min-width: 300px;"
+  />
+  <button id="set-campaign-id" class="btn" style="margin-left: 10px;">Set Campaign</button>
+</div>
+
+<div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+  <button id="refresh-campaign" class="btn">🔄 Refresh Data</button>
+  <div id="campaign-timer" style="font-family: monospace; font-size: 14px;"></div>
+</div>
+
+<div id="campaign-data"></div>
+
+<script src="{{ '/assets/js/campaignViewerEngine.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/campaignViewerUI.js' | relative_url }}"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    CampaignViewerUI.init("campaign-data", "refresh-campaign", "campaign-timer", "campaign-id-input", "set-campaign-id");
+  });
+</script>

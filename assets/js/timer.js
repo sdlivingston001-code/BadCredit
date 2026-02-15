@@ -19,14 +19,7 @@ const TimerUtil = {
     // Create timer display element
     const timerDiv = document.createElement("div");
     timerDiv.id = `${containerId}-display`;
-    timerDiv.style.padding = "10px";
-    timerDiv.style.marginBottom = "15px";
-    timerDiv.style.backgroundColor = "#f8f9fa";
-    timerDiv.style.border = "1px solid #dee2e6";
-    timerDiv.style.borderRadius = "4px";
-    timerDiv.style.fontFamily = "monospace";
-    timerDiv.style.fontSize = "14px";
-    timerDiv.style.display = "none"; // Start hidden
+    timerDiv.className = "timer-display";
     
     container.appendChild(timerDiv);
     
@@ -58,7 +51,8 @@ const TimerUtil = {
     
     if (!lastRun) {
       element.innerHTML = "⏱️ <strong>Last Run:</strong> Never";
-      element.style.color = "#6c757d";
+      element.classList.remove('timer-green');
+      element.classList.add('timer-grey');
       return;
     }
 
@@ -71,11 +65,13 @@ const TimerUtil = {
       const totalSeconds = Math.floor(elapsedMs / 1000);
       const milliseconds = elapsedMs % 1000;
       element.innerHTML = `⏱️ <strong>Last Run:</strong> ${totalSeconds}.${String(milliseconds).padStart(3, '0')} seconds ago`;
-      element.style.color = "#28a745"; // Green
+      element.classList.remove('timer-grey');
+      element.classList.add('timer-green');
     } else {
       // After 5 seconds, just show generic message
       element.innerHTML = "⏱️ <strong>Last Run:</strong> More than 5 seconds ago";
-      element.style.color = "#6c757d"; // Grey
+      element.classList.remove('timer-green');
+      element.classList.add('timer-grey');
     }
   },
 
@@ -94,13 +90,13 @@ const TimerUtil = {
   showTimer(containerId) {
     // Hide all timer displays
     document.querySelectorAll('[id$="-timer-display"]').forEach(timer => {
-      timer.style.display = 'none';
+      timer.classList.add('hidden');
     });
     
     // Show the specific timer
     const timerDisplay = document.getElementById(`${containerId}-display`);
     if (timerDisplay) {
-      timerDisplay.style.display = 'block';
+      timerDisplay.classList.remove('hidden');
     }
   },
 
@@ -111,7 +107,7 @@ const TimerUtil = {
   hideTimer(containerId) {
     const timerDisplay = document.getElementById(`${containerId}-display`);
     if (timerDisplay) {
-      timerDisplay.style.display = 'none';
+      timerDisplay.classList.add('hidden');
     }
   },
 
