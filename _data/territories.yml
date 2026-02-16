@@ -291,7 +291,7 @@ mine_workings:
   level: 3
   income:
     schema: standard
-    effect: "Captured fighters working the mine rule removed in this campaign"
+    effect: "Captured fighters mechanic removed due to special campaign rules"
   reputation_orlock: "Whilst it controls this Territory, the gang adds +2 to its Reputation."
   reputation_genestealer_cult: "Whilst it controls this Territory, the gang adds +2 to its Reputation."
   reputation_squats: "Whilst it controls this Territory, the gang adds +2 to its Reputation."

@@ -297,6 +297,12 @@ ol li, ul li {
   color: #4a148c;
 }
 
+.reroll-history-box {
+  background-color: #d4e7f0;
+  border-color: #2196f3;
+  color: #0d47a1;
+}
+
 .warning-box {
   background-color: #fff3cd;
   border-color: #ffc107;

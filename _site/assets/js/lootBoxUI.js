@@ -15,6 +15,58 @@ const LootBoxUI = {
 
       this.bindEvents();
       this.initTimer();
+
+      // Expose test functions to window for console testing
+      window.testLootBox = (roll, autoResolve = false) => {
+        const result = LootBoxEngine.testRoll(roll, autoResolve);
+        if (result) {
+          this.displayLootBoxResult(result);
+          console.log('Test loot box result for roll ' + roll + ':', result);
+        }
+      };
+
+      window.testNestedTable = (tableName, roll = null) => {
+        const result = LootBoxEngine.testNestedTable(tableName, roll);
+        if (result && !result.error) {
+          // Display as nested result
+          const container = document.getElementById('loot-box-results');
+          if (container) {
+            container.innerHTML = '';
+            const mainContainer = document.createElement('div');
+            mainContainer.classList.add('mt-20');
+            
+            const title = document.createElement('h3');
+            title.textContent = `Testing: ${tableName}`;
+            title.classList.add('mb-15');
+            mainContainer.appendChild(title);
+            
+            // Display reroll history if present
+            if (result.rerollHistory && result.rerollHistory.length > 0) {
+              const rerollDiv = document.createElement('div');
+              rerollDiv.className = 'info-box reroll-history-box';
+              const rerollList = result.rerollHistory.map(r => `${r.name} (${r.roll})`).join(', ');
+              rerollDiv.innerHTML = `🔄 <strong>Rerolled:</strong> ${rerollList}`;
+              mainContainer.appendChild(rerollDiv);
+            }
+            
+            const resultBox = this.createResultBox(result.result, result.roll, result.tableName);
+            mainContainer.appendChild(resultBox);
+            
+            if (result.randomEffect) {
+              this.displayNestedEffect(result.randomEffect, mainContainer);
+            }
+            
+            container.appendChild(mainContainer);
+          }
+          console.log('Test nested table result:', result);
+        } else if (result && result.error) {
+          console.error(result.error);
+        }
+      };
+
+      console.log('%c🎁 Loot Box Testing Enabled', 'color: #FFD700; font-weight: bold; font-size: 14px;');
+      console.log('Use: testLootBox(roll, autoResolve) - e.g., testLootBox(4) or testLootBox(4, true)');
+      console.log('Use: testNestedTable(tableName, roll) - e.g., testNestedTable("d66drugs", 11) or testNestedTable("d3skull")');
     } catch (err) {
       console.error(err);
       const container = document.getElementById("loot-box-container");
@@ -163,6 +215,15 @@ const LootBoxUI = {
     // Clear the button container and show the result
     containerDiv.innerHTML = "";
 
+    // Display reroll history if present
+    if (result.rerollHistory && result.rerollHistory.length > 0) {
+      const rerollDiv = document.createElement("div");
+      rerollDiv.className = "info-box reroll-history-box";
+      const rerollList = result.rerollHistory.map(r => `${r.name} (${r.roll})`).join(", ");
+      rerollDiv.innerHTML = `🔄 <strong>Rerolled:</strong> ${rerollList}`;
+      containerDiv.appendChild(rerollDiv);
+    }
+
     const nestedTitle = document.createElement("div");
     nestedTitle.className = "nested-title";
     nestedTitle.innerHTML = `<strong>➡️ Additional Result:</strong>`;
@@ -188,14 +249,17 @@ const LootBoxUI = {
       TimerUtil.showTimer('loot-box-timer');
     }
 
+    // Get loot box result
+    const lootResult = LootBoxEngine.openLootBox();
+    this.displayLootBoxResult(lootResult);
+  },
+
+  displayLootBoxResult(lootResult) {
     const resultsContainer = document.getElementById("loot-box-results");
     if (!resultsContainer) return;
 
     // Clear previous results
     resultsContainer.innerHTML = "";
-
-    // Get loot box result
-    const lootResult = LootBoxEngine.openLootBox();
 
     if (lootResult.error) {
       resultsContainer.innerHTML = `<div class="error-box">${lootResult.error}</div>`;

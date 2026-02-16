@@ -109,29 +109,54 @@ const LootBoxEngine = {
 
   // Roll a specific nested table
   rollNestedTable(tableName) {
-    const roll = this.rollDiceForTable(tableName);
-    if (roll === null) {
-      return {
-        error: `Failed to roll ${tableName}. Data not loaded.`
-      };
-    }
+    const maxRerolls = 100; // Safety limit
+    let attempts = 0;
+    let rerollHistory = [];
+    let roll, result, randomEffect;
 
-    const result = this.findResult(tableName, roll);
-    if (!result) {
-      return {
-        roll,
-        error: `No result found for roll ${roll} in table ${tableName}.`
-      };
-    }
+    // Keep rolling until we get a non-reroll result
+    do {
+      roll = this.rollDiceForTable(tableName);
+      if (roll === null) {
+        return {
+          error: `Failed to roll ${tableName}. Data not loaded.`
+        };
+      }
 
-    // Process nested random effects (don't auto-roll)
-    const randomEffect = this.processRandomEffect(result.randomeffect);
+      result = this.findResult(tableName, roll);
+      if (!result) {
+        return {
+          roll,
+          error: `No result found for roll ${roll} in table ${tableName}.`
+        };
+      }
+
+      // Process nested random effects
+      randomEffect = this.processRandomEffect(result.randomeffect);
+
+      // If it's a reroll, track it and loop again
+      if (randomEffect && randomEffect.type === 'reroll') {
+        rerollHistory.push({
+          roll: roll,
+          name: result.name
+        });
+        attempts++;
+
+        // Safety check to prevent infinite loops
+        if (attempts >= maxRerolls) {
+          return {
+            error: `Too many rerolls (${maxRerolls}) for ${tableName}. Stopping.`
+          };
+        }
+      }
+    } while (randomEffect && randomEffect.type === 'reroll');
 
     return {
       tableName,
       roll,
       result,
-      randomEffect
+      randomEffect,
+      rerollHistory: rerollHistory.length > 0 ? rerollHistory : null
     };
   },
 
@@ -163,6 +188,85 @@ const LootBoxEngine = {
       incomeResult,
       randomEffect
     };
+  },
+
+  // Test with a specific roll value
+  testRoll(rollValue, autoResolveNested = false) {
+    const roll = parseInt(rollValue);
+    if (isNaN(roll)) {
+      console.error(`Invalid roll value: ${rollValue}`);
+      return null;
+    }
+
+    const result = this.findResult('loot_box_roll', roll);
+    if (!result) {
+      return {
+        roll,
+        error: 'No result found for this roll.'
+      };
+    }
+
+    // Process income if present
+    const incomeResult = result.income ? this.processIncome(result.income) : null;
+
+    // Process random effects if present
+    let randomEffect = this.processRandomEffect(result.randomeffect);
+
+    // Auto-resolve nested tables if requested
+    if (autoResolveNested && randomEffect && randomEffect.type === 'pending_roll') {
+      const nestedResult = this.rollNestedTable(randomEffect.tableName);
+      randomEffect = {
+        type: 'nested_table',
+        tableName: nestedResult.tableName,
+        roll: nestedResult.roll,
+        result: nestedResult.result,
+        nestedEffect: nestedResult.randomEffect
+      };
+    }
+
+    return {
+      roll,
+      result,
+      incomeResult,
+      randomEffect
+    };
+  },
+
+  // Test a nested table directly
+  testNestedTable(tableName, rollValue = null) {
+    if (!this.getTable(tableName)) {
+      console.error(`Table not found: ${tableName}`);
+      return { error: `Table not found: ${tableName}` };
+    }
+
+    // If rollValue specified, test that specific roll (no auto-reroll)
+    if (rollValue !== null) {
+      const roll = parseInt(rollValue);
+      if (isNaN(roll)) {
+        console.error(`Invalid roll value: ${rollValue}`);
+        return null;
+      }
+
+      const result = this.findResult(tableName, roll);
+      if (!result) {
+        return {
+          roll,
+          error: `No result found for roll ${roll} in table ${tableName}.`
+        };
+      }
+
+      const randomEffect = this.processRandomEffect(result.randomeffect);
+
+      return {
+        tableName,
+        roll,
+        result,
+        randomEffect
+      };
+    }
+
+    // Otherwise use the automatic reroll logic
+    return this.rollNestedTable(tableName);
   },
 
   // Resolve a specific table (useful for testing or specific UI interactions)

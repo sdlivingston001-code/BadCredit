@@ -50,10 +50,12 @@ const TerritoryUI = {
       this.gangs = [];
     }
 
+    // Build territory map BEFORE loading campaign data (needed for territory counting)
+    this.buildTerritoryMap();
+
     // Load campaign data if available
     await this.loadCampaignData();
 
-    this.buildTerritoryMap();
     this.renderGangSelector();
     this.renderCheckboxes();
     this.bindEvents();
@@ -76,6 +78,7 @@ const TerritoryUI = {
       const normalizedName = this.normalizeTerritoryName(t.name);
       this.territoryNameToIdMap[normalizedName] = t.id;
     });
+    console.log('TerritoryUI: Built territory name to ID map:', this.territoryNameToIdMap);
   },
 
   /**
@@ -130,14 +133,22 @@ const TerritoryUI = {
     // Count territories for each gang (handle duplicates)
     this.playerGangTerritoryCounts = {};
     Object.entries(this.playerGangTerritories).forEach(([gangName, territoryNames]) => {
+      console.log(`TerritoryUI: Processing territories for gang "${gangName}":`, territoryNames);
       const counts = {};
       territoryNames.forEach(name => {
-        const territoryId = this.territoryNameToIdMap[name];
+        // Normalize API territory name before lookup
+        const normalizedName = this.normalizeTerritoryName(name);
+        const territoryId = this.territoryNameToIdMap[normalizedName];
+        console.log(`  Territory: "${name}" -> normalized: "${normalizedName}" -> ID: "${territoryId}"`);
         if (territoryId) {
           counts[territoryId] = (counts[territoryId] || 0) + 1;
+          console.log(`    Count for ${territoryId}: ${counts[territoryId]}`);
+        } else {
+          console.warn(`TerritoryUI: Could not map territory "${name}" (normalized: "${normalizedName}") to local territory`);
         }
       });
       this.playerGangTerritoryCounts[gangName] = counts;
+      console.log(`TerritoryUI: Final counts for "${gangName}":`, counts);
     });
     
     console.log('TerritoryUI: Loaded campaign data');
@@ -238,9 +249,12 @@ const TerritoryUI = {
     const controlledTerritoryNames = this.playerGangTerritories[playerGangName] || [];
     const territoryCounts = this.playerGangTerritoryCounts[playerGangName] || {};
     
-    // Convert API territory names to local territory IDs (preserving duplicates)
+    // Convert API territory names to local territory IDs (normalizing first)
     const controlledTerritoryIds = controlledTerritoryNames
-      .map(apiName => this.territoryNameToIdMap[apiName])
+      .map(apiName => {
+        const normalizedName = this.normalizeTerritoryName(apiName);
+        return this.territoryNameToIdMap[normalizedName];
+      })
       .filter(id => id); // Remove undefined values
     
     // Get unique territory IDs
@@ -401,7 +415,6 @@ const TerritoryUI = {
         
         // Check if this territory has multiple copies (from campaign data)
         const count = territoryCounts && territoryCounts[territory.id] ? territoryCounts[territory.id] : null;
-        const countBadge = count && count > 1 ? ` <span style="color: #000000; font-weight: bold; background-color: rgba(255, 255, 255, 0.9); padding: 2px 6px; border-radius: 3px;">(x${count})</span>` : '';
 
         wrapper.innerHTML = `
           <label for="${id}" style="display: flex; align-items: center; gap: 8px;">
@@ -409,7 +422,7 @@ const TerritoryUI = {
                    id="${id}"
                    class="territory-checkbox"
                    value="${territory.id}">
-            <span>${territory.name}${countBadge}</span>
+            <span>${territory.name}</span>
             <input type="number"
                    id="${countInputId}"
                    class="territory-count-input"
