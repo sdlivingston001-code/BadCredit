@@ -108,7 +108,8 @@ const LootBoxUI = {
       const rollText = document.createElement("div");
       rollText.className = "result-heading result-roll";
       const table = tableName ? this.lootData[tableName] : this.lootData.loot_box_roll;
-      const diceType = table && table.sides === 66 ? "D66" : table && table.sides === 3 ? "D3" : "D6";
+      const sides = table && table.sides;
+      const diceType = sides === "d66" ? "D66" : `D${typeof sides === 'number' ? sides : parseInt(sides)}`;
       rollText.innerHTML = `<strong>${diceType} Roll:</strong> ${roll}`;
       resultDiv.appendChild(rollText);
     }

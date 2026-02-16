@@ -29,14 +29,13 @@ const LastingInjuriesEngine = {
     const modeData = this.getCurrentModeData();
     if (!modeData) return null;
 
-    // Roll based on the sides property (6 for ironman, 66 for standard)
-    if (modeData.sides === 66) {
-      return Dice.d66();
-    } else if (modeData.sides === 6) {
-      return Dice.d6();
+    // Roll based on the sides property
+    const sides = modeData.sides;
+    if (sides === "d66") {
+      return Dice.d66(); // Special case: d66 is not a 66-sided die
     } else {
-      console.error(`Unknown sides: ${modeData.sides}`);
-      return null;
+      const n = typeof sides === 'number' ? sides : parseInt(sides);
+      return Dice.d(n);
     }
   },
 

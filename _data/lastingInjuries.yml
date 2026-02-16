@@ -1,7 +1,7 @@
 #D66 roll for lasting injuries
 
 standard_lasting_injuries:
-  sides: 66
+  sides: d66
   results:
     lesson_learned:
       values: [11]

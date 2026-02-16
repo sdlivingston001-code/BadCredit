@@ -1,0 +1,33 @@
+---
+layout: default
+title: XP Advancement Tables
+---
+
+<h1>XP Advancement Tables</h1>
+
+<div id="xp-tables-container"></div>
+
+<!-- User Choice Advancements Section -->
+<div id="user-choice-advancements" class="mb-30"></div>
+
+<!-- Random Advancement Roll Section -->
+<h3>Random Advancement</h3>
+<p>Roll 2D6 to determine a random advancement:</p>
+<button id="roll-advancement">Roll for Advancement</button>
+
+<!-- Skill Tables Section -->
+<div id="skill-tables-list"></div>
+
+<!-- Results Section -->
+<div id="xp-tables-results"></div>
+
+<!-- Load Scripts -->
+<script src="{{ '/assets/js/dice.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/timer.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/xpTablesEngine.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/xpTablesUI.js' | relative_url }}"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    XPTablesUI.init("{{ '/data/xpTables.json' | relative_url }}");
+  });
+</script>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/BadCredit/assets/css/style.css">
+  <link rel="stylesheet" href="/BadCredit/assets/css/terminal.css">
+  <title>XP Advancement Tables</title>
+</head>
+
+<body>
+
+
+
+  <div class="main">
+    <h1>XP Advancement Tables</h1>
+
+<div id="xp-tables-container"></div>
+
+<!-- User Choice Advancements Section -->
+<div id="user-choice-advancements" class="mb-30"></div>
+
+<!-- Random Advancement Roll Section -->
+<h3>Random Advancement</h3>
+<p>Roll 2D6 to determine a random advancement:</p>
+<button id="roll-advancement">Roll for Advancement</button>
+
+<!-- Skill Tables Section -->
+<div id="skill-tables-list"></div>
+
+<!-- Results Section -->
+<div id="xp-tables-results"></div>
+
+<!-- Load Scripts -->
+<script src="/BadCredit/assets/js/dice.js"></script>
+<script src="/BadCredit/assets/js/timer.js"></script>
+<script src="/BadCredit/assets/js/xpTablesEngine.js"></script>
+<script src="/BadCredit/assets/js/xpTablesUI.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    XPTablesUI.init("/BadCredit/data/xpTables.json");
+  });
+</script>
+
+  </div>
+
+  <script type="module" src="/BadCredit/assets/js/main.js"></script>
+  <hr style="border-color:#444;">
+
+<div class="bottom-bar">
+  <a href="/BadCredit/">Home</a>
+  <a href="/BadCredit/tools/territoryPage.html">Inc</a>
+  <a href="/BadCredit/tools/lastingInjuriesPage.html">Inj</a>
+  <a href="/BadCredit/tools/lootBox.html">LOOT</a>
+</div>
+
+  
+</body>
+</html>

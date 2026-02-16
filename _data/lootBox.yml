@@ -82,7 +82,7 @@ d3skull:
       fixedeffect: "Necromunda Core Rulebook (2023), p303.<br>Add Gun Skull to your stash.<br><br>BS 5+ miniature gun platform with a Compact autopistol (Necromunda Core Rulebook (2023), p264.)"
 
 d66drugs:
-  sides: 66
+  sides: d66
   results:
     frenzon:
       values: [11-13]

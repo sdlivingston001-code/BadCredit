@@ -20,16 +20,13 @@ const LootBoxEngine = {
     const table = this.getTable(tableName);
     if (!table) return null;
 
-    // Roll based on the sides property (6, 66, 3, etc.)
-    if (table.sides === 66) {
-      return Dice.d66();
-    } else if (table.sides === 6) {
-      return Dice.d6();
-    } else if (table.sides === 3) {
-      return Dice.d(3);
+    // Roll based on the sides property
+    const sides = table.sides;
+    if (sides === "d66") {
+      return Dice.d66(); // Special case: d66 is not a 66-sided die
     } else {
-      console.error(`Unknown sides: ${table.sides}`);
-      return null;
+      const n = typeof sides === 'number' ? sides : parseInt(sides);
+      return Dice.d(n);
     }
   },
 
