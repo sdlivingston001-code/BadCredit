@@ -5,9 +5,9 @@ advancements_userchoice:
     ratingIncrease: 20
   random_secondary_skill:
     cost: 5
-    advancement: "1. Pick a Secondary skillset. </br>2. Randomise the skill.</br>If you already have the randomised skill, you may select a skill from that skillset instead."
+    advancement: "1. Pick a Secondary skillset. </br>2. Randomise the skill. If you already have the randomised skill then you may select a skill from that skillset instead."
     ratingIncrease: 20
-    sides: 6
+    #sides: 6
   choose_secondary_skill:
     cost: 7
     advancement: "1. Pick a Secondary skillset. </br>2. Select a skill."
@@ -15,7 +15,7 @@ advancements_userchoice:
   random_any_skill:
     cost: 12
     advancement: "1. Pick a non-gang specific skillset. </br>2. Randomise the skill.</br>If you already have the randomised skill, you may select a skill from that skillset instead."
-    sides: 6
+    #sides: 6
     ratingIncrease: 30
 
 advancements_random:
@@ -24,23 +24,23 @@ advancements_random:
   results:
     become_specialist:
       values: [2]
-      advancement: "Become a specialist"
+      advancement: "Become a specialist and gain a skill of your choice from their primary skillset."
       ratingIncrease: null
     random_secondary_skill:
       values: [3-5]
-      advancement: "Random Secondary skill"
+      advancement: "1. Pick a Primary skillset. </br>2. Randomise the skill. If you already have the randomised skill then you may select a skill from that skillset instead."
       ratingIncrease: 20
     random_primary_skill:
       values: [6-7]
-      advancement: "Random Primary skill"
+      advancement: "1. Pick a Primary skillset. </br>2. Randomise the skill. If you already have the randomised skill then you may select a skill from that skillset instead."
       ratingIncrease: 20
     choose_primary_skill:
       values: [8-10]
-      advancement: "Choose Primary skill"
+      advancement: "1. Pick a Primary skillset. </br>2. Select a skill."
       ratingIncrease: 20
     choose_secondary_skill:
       values: [11-12]
-      advancement: "Choose Secondary skill"
+      advancement: "1. Pick a Secondary skillset. </br>2. Select a skill."
       ratingIncrease: 30
 
 skills:

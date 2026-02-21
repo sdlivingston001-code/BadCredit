@@ -82,6 +82,11 @@ const XPTablesUI = {
     title.className = "mb-15";
     container.appendChild(title);
 
+    const fighterTypes = document.createElement("p");
+    fighterTypes.innerHTML = "<em>Leaders, Champions, Brutes, Prospects, Juves, Specialists.</em>";
+    fighterTypes.className = "mb-15";
+    container.appendChild(fighterTypes);
+
     const table = document.createElement("table");
     table.className = "advancement-table";
     

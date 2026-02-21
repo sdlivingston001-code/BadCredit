@@ -442,7 +442,7 @@ const LastingInjuriesUI = {
     if (result.outcome.randomeffect === 'stabilisedinjury') {
       const randomEffectDiv = document.createElement("div");
       randomEffectDiv.classList.add('mt-10');
-      randomEffectDiv.innerHTML = "The fighter is stabilised and removed from recovery.";
+      randomEffectDiv.innerHTML = "The fighter is stabilised. Roll a lasting injury.";
       resultDiv.appendChild(randomEffectDiv);
 
       // Display the stabilised injury if present
@@ -484,9 +484,9 @@ const LastingInjuriesUI = {
         }
 
         // Always show Into Recovery warning for stabilised injuries
-        resultDiv.appendChild(
-          this.createWarningBox("recovery", "This fighter goes into recovery. They cannot make Post Battle actions AND they miss the next battle.")
-        );
+        //resultDiv.appendChild(
+        //  this.createWarningBox("recovery", "This fighter goes into recovery. They cannot make Post Battle actions AND they miss the next battle.")
+        //);
       }
     }
 

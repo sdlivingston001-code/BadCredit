@@ -1,5 +1,5 @@
 #D66 roll for lasting injuries
-#Into Recovery and Convalescence always set to zero.
+#Into Recovery and Convalescence per Corerulebook.
 
 standard_lasting_injuries:
   sides: d66
@@ -33,17 +33,17 @@ standard_lasting_injuries:
       intoRecovery: 0
       colour: green
     out_cold:
-      values: [15-26, 31-36] #Extended to capture convalescence results as well.
+      values: [15-26]
       name: Out Cold
       convalescence: 0
       intoRecovery: 0
       colour: green
-#    convalescence:
-#      values: [31-36]
-#      name: Convalescence
-#      convalescence: 0
-#      intoRecovery: 0
-#      colour: yellow
+    convalescence:
+      values: [31-36]
+      name: Convalescence
+      convalescence: 1
+      intoRecovery: 0
+      colour: yellow
     old_battle_wound:
       values: [41]
       name: Old Battle Wound
@@ -62,7 +62,7 @@ standard_lasting_injuries:
       values: [43]
       name: Humiliated
       fixedeffect: "Reduce Leadership and Cool by 1."
-      convalescence: 0
+      convalescence: 1
       intoRecovery: 0
       colour: yellow
     eye_injury:
@@ -70,42 +70,42 @@ standard_lasting_injuries:
       name: Eye Injury
       fixedeffect: "Reduce Ballistic Skill by 1."
       convalescence: 0
-      intorecovery: 0
+      intoRecovery: 1
       colour: red
     hand_injury:
       values: [45]
       name: Hand Injury
       fixedeffect: "Reduce Weapon Skill by 1."
       convalescence: 0
-      intorecovery: 0
+      intoRecovery: 1
       colour: red
     hobbled:
       values: [46]
       name: Hobbled
       fixedeffect: "Reduce Movement by 1."
       convalescence: 0
-      intorecovery: 0
+      intoRecovery: 1
       colour: red
     spinal_injury:
       values: [51]
       name: Spinal Injury
       fixedeffect: "Reduce Strength by 1."
       convalescence: 0
-      intorecovery: 0
+      intoRecovery: 1
       colour: red
     enfeebled:
       values: [52]
       name: Enfeebled
       fixedeffect: "Reduce Toughness by 1."
       convalescence: 0
-      intorecovery: 0
+      intoRecovery: 1
       colour: red
     head_injury:
       values: [53]
       name: Head Injury
       fixedeffect: "Reduce Intelligence and Willpower by 1."
       convalescence: 0
-      intorecovery: 0
+      intoRecovery: 1
       colour: red
     multiple_injuries:
       values: [54]
