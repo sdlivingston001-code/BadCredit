@@ -1,5 +1,9 @@
 // xpTablesUI.js
 
+document.querySelectorAll('button').forEach(button => {
+  button.classList.add('btn');
+});
+
 const XPTablesUI = {
   xpData: null,
 

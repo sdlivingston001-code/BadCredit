@@ -1,5 +1,9 @@
 // lootBoxUI.js
 
+document.querySelectorAll('button').forEach(button => {
+  button.classList.add('btn');
+});
+
 const LootBoxUI = {
   lootData: null,
 

@@ -1,5 +1,9 @@
 // lastingInjuriesUI.js
 
+document.querySelectorAll('button').forEach(button => {
+  button.classList.add('btn');
+});
+
 const LastingInjuriesUI = {
   injuriesData: null,
 

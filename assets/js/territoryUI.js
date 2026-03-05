@@ -1,5 +1,9 @@
 // territoryUI.js
 
+document.querySelectorAll('button').forEach(button => {
+  button.classList.add('btn');
+});
+
 const TerritoryUI = {
   territories: [],
   territoryMap: {},
@@ -479,9 +483,18 @@ const TerritoryUI = {
       }
 
       // Get the dominionGangId for the selected gang
-      let selectedGang = this.gangs && this.gangs[selectedGangKey] && this.gangs[selectedGangKey].dominionGangId 
-        ? this.gangs[selectedGangKey].dominionGangId 
-        : selectedGangKey;
+      let selectedGang;
+      if (selectedGangKey.startsWith('player:')) {
+        const playerGangName = selectedGangKey.substring(7);
+        const localGangId = this.playerGangMapping && this.playerGangMapping[playerGangName];
+        selectedGang = localGangId
+          ? (this.gangs[localGangId] && this.gangs[localGangId].dominionGangId || localGangId)
+          : selectedGangKey;
+      } else {
+        selectedGang = this.gangs && this.gangs[selectedGangKey] && this.gangs[selectedGangKey].dominionGangId
+          ? this.gangs[selectedGangKey].dominionGangId
+          : selectedGangKey;
+      }
 
       // If legacy gang, check for legacy gang selection
       if (selectedGang === 'legacy') {

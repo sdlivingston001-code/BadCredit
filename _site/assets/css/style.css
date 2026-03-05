@@ -391,8 +391,8 @@ ol li, ul li {
 
 .btn {
   padding: 12px 24px;
-  font-size: 16px;
-  border: none;
+  font-size: 18px;
+  border: 2px solid black; /* added this line */
   border-radius: 4px;
   cursor: pointer;
   font-weight: bold;
@@ -571,3 +571,4 @@ ol li, ul li {
 .monospace {
   font-family: monospace;
 }
+

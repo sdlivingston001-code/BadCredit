@@ -1,5 +1,9 @@
 // campaignViewerUI.js - Display Munda Manager campaign data
 
+document.querySelectorAll('button').forEach(button => {
+  button.classList.add('btn');
+});
+
 const CampaignViewerUI = {
   containerId: null,
   refreshButton: null,
@@ -7,6 +11,7 @@ const CampaignViewerUI = {
   timerInterval: null,
   lastRefreshTime: null,
   localTerritories: null,
+  localGangs: null,
   campaignIdInput: null,
   setCampaignIdButton: null,
 
@@ -36,8 +41,9 @@ const CampaignViewerUI = {
       });
     }
 
-    // Load local territories data for validation
+    // Load local territories and gangs data for validation
     await this.loadLocalTerritories();
+    await this.loadLocalGangs();
 
     // Initialize timer display
     this.initTimer();
@@ -56,6 +62,28 @@ const CampaignViewerUI = {
     if (CampaignViewerEngine.setCampaignId(newId)) {
       alert('Campaign ID updated! Refreshing data...');
       this.refresh();
+    }
+  },
+
+  async loadLocalGangs() {
+    try {
+      const baseUrl = window.location.pathname.includes('/BadCredit/') ? '/BadCredit' : '';
+      const response = await fetch(`${baseUrl}/data/gangs.json?t=${Date.now()}`, { cache: 'no-store' });
+      if (response.ok) {
+        this.localGangs = await response.json();
+        // Convert to array if needed
+        if (!Array.isArray(this.localGangs)) {
+          this.localGangs = Object.entries(this.localGangs).map(([id, data]) => ({
+            id,
+            ...data
+          }));
+        }
+        console.log('CampaignViewerUI: Loaded local gangs:', this.localGangs.length);
+      } else {
+        console.warn('CampaignViewerUI: Failed to load gangs.json');
+      }
+    } catch (error) {
+      console.error('CampaignViewerUI: Error loading local gangs:', error);
     }
   },
 
@@ -239,6 +267,15 @@ const CampaignViewerUI = {
       container.appendChild(this.createTerritoryValidationSection());
     } else {
       console.log('CampaignViewerUI: Skipping territory validation - no local territories loaded');
+    }
+
+    // Gang Validation (if local data loaded)
+    console.log('CampaignViewerUI: localGangs available?', !!this.localGangs);
+    if (this.localGangs) {
+      console.log('CampaignViewerUI: Adding gang validation section');
+      container.appendChild(this.createGangValidationSection());
+    } else {
+      console.log('CampaignViewerUI: Skipping gang validation - no local gangs loaded');
     }
   },
 
@@ -432,6 +469,64 @@ const CampaignViewerUI = {
       validBox.style.overflowY = 'auto';
       const mappingList = validation.valid
         .map(t => `<span style="font-family: monospace;">${t.apiName} → ${t.territoryId}</span>`)
+        .join('<br>');
+      validBox.innerHTML = mappingList;
+      section.appendChild(validBox);
+    }
+
+    return section;
+  },
+
+  createGangValidationSection() {
+    const section = document.createElement('div');
+    section.className = 'mb-20';
+
+    const title = document.createElement('h3');
+    title.textContent = 'Gang Type Mapping Validation';
+    title.className = 'mb-10';
+    section.appendChild(title);
+
+    const validation = CampaignViewerEngine.validateGangMappings(this.localGangs);
+
+    // Summary box
+    const summaryBox = document.createElement('div');
+    summaryBox.className = validation.allValid ? 'result-box green mb-15' : 'result-box yellow mb-15';
+    summaryBox.innerHTML = `
+      <strong>Validation Summary:</strong><br>
+      ✅ Valid Mappings: ${validation.valid.length}<br>
+      ${validation.invalid.length > 0 ? `⚠️ Invalid Mappings: ${validation.invalid.length}<br>` : ''}
+      <strong>Total Gangs Checked:</strong> ${validation.totalChecked}
+    `;
+    section.appendChild(summaryBox);
+
+    // Show invalid mappings if any
+    if (validation.invalid.length > 0) {
+      const invalidTitle = document.createElement('h4');
+      invalidTitle.textContent = 'Unmapped Gang Types';
+      invalidTitle.className = 'mb-10';
+      invalidTitle.style.color = '#dc3545';
+      section.appendChild(invalidTitle);
+
+      const invalidBox = document.createElement('div');
+      invalidBox.className = 'info-box yellow mb-15';
+      const invalidList = validation.invalid.map(g => g.apiType).join(', ');
+      invalidBox.innerHTML = `<strong>These API gang types have no matching local ID:</strong><br>${invalidList}`;
+      section.appendChild(invalidBox);
+    }
+
+    // Show valid mappings
+    if (validation.valid.length > 0) {
+      const validTitle = document.createElement('h4');
+      validTitle.textContent = 'Valid Gang Type Mappings';
+      validTitle.className = 'mb-10';
+      section.appendChild(validTitle);
+
+      const validBox = document.createElement('div');
+      validBox.className = 'info-box mb-15';
+      validBox.style.maxHeight = '200px';
+      validBox.style.overflowY = 'auto';
+      const mappingList = validation.valid
+        .map(g => `<span style="font-family: monospace;">${g.apiType} → ${g.gangId}</span>`)
         .join('<br>');
       validBox.innerHTML = mappingList;
       section.appendChild(validBox);

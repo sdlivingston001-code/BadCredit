@@ -329,6 +329,45 @@ const CampaignViewerEngine = {
    * @param {Array} localTerritories - Array of local territory objects with id and name
    * @returns {Object} Validation results
    */
+  /**
+   * Validate gang type mappings against local gangs data
+   * @param {Array} localGangs - Array of local gang objects with id and name
+   * @returns {Object} Validation results
+   */
+  validateGangMappings(localGangs) {
+    if (!this.campaignData) {
+      return { valid: [], invalid: [], allValid: true, totalChecked: 0 };
+    }
+
+    // Build name to ID map from local data
+    const nameToIdMap = {};
+    localGangs.forEach(g => {
+      nameToIdMap[g.name] = g.id;
+    });
+
+    const gangs = this.getAllGangs();
+    const valid = [];
+    const invalid = [];
+
+    gangs.forEach(gang => {
+      const apiType = gang.type;
+      const gangId = nameToIdMap[apiType];
+
+      if (gangId) {
+        valid.push({ apiType, gangId });
+      } else {
+        invalid.push({ apiType });
+      }
+    });
+
+    return {
+      valid,
+      invalid,
+      allValid: invalid.length === 0,
+      totalChecked: gangs.length
+    };
+  },
+
   validateTerritoryMappings(localTerritories) {
     if (!this.campaignData) {
       return { valid: [], invalid: [], allValid: true, totalChecked: 0 };
