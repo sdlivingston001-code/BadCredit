@@ -145,6 +145,11 @@ const XPTablesUI = {
     table.appendChild(tbody);
     
     container.appendChild(table);
+
+    const note = document.createElement("p");
+    note.className = "table-footnote";
+    note.textContent = "* If you already have the random skill; select one from that skillset instead.";
+    container.appendChild(note);
   },
 
   displaySkillTables() {
@@ -288,6 +293,11 @@ const XPTablesUI = {
     // Display skill result
     const resultBox = this.createSkillResultBox(skillResult.result, skillResult.roll);
     mainContainer.appendChild(resultBox);
+
+    const note = document.createElement("p");
+    note.className = "table-footnote";
+    note.textContent = "* If you already have the random skill; select one from that skillset instead.";
+    mainContainer.appendChild(note);
 
     resultsContainer.appendChild(mainContainer);
 
