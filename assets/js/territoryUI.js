@@ -1,7 +1,9 @@
 // territoryUI.js
 
-document.querySelectorAll('button').forEach(button => {
-  button.classList.add('btn');
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('button').forEach(button => {
+    button.classList.add('btn');
+  });
 });
 
 const TerritoryUI = {
@@ -13,7 +15,7 @@ const TerritoryUI = {
   playerGangTerritoryCounts: null, // Track how many of each territory a gang owns
   territoryNameToIdMap: {},
 
- async init(jsonPath) {
+ async init(jsonPath, gangsPath) {
   try {
     const response = await fetch(`${jsonPath}?t=${Date.now()}`, { cache: 'no-store' });
     if (!response.ok) {
@@ -45,8 +47,7 @@ const TerritoryUI = {
     }
 
     // Load gangs data
-    const baseUrl = window.location.pathname.includes('/BadCredit/') ? '/BadCredit' : '';
-    const gangsResponse = await fetch(`${baseUrl}/data/gangs.json?t=${Date.now()}`, { cache: 'no-store' });
+    const gangsResponse = await fetch(`${gangsPath}?t=${Date.now()}`, { cache: 'no-store' });
     if (gangsResponse.ok) {
       this.gangs = await gangsResponse.json();
       console.log('Loaded gangs:', this.gangs);

@@ -20,6 +20,6 @@ title: Territories
 <script src="{{ '/assets/js/territoryUI.js' | relative_url }}"></script>
 <script>
   document.addEventListener("DOMContentLoaded", () => {
-    TerritoryUI.init("{{ '/data/territories.json' | relative_url }}");
+    TerritoryUI.init("{{ '/data/territories.json' | relative_url }}", "{{ '/data/gangs.json' | relative_url }}");
   });
 </script>

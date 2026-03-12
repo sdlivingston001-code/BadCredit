@@ -1,7 +1,9 @@
 // lootBoxUI.js
 
-document.querySelectorAll('button').forEach(button => {
-  button.classList.add('btn');
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('button').forEach(button => {
+    button.classList.add('btn');
+  });
 });
 
 const LootBoxUI = {

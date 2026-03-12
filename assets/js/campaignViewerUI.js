@@ -1,7 +1,9 @@
 // campaignViewerUI.js - Display Munda Manager campaign data
 
-document.querySelectorAll('button').forEach(button => {
-  button.classList.add('btn');
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('button').forEach(button => {
+    button.classList.add('btn');
+  });
 });
 
 const CampaignViewerUI = {

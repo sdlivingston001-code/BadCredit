@@ -5,7 +5,7 @@ const CampaignViewerEngine = {
   defaultCampaignId: 'e2785818-5736-4c50-bfb2-d243953541f8',
   campaignIdKey: 'mundamanager_campaign_id',
   apiUrlBase: "https://www.mundamanager.com/api/campaigns/",
-  useCorsProxy: true, // Set to false if CORS is fixed on server
+  useCorsProxy: false, // Set to false if CORS is fixed on server
   cacheKey: 'mundamanager_campaign_cache',
   cacheTimeKey: 'mundamanager_campaign_cache_time',
   cacheDuration: 15 * 60 * 1000, // 15 minutes in milliseconds
