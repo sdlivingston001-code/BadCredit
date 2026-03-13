@@ -6,6 +6,7 @@ const CampaignViewerEngine = {
   campaignIdKey: 'mundamanager_campaign_id',
   apiUrlBase: "https://www.mundamanager.com/api/campaigns/",
   useCorsProxy: true, // Set to false if CORS is fixed on server
+  corsProxy: 'https://api.allorigins.win/get?url=', // allorigins wraps response in { contents: "..." }
   cacheKey: 'mundamanager_campaign_cache',
   cacheTimeKey: 'mundamanager_campaign_cache_time',
   cacheDuration: 15 * 60 * 1000, // 15 minutes in milliseconds
@@ -130,7 +131,7 @@ const CampaignViewerEngine = {
       // Use CORS proxy if needed
       const apiUrl = this.getApiUrl();
       const url = this.useCorsProxy 
-        ? `https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`
+        ? `${this.corsProxy}${encodeURIComponent(apiUrl)}`
         : apiUrl;
       
       const response = await fetch(url);
@@ -139,6 +140,7 @@ const CampaignViewerEngine = {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
+      // allorigins.win wraps the response: { contents: "...", status: { ... } }
       let data;
       if (this.useCorsProxy) {
         const wrapper = await response.json();
