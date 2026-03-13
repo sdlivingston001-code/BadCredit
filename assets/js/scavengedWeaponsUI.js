@@ -15,6 +15,8 @@ const ScavengedWeaponsUI = {
       const data = await response.json();
       ScavengedWeaponsEngine.loadData(data);
       this.bindEvents();
+      this.initTimer();
+      this.renderWeaponTable(data);
     } catch (err) {
       console.error(err);
       const container = document.getElementById('scavenged-weapons-results');
@@ -27,7 +29,79 @@ const ScavengedWeaponsUI = {
     if (button) button.addEventListener('click', () => this.doRoll());
   },
 
+  initTimer() {
+    const button = document.getElementById('roll-scavenged-weapon');
+    if (button && typeof TimerUtil !== 'undefined') {
+      const timerContainer = document.createElement('div');
+      timerContainer.id = 'scavenged-weapons-timer';
+      timerContainer.className = 'mt-15';
+      button.parentNode.insertBefore(timerContainer, button.nextSibling);
+      TimerUtil.init('scavenged-weapons-timer', 'scavengedWeaponsLastRun');
+      TimerUtil.setupPageCleanup();
+    }
+  },
+
+  getProfileStats(profile) {
+    if (profile.RngS !== undefined || profile.RngL !== undefined) return profile;
+    for (const [key, val] of Object.entries(profile)) {
+      if (key !== 'name' && typeof val === 'object' && val !== null) {
+        return { name: profile.name, ...val };
+      }
+    }
+    return profile;
+  },
+
+  renderWeaponTable(data) {
+    const container = document.getElementById('weapon-profiles-table');
+    if (!container) return;
+
+    const table = data.scavenged_weapon_table;
+    if (!table) return;
+
+    const cols = ['Name', 'Rng S', 'Rng L', 'Acc S', 'Acc L', 'Str', 'AP', 'Dam', 'AM', 'Traits'];
+    const statKeys = ['name', 'RngS', 'RngL', 'AccS', 'AccL', 'Str', 'AP', 'Dam', 'AM', 'Traits'];
+
+    let rows = '';
+    for (const [weaponId, weapon] of Object.entries(table)) {
+      const profiles = Object.values(weapon);
+      const isMulti = profiles.length > 1;
+      profiles.forEach((profile, i) => {
+        let cls = '';
+        if (isMulti) {
+          if (i === 0) cls = 'group-first';
+          else if (i === profiles.length - 1) cls = 'group-last';
+          else cls = 'group-mid';
+        }
+        if (profile.header) {
+          rows += `<tr${cls ? ` class="${cls}"` : ''}><td colspan="${statKeys.length}" class="weapon-group-header">${profile.name}</td></tr>`;
+          return;
+        }
+        const stats = this.getProfileStats(profile);
+        rows += `<tr${cls ? ` class="${cls}"` : ''}>`;
+        for (const key of statKeys) {
+          const val = stats[key] !== undefined ? stats[key] : '-';
+          rows += `<td>${val}</td>`;
+        }
+        rows += '</tr>';
+      });
+    }
+
+    container.innerHTML = `
+      <table class="weapon-profiles-table">
+        <thead>
+          <tr>${cols.map(c => `<th>${c}</th>`).join('')}</tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    `;
+  },
+
   doRoll() {
+    if (typeof TimerUtil !== 'undefined') {
+      TimerUtil.markRun('scavengedWeaponsLastRun');
+      TimerUtil.showTimer('scavenged-weapons-timer');
+    }
+
     const container = document.getElementById('scavenged-weapons-results');
     if (!container) return;
 

@@ -14,7 +14,6 @@ scavenged_weapon_roll:
     shotgun:
       values: [5]
       name: Shotgun
-      fixedeffect: "Comes with Solid and Scatter ammo."
     auto_pistol:
       values: [6]
       name: Auto Pistol
@@ -36,3 +35,151 @@ scavenged_weapon_roll:
     heavy_rock_cutter:
       values: [12]
       name: Heavy Rock Cutter
+
+scavenged_weapon_table:
+    heavy_stubber:
+      profile_0:
+        name: Heavy Stubber
+        RngS: 20
+        RngL: 40
+        AccS: "-"
+        AccL: -1
+        Str: 4
+        AP: -1
+        Dam: 1
+        AM: "*"
+        Traits: "Rapid Fire (2), Unwieldy"
+    flamer:
+      profile_0:
+        name: Flamer
+        RngS: "-"
+        RngL: "T"
+        AccS: "-"
+        AccL: "-"
+        Str: 4
+        AP: -1
+        Dam: 1
+        AM: "*"
+        Traits: "Blaze, Template"
+    autogun:
+      profile_0:
+        name: Autogun
+        RngS: 8
+        RngL: 24
+        AccS: +1
+        AccL: "-"
+        Str: 3
+        AP: "-"
+        Dam: 1
+        AM: "*"
+        Traits: "Rapid Fire (1)"
+    shotgun:
+      profile_0:
+        name: Shotgun
+        header: true
+      profile_1:
+        name: "- Solid Ammo"
+        RngS: 8
+        RngL: 24
+        AccS: +1
+        AccL: "-"
+        Str: 4
+        AP: "-"
+        Dam: 2
+        AM: "*"
+        Traits: "Knockback"
+      profile_2:
+        name: "- Scatter Ammo"
+        RngS: 4
+        RngL: 8
+        AccS: +2
+        AccL: "-"
+        Str: 2
+        AP: "-"
+        Dam: 1
+        AM: "*"
+        Traits: "Scattershot"  
+    auto_pistol:
+      profile_0:
+        name: Auto Pistol
+        RngS: 4
+        RngL: 12
+        AccS: +1
+        AccL: "-"
+        Str: 3
+        AP: "-"
+        Dam: 1
+        AM: "*"
+        Traits: "Rapid Fire (1), Sidearm"
+    stub_gun:
+      profile_0:
+        name: Stub Gun
+        RngS: 6
+        RngL: 12
+        AccS: +2
+        AccL: "-"
+        Str: 3
+        AP: "-"
+        Dam: 1
+        AM: "*"
+        Traits: "Plentiful, Sidearm"
+    axe:
+      profile_0:
+        name: Axe
+        RngS: "-"
+        RngL: "E"
+        AccS: "-"
+        AccL: "-"
+        Str: "S+1"
+        AP: "-"
+        Dam: 1
+        AM: "-"
+        Traits: "Disarm, Melee"
+    stiletto_knife:
+      profile_0:
+        name: Stiletto Knife
+        RngS: "-"
+        RngL: "E"
+        AccS: "-"
+        AccL: "-"
+        Str: "-"
+        AP: "-"
+        Dam: "-"
+        AM: "-"
+        Traits: "Melee, Toxin"
+    sword:
+      profile_0:
+        name: Sword
+        RngS: "-"
+        RngL: "E"
+        AccS: "-"
+        AccL: "+1"
+        Str: "S"
+        AP: -1
+        Dam: 1
+        AM: "-"
+        Traits: "Melee, Parry"
+    power_axe:
+      profile_0:
+        name: Power Axe
+        RngS: "-"
+        RngL: "E"
+        AccS: "-"
+        AccL: "-"
+        Str: "S+2"
+        AP: -2
+        Dam: 1
+        AM: "-"
+        Traits: "Disarm, Melee, Power"
+    heavy_rock_cutter:
+      profile_0:
+        name: Heavy Rock Cutter*
+        RngS: "-"
+        RngL: "E"
+        AccS: "-"
+        AccL: "-"
+        Str: "S+4"
+        AP: -4
+        Dam: 3
+        AM: "-"
+        Traits: "Melee, Unwieldy"

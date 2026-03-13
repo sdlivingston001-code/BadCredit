@@ -109,8 +109,13 @@ const TerritoryUI = {
     // If no cache exists, try to fetch from default campaign
     if (!cached) {
       console.log('TerritoryUI: No cached campaign data available. Fetching from default campaign...');
+      const notice = document.getElementById('territory-container');
+      if (notice) notice.innerHTML = '<div class="info-box warning-box">Fetching campaign data, please wait&hellip;</div>';
+
       const result = await CampaignViewerEngine.fetchCampaignData(false);
-      
+
+      if (notice) notice.innerHTML = '';
+
       if (result.success) {
         cached = result.data;
         console.log('TerritoryUI: Successfully fetched campaign data');

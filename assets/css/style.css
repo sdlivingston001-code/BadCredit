@@ -90,6 +90,43 @@ table td:first-child {
   text-align: center;
 }
 
+/* Weapon profiles table: name column should not be narrow */
+table.weapon-profiles-table th:first-child,
+table.weapon-profiles-table td:first-child {
+  width: auto;
+  text-align: left;
+}
+
+/* Centre all stat columns (2nd through 9th), leave Name (1st) and Traits (last) left-aligned */
+table.weapon-profiles-table th:not(:first-child):not(:last-child),
+table.weapon-profiles-table td:not(:first-child):not(:last-child) {
+  text-align: center;
+}
+
+/* Bold boundary around multi-profile weapon groups */
+table.weapon-profiles-table tr.group-first td {
+  border-top: 2px solid #333;
+}
+table.weapon-profiles-table tr.group-last td {
+  border-bottom: 2px solid #333;
+}
+table.weapon-profiles-table tr.group-first td:first-child,
+table.weapon-profiles-table tr.group-last td:first-child,
+table.weapon-profiles-table tr.group-mid td:first-child {
+  border-left: 2px solid #333;
+}
+table.weapon-profiles-table tr.group-first td:last-child,
+table.weapon-profiles-table tr.group-last td:last-child,
+table.weapon-profiles-table tr.group-mid td:last-child {
+  border-right: 2px solid #333;
+}
+
+/* Weapon group header row (e.g. Shotgun spanning row) */
+table.weapon-profiles-table td.weapon-group-header {
+  background-color: #fff3cd;
+  text-align: left;
+}
+
 /* Zebra striping for table rows */
 table tr:nth-child(even) {
   background-color: #d9d9d9;

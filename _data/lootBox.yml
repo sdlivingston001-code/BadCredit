@@ -6,7 +6,7 @@ loot_box_roll:
     booby_trap:
       values: [1]
       name: Booby trap!
-      fixedeffect: "Kaboom! Str 3 Dam 1 Ap -. Blast(5), Knockback, center on loot box."
+      fixedeffect: "Str 3 Dam 1 Ap -. Blast(5) centred on loot box. Knockback."
       colour: red
     credits_cache:
       values: [2-3]
