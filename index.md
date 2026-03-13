@@ -15,6 +15,7 @@ Use the interactive tools to run simulations and explore outcomes.
 [Generate Territory Boons]({{ site.baseurl }}/tools/territoryPage.html)<br><br>
 [Lasting Injuries and Medical Interventions]({{ site.baseurl }}/tools/lastingInjuriesPage.html)<br><br>
 [Open a Loot Casket]({{ site.baseurl }}/tools/lootBox.html)<br><br>
+[Scavenge Weapons]({{ site.baseurl }}/tools/scavengedWeapons.html)<br><br>
 [Spend XP]({{ site.baseurl }}/tools/xpTables.html)<br><br>
 
 

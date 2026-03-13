@@ -62,6 +62,11 @@ const Dice = {
     return rolls.filter(roll => roll === value).length;
   },
 
+  // Roll count dice with sides sides and sum the results e.g. Dice.sum(Dice.rollMany(2, null, 6)) for 2D6
+  sum(rolls) {
+    return rolls.reduce((total, r) => total + r, 0);
+  },
+
   // Check if an array of dice rolls contains any duplicate values
   hasDuplicates(rolls) {
     const seen = new Set();

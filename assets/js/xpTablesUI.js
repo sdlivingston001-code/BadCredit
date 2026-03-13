@@ -257,7 +257,7 @@ const XPTablesUI = {
     mainContainer.appendChild(title);
 
     // Display main result
-    const resultBox = this.createAdvancementResultBox(advancementResult.result, advancementResult.roll);
+    const resultBox = this.createAdvancementResultBox(advancementResult.result, advancementResult.rolls, advancementResult.total);
     mainContainer.appendChild(resultBox);
 
     resultsContainer.appendChild(mainContainer);
@@ -293,7 +293,7 @@ const XPTablesUI = {
     mainContainer.appendChild(title);
 
     // Display skill result
-    const resultBox = this.createSkillResultBox(skillResult.result, skillResult.roll);
+    const resultBox = this.createSkillResultBox(skillResult.result, skillResult.rolls, skillResult.total);
     mainContainer.appendChild(resultBox);
 
     const note = document.createElement("p");
@@ -307,14 +307,15 @@ const XPTablesUI = {
     resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   },
 
-  createAdvancementResultBox(result, roll) {
+  createAdvancementResultBox(result, rolls, total) {
     const resultDiv = document.createElement("div");
     resultDiv.className = "result-box result-box-blue";
 
     // Display roll info
     const rollText = document.createElement("div");
     rollText.className = "result-heading result-roll";
-    rollText.innerHTML = `<strong>2D6 Roll:</strong> ${roll}`;
+    const diceHtml = rolls ? `(${rolls.join(' + ')}) = ` : '';
+    rollText.innerHTML = `<strong>2D6 Roll:</strong> ${diceHtml}${total}`;
     resultDiv.appendChild(rollText);
 
     // Display advancement text
@@ -334,14 +335,15 @@ const XPTablesUI = {
     return resultDiv;
   },
 
-  createSkillResultBox(result, roll) {
+  createSkillResultBox(result, rolls, total) {
     const resultDiv = document.createElement("div");
     resultDiv.className = "result-box result-box-green";
 
     // Display roll info
     const rollText = document.createElement("div");
     rollText.className = "result-heading result-roll";
-    rollText.innerHTML = `<strong>D6 Roll:</strong> ${roll}`;
+    const diceHtml = rolls ? `(${rolls.join(' + ')}) = ` : '';
+    rollText.innerHTML = `<strong>D6 Roll:</strong> ${diceHtml}${total}`;
     resultDiv.appendChild(rollText);
 
     // Display skill name

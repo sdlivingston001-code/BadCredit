@@ -1,0 +1,21 @@
+---
+layout: default
+title: Scavenged Weapons
+---
+
+<h1>Scavenged Weapons</h1>
+
+<p>Roll to see what weapon a fighter finds while scavenging.</p>
+
+<button id="roll-scavenged-weapon">Roll Scavenged Weapon</button>
+
+<div id="scavenged-weapons-results"></div>
+
+<script src="{{ '/assets/js/dice.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/scavengedWeaponsEngine.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/scavengedWeaponsUI.js' | relative_url }}"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    ScavengedWeaponsUI.init("{{ '/data/scavengedWeapons.json' | relative_url }}");
+  });
+</script>

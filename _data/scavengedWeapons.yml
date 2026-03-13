@@ -1,0 +1,38 @@
+scavenged_weapon_roll:
+  count: 2
+  sides: 6
+  results:
+    heavy_stubber:
+      values: [2]
+      name: Heavy Stubber
+    flamer:
+      values: [3]
+      name: Flamer
+    autogun:
+      values: [4]
+      name: Autogun
+    shotgun:
+      values: [5]
+      name: Shotgun
+      fixedeffect: "Comes with Solid and Scatter ammo."
+    auto_pistol:
+      values: [6]
+      name: Auto Pistol
+    stub_gun:
+      values: [7]
+      name: Stub Gun
+    axe:
+      values: [8]
+      name: Axe
+    stiletto_knife:
+      values: [9]
+      name: Stiletto Knife
+    sword:
+      values: [10]
+      name: Sword
+    power_axe:
+      values: [11]
+      name: Power Axe
+    heavy_rock_cutter:
+      values: [12]
+      name: Heavy Rock Cutter

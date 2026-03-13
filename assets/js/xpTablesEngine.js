@@ -20,21 +20,17 @@ const XPTablesEngine = {
     const table = this.getTable(tableName);
     if (!table) return null;
 
-    // Check if table has a count property (for multiple dice)
     const count = table.count || 1;
     const sides = table.sides;
 
     if (sides === "d66") {
-      return Dice.d66(); // Special case: d66 is not a 66-sided die
+      const total = Dice.d66();
+      return { rolls: null, total };
     } else {
       const n = typeof sides === 'number' ? sides : parseInt(sides);
-      if (count === 1) {
-        return Dice.d(n);
-      } else {
-        // Roll multiple dice and sum them
-        const rolls = Dice.rollMany(count, null, n);
-        return rolls.reduce((sum, roll) => sum + roll, 0);
-      }
+      const rolls = Dice.rollMany(count, null, n);
+      const total = Dice.sum(rolls);
+      return { rolls, total };
     }
   },
 
@@ -75,48 +71,33 @@ const XPTablesEngine = {
   },
 
   rollAdvancement() {
-    const roll = this.rollDiceForTable('advancements_random');
-    if (roll === null) {
-      return {
-        error: 'Failed to roll. Data not loaded.'
-      };
+    const diceResult = this.rollDiceForTable('advancements_random');
+    if (diceResult === null) {
+      return { error: 'Failed to roll. Data not loaded.' };
     }
 
-    const result = this.findResult('advancements_random', roll);
+    const { rolls, total } = diceResult;
+    const result = this.findResult('advancements_random', total);
     if (!result) {
-      return {
-        roll,
-        error: 'No result found for this roll.'
-      };
+      return { rolls, total, error: 'No result found for this roll.' };
     }
 
-    return {
-      roll,
-      result
-    };
+    return { rolls, total, result };
   },
 
   rollSkillTable(skillTableName) {
-    const roll = this.rollDiceForTable(skillTableName);
-    if (roll === null) {
-      return {
-        error: `Failed to roll ${skillTableName}. Data not loaded.`
-      };
+    const diceResult = this.rollDiceForTable(skillTableName);
+    if (diceResult === null) {
+      return { error: `Failed to roll ${skillTableName}. Data not loaded.` };
     }
 
-    const result = this.findResult(skillTableName, roll);
+    const { rolls, total } = diceResult;
+    const result = this.findResult(skillTableName, total);
     if (!result) {
-      return {
-        roll,
-        error: `No result found for roll ${roll} in table ${skillTableName}.`
-      };
+      return { rolls, total, error: `No result found for roll ${total} in table ${skillTableName}.` };
     }
 
-    return {
-      tableName: skillTableName,
-      roll,
-      result
-    };
+    return { tableName: skillTableName, rolls, total, result };
   },
 
   // Test with a specific roll value

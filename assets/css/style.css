@@ -390,7 +390,7 @@ ol li, ul li {
    ====================== */
 
 .btn {
-  padding: 24px 36px;
+  padding: 16px 48px;
   font-size: 18px;
   border: 2px solid black; /* added this line */
   border-radius: 4px;

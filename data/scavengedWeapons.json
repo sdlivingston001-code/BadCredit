@@ -1,0 +1,5 @@
+---
+layout: null
+permalink: /data/scavengedWeapons.json
+---
+{{ site.data.scavengedWeapons | jsonify }}
