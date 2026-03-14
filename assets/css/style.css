@@ -169,6 +169,7 @@ ol li, ul li {
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
   max-width: 400px;
+  width: 90%;
   text-align: center;
 }
 
@@ -419,7 +420,7 @@ ol li, ul li {
 
 .select-input-small {
   padding: 5px;
-  font-size: 14px;
+  font-size: 16px; /* 16px minimum prevents iOS auto-zoom */
 }
 
 /* ======================
@@ -468,6 +469,7 @@ ol li, ul li {
   display: flex;
   gap: 15px;
   justify-content: center;
+  flex-wrap: wrap;
 }
 
 .text-center {
@@ -614,5 +616,38 @@ ol li, ul li {
   font-style: italic;
   margin-top: 8px;
   opacity: 0.8;
+}
+
+/* ======================
+   RESPONSIVE / MOBILE
+   ====================== */
+
+@media (max-width: 768px) {
+  /* Reduce side padding so content fills the screen */
+  .main {
+    padding: 1rem;
+  }
+
+  /* Horizontally scroll wide tables instead of overflowing */
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Reduce excessive horizontal padding on buttons */
+  .btn {
+    padding: 14px 24px;
+  }
+
+  /* Prevent iOS auto-zoom on number inputs */
+  .territory-count-input {
+    font-size: 16px;
+  }
+
+  /* Allow bottom-bar links to wrap on very narrow phones */
+  .bottom-bar {
+    flex-wrap: wrap;
+  }
 }
 
