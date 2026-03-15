@@ -635,6 +635,19 @@ ol li, ul li {
     -webkit-overflow-scrolling: touch;
   }
 
+  /* Weapon profiles table: shrink to fit the screen instead of scrolling */
+  table.weapon-profiles-table {
+    display: table;
+    width: 100%;
+    font-size: 0.7rem;
+  }
+
+  table.weapon-profiles-table th,
+  table.weapon-profiles-table td {
+    padding: 4px 3px;
+    word-break: break-word; /* allows long trait names to wrap */
+  }
+
   /* Reduce excessive horizontal padding on buttons */
   .btn {
     padding: 14px 24px;
