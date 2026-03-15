@@ -699,7 +699,7 @@ const TerritoryUI = {
         const li = document.createElement("li");
         const name = result.territory?.name || result.id || "Unknown territory";
         const description = formatter ? formatter(data, result) : data.description;
-        li.innerHTML = `<strong>${name}:</strong> ${description}`;
+        li.innerHTML = `<b>${name}:</b> ${description}`;
         list.appendChild(li);
       }
     });
@@ -714,7 +714,7 @@ const TerritoryUI = {
     categoriesWithout.forEach(({ label, territories }) => {
       if (territories && territories.length > 0) {
         const li = document.createElement("li");
-        li.innerHTML = `<strong>${label}:</strong> ${territories.join(', ')}`;
+        li.innerHTML = `<b>${label}:</b> ${territories.join(', ')}`;
         items.push(li);
       }
     });
@@ -752,17 +752,17 @@ const TerritoryUI = {
       }
       if (result.territory?.income?.effect) {
         const name = result.territory?.name || result.id;
-        specialEffects.push(`<strong>${name}:</strong> ${result.territory.income.effect}`);
+        specialEffects.push(`<b>${name}:</b> ${result.territory.income.effect}`);
       }
     });
     
     const totalDiv = document.createElement("div");
-    totalDiv.innerHTML = `<p><strong>Total Credits: ${totalCredits}</strong></p>`;
+    totalDiv.innerHTML = `<p><b>Total Credits: ${totalCredits}</b></p>`;
     incomeSection.appendChild(totalDiv);
     
     if (specialEffects.length > 0) {
       const effectsDiv = document.createElement("div");
-      effectsDiv.innerHTML = "<p><em><strong>Special Effects to apply manually:</strong></em></p>";
+      effectsDiv.innerHTML = "<p><em><b>Special Effects to apply manually:</b></em></p>";
       const effectsList = document.createElement("ul");
       specialEffects.forEach(effect => {
         const li = document.createElement("li");

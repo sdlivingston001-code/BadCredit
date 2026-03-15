@@ -14,14 +14,14 @@ standard_lasting_injuries:
     impressive_scars:
       values: [12]
       name: Impressive Scars
-      fixedeffect: "Increase <strong>Cool</strong> by 1.<br><br>This bonus only applies once, treat all further results as Out Cold."
+      fixedeffect: "Increase <b>Cool</b> by 1.<br><br>This bonus only applies once, treat all further results as Out Cold."
       convalescence: 0
       intoRecovery: 0
       colour: green
     horrid_scars:
       values: [13]
       name: Horrid Scars
-      fixedeffect: "Gain <strong>Fearsome</strong> skill.<br><br>This bonus only applies once, treat all further results as Out Cold."
+      fixedeffect: "Gain <b>Fearsome</b> skill.<br><br>This bonus only applies once, treat all further results as Out Cold."
       convalescence: 0
       intoRecovery: 0
       colour: green

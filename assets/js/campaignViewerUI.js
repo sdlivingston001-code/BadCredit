@@ -242,7 +242,7 @@ const CampaignViewerUI = {
     if (fromCache) {
       const cacheNotice = document.createElement('div');
       cacheNotice.className = 'info-box mb-15';
-      cacheNotice.innerHTML = '💾 <strong>Showing cached data</strong> (to respect Munda Manager\'s rate limits)';
+      cacheNotice.innerHTML = '💾 <b>Showing cached data</b> (to respect Munda Manager\'s rate limits)';
       container.appendChild(cacheNotice);
     }
 
@@ -293,8 +293,8 @@ const CampaignViewerUI = {
     const infoBox = document.createElement('div');
     infoBox.className = 'result-box blue mb-15';
     infoBox.innerHTML = `
-      <strong>Type:</strong> ${campaignInfo.campaign_type_name || 'Unknown'}<br>
-      <strong>Status:</strong> ${campaignInfo.status || 'Unknown'}
+      <b>Type:</b> ${campaignInfo.campaign_type_name || 'Unknown'}<br>
+      <b>Status:</b> ${campaignInfo.status || 'Unknown'}
     `;
     section.appendChild(infoBox);
 
@@ -313,12 +313,12 @@ const CampaignViewerUI = {
     const statsBox = document.createElement('div');
     statsBox.className = 'result-box green';
     statsBox.innerHTML = `
-      <strong>Total Gangs:</strong> ${stats.total_gangs}<br>
-      <strong>Total Members:</strong> ${stats.total_members}<br>
-      <strong>Average Gang Rating:</strong> ${stats.average_rating}<br>
-      <strong>Total Wealth:</strong> ${stats.total_wealth} credits<br>
-      <strong>Owned Territories:</strong> ${stats.total_owned_territories}<br>
-      <strong>Available Territories:</strong> ${stats.total_available_territories}
+      <b>Total Gangs:</b> ${stats.total_gangs}<br>
+      <b>Total Members:</b> ${stats.total_members}<br>
+      <b>Average Gang Rating:</b> ${stats.average_rating}<br>
+      <b>Total Wealth:</b> ${stats.total_wealth} credits<br>
+      <b>Owned Territories:</b> ${stats.total_owned_territories}<br>
+      <b>Available Territories:</b> ${stats.total_available_territories}
     `;
     section.appendChild(statsBox);
 
@@ -347,15 +347,15 @@ const CampaignViewerUI = {
       gangBox.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: start;">
           <div>
-            <strong>${medal} ${gang.name}</strong><br>
+            <b>${medal} ${gang.name}</b><br>
             <span style="font-size: 0.9em; color: #666;">
               ${gang.type} • Owner: ${gang.owner}
             </span>
           </div>
           <div style="text-align: right;">
-            <strong>Rating:</strong> ${gang.rating}<br>
-            <strong>Wealth:</strong> ${gang.wealth}<br>
-            <strong>Territories:</strong> ${gang.territory_count || 0}
+            <b>Rating:</b> ${gang.rating}<br>
+            <b>Wealth:</b> ${gang.wealth}<br>
+            <b>Territories:</b> ${gang.territory_count || 0}
           </div>
         </div>
       `;
@@ -389,7 +389,7 @@ const CampaignViewerUI = {
         territoryBox.style.borderLeft = `5px solid ${territory.gang_colour || '#000000'}`;
         
         territoryBox.innerHTML = `
-          <strong>${territory.name}</strong>
+          <b>${territory.name}</b>
           ${territory.ruined ? ' <span style="color: #dc3545;">(Ruined)</span>' : ''}<br>
           <span style="font-size: 0.9em; color: #666;">
             Controlled by: ${territory.gang_name} (${territory.gang_type})
@@ -414,7 +414,7 @@ const CampaignViewerUI = {
         .map(t => t.ruined ? `${t.name} (Ruined)` : t.name)
         .join(', ');
       
-      availableBox.innerHTML = `<strong>Unclaimed:</strong> ${territoryNames || 'None'}`;
+      availableBox.innerHTML = `<b>Unclaimed:</b> ${territoryNames || 'None'}`;
       section.appendChild(availableBox);
     }
 
@@ -436,10 +436,10 @@ const CampaignViewerUI = {
     const summaryBox = document.createElement('div');
     summaryBox.className = validation.allValid ? 'result-box green mb-15' : 'result-box yellow mb-15';
     summaryBox.innerHTML = `
-      <strong>Validation Summary:</strong><br>
+      <b>Validation Summary:</b><br>
       ✅ Valid Mappings: ${validation.valid.length}<br>
       ${validation.invalid.length > 0 ? `⚠️ Invalid Mappings: ${validation.invalid.length}<br>` : ''}
-      <strong>Total Territories Checked:</strong> ${validation.totalChecked}
+      <b>Total Territories Checked:</b> ${validation.totalChecked}
     `;
     section.appendChild(summaryBox);
 
@@ -454,7 +454,7 @@ const CampaignViewerUI = {
       const invalidBox = document.createElement('div');
       invalidBox.className = 'info-box yellow mb-15';
       const invalidList = validation.invalid.map(t => t.apiName).join(', ');
-      invalidBox.innerHTML = `<strong>These API territories have no matching local ID:</strong><br>${invalidList}`;
+      invalidBox.innerHTML = `<b>These API territories have no matching local ID:</b><br>${invalidList}`;
       section.appendChild(invalidBox);
     }
 
@@ -494,10 +494,10 @@ const CampaignViewerUI = {
     const summaryBox = document.createElement('div');
     summaryBox.className = validation.allValid ? 'result-box green mb-15' : 'result-box yellow mb-15';
     summaryBox.innerHTML = `
-      <strong>Validation Summary:</strong><br>
+      <b>Validation Summary:</b><br>
       ✅ Valid Mappings: ${validation.valid.length}<br>
       ${validation.invalid.length > 0 ? `⚠️ Invalid Mappings: ${validation.invalid.length}<br>` : ''}
-      <strong>Total Gangs Checked:</strong> ${validation.totalChecked}
+      <b>Total Gangs Checked:</b> ${validation.totalChecked}
     `;
     section.appendChild(summaryBox);
 
@@ -512,7 +512,7 @@ const CampaignViewerUI = {
       const invalidBox = document.createElement('div');
       invalidBox.className = 'info-box yellow mb-15';
       const invalidList = validation.invalid.map(g => g.apiType).join(', ');
-      invalidBox.innerHTML = `<strong>These API gang types have no matching local ID:</strong><br>${invalidList}`;
+      invalidBox.innerHTML = `<b>These API gang types have no matching local ID:</b><br>${invalidList}`;
       section.appendChild(invalidBox);
     }
 

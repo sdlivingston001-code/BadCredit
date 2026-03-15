@@ -29,7 +29,7 @@ settlement:
 spyrer_base_camp:
   name: Spyrer Base Camp (Spyrers)
   level: 1
-  trading_special_rules_spyrers: "<strong>Recovery Systems</strong>: During the Wrap-up of each battle the Spyre Hunting Party gang takes part in, one Spyrer may perform post-battle actions even if they are in Convalescence. A Spyre Hunting Party gang may never lose control of their Spyrer Base Camp Territory."
+  trading_special_rules_spyrers: "<b>Recovery Systems</b>: During the Wrap-up of each battle the Spyre Hunting Party gang takes part in, one Spyrer may perform post-battle actions even if they are in Convalescence. A Spyre Hunting Party gang may never lose control of their Spyrer Base Camp Territory."
   campaign: 1 # 1= include, 0 = exclude
 
 palanite_precinct:
@@ -76,14 +76,14 @@ rogue_doc_shop:
   level: 2
   income:
     schema: standard
-  fixed_recruit: "Whilst it controls this Territory, the gang may add one <strong>Rogue Doc</strong> to its roster for free."
+  fixed_recruit: "Whilst it controls this Territory, the gang may add one <b>Rogue Doc</b> to its roster for free."
   campaign: 1 # 1= include, 0 = exclude
 
 promethium_cache:
   name: Promethium Cache (*)
   level: 2
-  fixed_gear: "Whilst it controls this Territory, three fighters in the gang gain <strong>Incendiary Charges</strong>. Nil credit cost and nil gang rating impact."
-  battle_special_rules: "All fighters in the gang may re-roll Ammo tests for any weapon that has the <strong>Blaze</strong> trait."
+  fixed_gear: "Whilst it controls this Territory, three fighters in the gang gain <b>Incendiary Charges</b>. Nil credit cost and nil gang rating impact."
+  battle_special_rules: "All fighters in the gang may re-roll Ammo tests for any weapon that has the <b>Blaze</b> trait."
   campaign: 1 # 1= include, 0 = exclude
 
 wastes:
@@ -95,7 +95,7 @@ wastes:
 sludge_sea:
   name: Sludge Sea (*)
   level: 2
-  fixed_gear: "Whilst it controls this Territory, three fighters in the gang gain <strong>Choke Gas Grenades</strong>. Nil credit cost and nil gang rating impact."
+  fixed_gear: "Whilst it controls this Territory, three fighters in the gang gain <b>Choke Gas Grenades</b>. Nil credit cost and nil gang rating impact."
   campaign: 1 # 1= include, 0 = exclude
 
 workshop:
@@ -103,7 +103,7 @@ workshop:
   level: 2
   income:
     schema: standard
-  fixed_recruit: "Whilst it controls this Territory, the gang may add one <strong>Ammo-jack</strong> to its roster for free."
+  fixed_recruit: "Whilst it controls this Territory, the gang may add one <b>Ammo-jack</b> to its roster for free."
   campaign: 1 # 1= include, 0 = exclude
 
 collapsed_dome:
@@ -266,7 +266,7 @@ slag_furnace:
 fighting_pits:
   name: Fighting Pits (Goliath, CGC)
   level: 3
-  fixed_recruit: "Whilst it controls this Territory, the gang may recruit <strong>two Hive Scum Hired Guns</strong> for free, including their equipment, prior to every battle."
+  fixed_recruit: "Whilst it controls this Territory, the gang may recruit <b>two Hive Scum Hired Guns</b> for free, including their equipment, prior to every battle."
   reputation_goliath: "Whilst it controls this Territory, the gang adds +2 to its Reputation."
   reputation_corpse_grinder_cult: "Whilst it controls this Territory, the gang adds +2 to its Reputation."
   campaign: 0 # 1= include, 0 = exclude
@@ -327,8 +327,8 @@ generatorium:
 archaeotech_device:
   name: Archaeotech Device (Van Saar)
   level: 3
-  battle_special_rules: " Any number of weapons owned by the gang may be given <strong>one</strong> of the following Traits for free: <strong>Blaze, Rad-phage, Seismic, or Shock</strong>. All weapons must be given the same Trait and new weapons purchased later may also be given this Trait. These weapons also gain the <strong>Unstable</strong> Trait. If the Territory is lost, the weapons lose these additional Traits."
-  battle_special_rules_van_saar: " The gang may give any number of weapons it owns <strong>two</strong> of the following Traits for free: <strong>Blaze, Rad-phage, Seismic, or Shock</strong>. All weapons must be given the same Traits and new weapons purchased later may also be given these Traits. These weapons also gain the <strong>Unstable</strong> trait. If the Territory is lost, the weapons lose these additional Traits."
+  battle_special_rules: " Any number of weapons owned by the gang may be given <b>one</b> of the following Traits for free: <b>Blaze, Rad-phage, Seismic, or Shock</b>. All weapons must be given the same Trait and new weapons purchased later may also be given this Trait. These weapons also gain the <b>Unstable</b> Trait. If the Territory is lost, the weapons lose these additional Traits."
+  battle_special_rules_van_saar: " The gang may give any number of weapons it owns <b>two</b> of the following Traits for free: <b>Blaze, Rad-phage, Seismic, or Shock</b>. All weapons must be given the same Traits and new weapons purchased later may also be given these Traits. These weapons also gain the <b>Unstable</b> trait. If the Territory is lost, the weapons lose these additional Traits."
   reputation_van_saar: "Whilst it controls this Territory, the gang adds +2 to its Reputation."
   campaign: 1 # 1= include, 0 = exclude
 

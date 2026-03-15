@@ -26,7 +26,7 @@ const LastingInjuriesUI = {
     const config = configs[type];
     const div = document.createElement("div");
     div.className = config.className;
-    div.innerHTML = `${config.icon} <strong>${config.label}:</strong> ${message}`;
+    div.innerHTML = `${config.icon} <b>${config.label}:</b> ${message}`;
     return div;
   },
 
@@ -43,7 +43,7 @@ const LastingInjuriesUI = {
 
     const nameText = document.createElement("div");
     nameText.className = `result-heading result-name ${rollInfo ? 'mt-5' : ''}`;
-    nameText.innerHTML = `<strong>${injury.name}</strong>`;
+    nameText.innerHTML = `<b>${injury.name}</b>`;
     injDiv.appendChild(nameText);
 
     if (injury.fixedeffect) {
@@ -60,9 +60,9 @@ const LastingInjuriesUI = {
     if (!randomRoll) return randomeffect;
 
     if (randomeffect === 'd3xpgain') {
-      return `Rolled ${randomRoll.type.toUpperCase()}: <strong>${randomRoll.value}</strong> - Gain ${randomRoll.value} XP!`;
+      return `Rolled ${randomRoll.type.toUpperCase()}: <b>${randomRoll.value}</b> - Gain ${randomRoll.value} XP!`;
     } else if (randomeffect === 'd3multipleinjuries') {
-      return `Rolled ${randomRoll.type.toUpperCase()}: <strong>${randomRoll.value}</strong> - Suffer ${randomRoll.value} additional injuries (see below)`;
+      return `Rolled ${randomRoll.type.toUpperCase()}: <b>${randomRoll.value}</b> - Suffer ${randomRoll.value} additional injuries (see below)`;
     }
     return randomeffect;
   },
@@ -86,8 +86,8 @@ const LastingInjuriesUI = {
       const injColour = injuryResult.injury.colour || "grey";
 
       const rollLabel = rollLabelFormat === 'D66' 
-        ? `<strong>D66 Roll:</strong> ${injuryResult.roll}`
-        : `<strong>${rollLabelFormat} ${index + 1}:</strong> ${injuryResult.roll}`;
+        ? `<b>D66 Roll:</b> ${injuryResult.roll}`
+        : `<b>${rollLabelFormat} ${index + 1}:</b> ${injuryResult.roll}`;
 
       const injDiv = this.createInjuryBox(
         injuryResult.injury,
@@ -172,7 +172,7 @@ const LastingInjuriesUI = {
       const container = document.getElementById("lasting-injuries-container");
       if (container) {
         container.innerHTML = `<div style="color: red; padding: 20px; border: 2px solid red; border-radius: 4px;">
-          <strong>Error loading lasting injuries data:</strong><br>
+          <b>Error loading lasting injuries data:</b><br>
           ${err.message}<br>
           <em>Check console for details</em>
         </div>`;
@@ -465,7 +465,7 @@ const LastingInjuriesUI = {
         const injDiv = this.createInjuryBox(
           result.stabilisedInjury.injury,
           injColour,
-          `<strong>D66 Roll:</strong> ${result.stabilisedInjury.roll}`
+          `<b>D66 Roll:</b> ${result.stabilisedInjury.roll}`
         );
 
         injuryContainer.appendChild(injDiv);

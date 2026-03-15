@@ -315,20 +315,20 @@ const XPTablesUI = {
     const rollText = document.createElement("div");
     rollText.className = "result-heading result-roll";
     const diceHtml = rolls ? `(${rolls.join(' + ')}) = ` : '';
-    rollText.innerHTML = `<strong>2D6 Roll:</strong> ${diceHtml}${total}`;
+    rollText.innerHTML = `<b>2D6 Roll:</b> ${diceHtml}${total}`;
     resultDiv.appendChild(rollText);
 
     // Display advancement text
     const advText = document.createElement("div");
     advText.className = "result-heading result-name";
-    advText.innerHTML = `<strong>${result.advancement}</strong>`;
+    advText.innerHTML = `<b>${result.advancement}</b>`;
     resultDiv.appendChild(advText);
 
     // Display rating increase if present
     if (result.ratingIncrease !== null && result.ratingIncrease !== undefined) {
       const ratingDiv = document.createElement("div");
       ratingDiv.className = "result-effect";
-      ratingDiv.innerHTML = `<strong>Rating Increase:</strong> +${result.ratingIncrease}`;
+      ratingDiv.innerHTML = `<b>Rating Increase:</b> +${result.ratingIncrease}`;
       resultDiv.appendChild(ratingDiv);
     }
 
@@ -343,13 +343,13 @@ const XPTablesUI = {
     const rollText = document.createElement("div");
     rollText.className = "result-heading result-roll";
     const diceHtml = rolls ? `(${rolls.join(' + ')}) = ` : '';
-    rollText.innerHTML = `<strong>D6 Roll:</strong> ${diceHtml}${total}`;
+    rollText.innerHTML = `<b>D6 Roll:</b> ${diceHtml}${total}`;
     resultDiv.appendChild(rollText);
 
     // Display skill name
     const nameText = document.createElement("div");
     nameText.className = "result-heading result-name";
-    nameText.innerHTML = `<strong>${result.name}</strong>`;
+    nameText.innerHTML = `<b>${result.name}</b>`;
     resultDiv.appendChild(nameText);
 
     return resultDiv;

@@ -51,7 +51,7 @@ const LootBoxUI = {
               const rerollDiv = document.createElement('div');
               rerollDiv.className = 'info-box reroll-history-box';
               const rerollList = result.rerollHistory.map(r => `${r.name} (${r.roll})`).join(', ');
-              rerollDiv.innerHTML = `🔄 <strong>Rerolled:</strong> ${rerollList}`;
+              rerollDiv.innerHTML = `🔄 <b>Rerolled:</b> ${rerollList}`;
               mainContainer.appendChild(rerollDiv);
             }
             
@@ -116,14 +116,14 @@ const LootBoxUI = {
       const table = tableName ? this.lootData[tableName] : this.lootData.loot_box_roll;
       const sides = table && table.sides;
       const diceType = sides === "d66" ? "D66" : `D${typeof sides === 'number' ? sides : parseInt(sides)}`;
-      rollText.innerHTML = `<strong>${diceType} Roll:</strong> ${roll}`;
+      rollText.innerHTML = `<b>${diceType} Roll:</b> ${roll}`;
       resultDiv.appendChild(rollText);
     }
 
     // Display result name
     const nameText = document.createElement("div");
     nameText.className = "result-heading result-name";
-    nameText.innerHTML = `<strong>${result.name}</strong>`;
+    nameText.innerHTML = `<b>${result.name}</b>`;
     resultDiv.appendChild(nameText);
 
     // Display fixed effect
@@ -142,14 +142,14 @@ const LootBoxUI = {
     incomeDiv.className = "info-box income-box";
 
     const rollInfo = incomeResult.sides 
-      ? `D${incomeResult.sides} Roll: <strong>${incomeResult.roll}</strong>`
+      ? `D${incomeResult.sides} Roll: <b>${incomeResult.roll}</b>`
       : '';
     
     const calculation = incomeResult.multiplier > 1 
-      ? ` × ${incomeResult.multiplier} = <strong>${incomeResult.amount} credits</strong>`
-      : ` = <strong>${incomeResult.amount} credits</strong>`;
+      ? ` × ${incomeResult.multiplier} = <b>${incomeResult.amount} credits</b>`
+      : ` = <b>${incomeResult.amount} credits</b>`;
 
-    incomeDiv.innerHTML = `💰 <strong>Income:</strong> ${rollInfo}${calculation}`;
+    incomeDiv.innerHTML = `💰 <b>Income:</b> ${rollInfo}${calculation}`;
     
     return incomeDiv;
   },
@@ -160,7 +160,7 @@ const LootBoxUI = {
     if (randomEffect.type === 'reroll') {
       const rerollDiv = document.createElement("div");
       rerollDiv.className = "info-box reroll-box";
-      rerollDiv.innerHTML = "🔄 <strong>Reroll:</strong> This result requires a reroll.";
+      rerollDiv.innerHTML = "🔄 <b>Reroll:</b> This result requires a reroll.";
       parentDiv.appendChild(rerollDiv);
       return;
     }
@@ -171,7 +171,7 @@ const LootBoxUI = {
       
       const buttonText = document.createElement("div");
       buttonText.className = "info-box mb-10";
-      buttonText.innerHTML = `⚡ <strong>Additional Roll Required... Click to proceed.</strong>`;
+      buttonText.innerHTML = `⚡ <b>Additional Roll Required... Click to proceed.</b>`;
       buttonContainer.appendChild(buttonText);
 
       const rollButton = document.createElement("button");
@@ -191,7 +191,7 @@ const LootBoxUI = {
 
       const nestedTitle = document.createElement("div");
       nestedTitle.className = "nested-title";
-      nestedTitle.innerHTML = `<strong>➡️ Additional Result:</strong>`;
+      nestedTitle.innerHTML = `<b>➡️ Additional Result:</b>`;
       nestedContainer.appendChild(nestedTitle);
 
       const nestedBox = this.createResultBox(
@@ -227,13 +227,13 @@ const LootBoxUI = {
       const rerollDiv = document.createElement("div");
       rerollDiv.className = "info-box reroll-history-box";
       const rerollList = result.rerollHistory.map(r => `${r.name} (${r.roll})`).join(", ");
-      rerollDiv.innerHTML = `🔄 <strong>Rerolled:</strong> ${rerollList}`;
+      rerollDiv.innerHTML = `🔄 <b>Rerolled:</b> ${rerollList}`;
       containerDiv.appendChild(rerollDiv);
     }
 
     const nestedTitle = document.createElement("div");
     nestedTitle.className = "nested-title";
-    nestedTitle.innerHTML = `<strong>➡️ Additional Result:</strong>`;
+    nestedTitle.innerHTML = `<b>➡️ Additional Result:</b>`;
     containerDiv.appendChild(nestedTitle);
 
     const nestedBox = this.createResultBox(

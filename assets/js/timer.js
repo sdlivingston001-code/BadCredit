@@ -50,7 +50,7 @@ const TimerUtil = {
     const lastRun = localStorage.getItem(storageKey);
     
     if (!lastRun) {
-      element.innerHTML = "⏱️ <strong>Last Run:</strong> Never";
+      element.innerHTML = "⏱️ <b>Last Run:</b> Never";
       element.classList.remove('timer-green');
       element.classList.add('timer-grey');
       return;
@@ -64,12 +64,12 @@ const TimerUtil = {
       // Show milliseconds for first 5 seconds
       const totalSeconds = Math.floor(elapsedMs / 1000);
       const milliseconds = elapsedMs % 1000;
-      element.innerHTML = `⏱️ <strong>Last Run:</strong> ${totalSeconds}.${String(milliseconds).padStart(3, '0')} seconds ago`;
+      element.innerHTML = `⏱️ <b>Last Run:</b> ${totalSeconds}.${String(milliseconds).padStart(3, '0')} seconds ago`;
       element.classList.remove('timer-grey');
       element.classList.add('timer-green');
     } else {
       // After 5 seconds, just show generic message
-      element.innerHTML = "⏱️ <strong>Last Run:</strong> More than 5 seconds ago";
+      element.innerHTML = "⏱️ <b>Last Run:</b> More than 5 seconds ago";
       element.classList.remove('timer-green');
       element.classList.add('timer-grey');
     }
