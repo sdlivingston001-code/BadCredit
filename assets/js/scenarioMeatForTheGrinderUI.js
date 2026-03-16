@@ -1,4 +1,4 @@
-// scavengedWeaponsUI.js
+// scenarioMeatForTheGrinderUI.js
 
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('button').forEach(button => {
@@ -6,14 +6,14 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-const ScavengedWeaponsUI = {
+const scenarioMeatForTheGrinderUI = {
   async init(jsonPath) {
     try {
       const response = await fetch(`${jsonPath}?t=${Date.now()}`, { cache: 'no-store' });
       if (!response.ok) throw new Error(`Failed to load data: ${response.status}`);
 
       const data = await response.json();
-      ScavengedWeaponsEngine.loadData(data);
+      scenarioMeatForTheGrinderEngine.loadData(data);
       this.bindEvents();
       this.initTimer();
       this.renderWeaponTable(data);
@@ -36,7 +36,7 @@ const ScavengedWeaponsUI = {
       timerContainer.id = 'scavenged-weapons-timer';
       timerContainer.className = 'mt-15';
       button.parentNode.insertBefore(timerContainer, button.nextSibling);
-      TimerUtil.init('scavenged-weapons-timer', 'scavengedWeaponsLastRun');
+      TimerUtil.init('scavenged-weapons-timer', 'scenarioMeatForTheGrinderLastRun');
       TimerUtil.setupPageCleanup();
     }
   },
@@ -98,14 +98,14 @@ const ScavengedWeaponsUI = {
 
   doRoll() {
     if (typeof TimerUtil !== 'undefined') {
-      TimerUtil.markRun('scavengedWeaponsLastRun');
+      TimerUtil.markRun('scenarioMeatForTheGrinderLastRun');
       TimerUtil.showTimer('scavenged-weapons-timer');
     }
 
     const container = document.getElementById('scavenged-weapons-results');
     if (!container) return;
 
-    const { rolls, total, result, error } = ScavengedWeaponsEngine.roll();
+    const { rolls, total, result, error } = scenarioMeatForTheGrinderEngine.roll();
 
     if (error) {
       container.innerHTML = `<div class="error-box">${error}</div>`;

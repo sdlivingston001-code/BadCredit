@@ -1,6 +1,6 @@
-// scavengedWeaponsEngine.js
+// scenarioMeatForTheGrinderEngine.js
 
-const ScavengedWeaponsEngine = {
+const scenarioMeatForTheGrinderEngine = {
   data: null,
 
   loadData(data) {

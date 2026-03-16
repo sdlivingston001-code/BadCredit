@@ -17,7 +17,7 @@ title: BadCredit
 
 ---
 ## Scenario Tools
-[Meat for the Grinder]({{ site.baseurl }}/tools/scavengedWeapons.html)<br><br>
+[Meat for the Grinder]({{ site.baseurl }}/tools/scenarioMeatForTheGrinder.html)<br><br>
 
 
 

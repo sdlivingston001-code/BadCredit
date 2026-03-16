@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Scavenged Weapons
+title: Meat for the Grinder
 ---
 
 
@@ -27,6 +27,25 @@ title: Scavenged Weapons
 <div id="weapon-profiles-table"></div>
 <br>
 <h2>Weapon Trait Reminders</h2>
+
+<p><b>Blaze:</b> After an attack with the <b>Blaze</b> trait has been resolved, <u>roll 1D6; on a 4+, they become subject to the <b>Blaze condition</b></u>.</p>
+
+<p><b>Blaze Condition:</b>  When this fighter is activated resolve their activation as follows:</p>
+ <ul>
+  <li>Suffer an immediate <b>S3, AP-1, D1</b> hit.</li>
+  <li>If <b>Prone and Pinned</b> become <b>Standing and Active</b> and follow the <b>Standing and Active</b> step.</li>
+  <li>If <b>Standing and Active</b> move 2D6" in a random direction, then attempt to put the fire out.
+    <ul>
+      <li>Stop moving if you move within 1" of an enemy fighter, or into base contact with impassable terrain.</li>
+      <li>If you move beyond the edge of a level or platform you automatically fall.</li>
+      <li>If you move within 1/2" of an edge of a level or platform test for falling.</li>
+      <li>At the end of this move the fighter may choose to become <b>Prone and Pinned</b>.</li>
+    </ul>
+  </li>
+  <li>If <b>Standing and Engaged</b> or <b>Prone and Seriously Injured</b>, the fighter does not move, and attempts to put the fire out.</li>
+  <li><b>Attempt to put the fire out:</b> Roll 1D6, add 2 if <b>Prone and Pinned</b> or <b>Seriously Injured</b>, on a result of 6 or more the Blaze condition is removed.</li>
+</ul> 
+
 
 <p><b>Disarm:</b> If the <u>roll to hit = natural 6</u>, the target cannot use any weapons in their <b>Reaction attacks</b> for the remainder of that round (they make unarmed attacks instead).</p>
 
@@ -60,10 +79,10 @@ title: Scavenged Weapons
 
 <script src="{{ '/assets/js/dice.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/timer.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/scavengedWeaponsEngine.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/scavengedWeaponsUI.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/scenarioMeatForTheGrinderEngine.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/scenarioMeatForTheGrinderUI.js' | relative_url }}"></script>
 <script>
   document.addEventListener("DOMContentLoaded", () => {
-    ScavengedWeaponsUI.init("{{ '/data/scavengedWeapons.json' | relative_url }}");
+    scenarioMeatForTheGrinderUI.init("{{ '/data/scenarioMeatForTheGrinder.json' | relative_url }}");
   });
 </script>
