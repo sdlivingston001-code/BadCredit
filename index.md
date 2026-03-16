@@ -8,20 +8,20 @@ title: BadCredit
 
 ---
 
-## Randomisation Tools
+## Randomisers...
 
-Use the interactive tools to run simulations and explore outcomes.
+[Territory Income & Boons]({{ site.baseurl }}/tools/territoryPage.html)<br><br>
+[Lasting Injuries & Medical Interventions]({{ site.baseurl }}/tools/lastingInjuriesPage.html)<br><br>
+[Loot Boxes]({{ site.baseurl }}/tools/lootBox.html)<br><br>
+[Experience]({{ site.baseurl }}/tools/xpTables.html)<br><br>
 
-[Generate Territory Boons]({{ site.baseurl }}/tools/territoryPage.html)<br><br>
-[Lasting Injuries and Medical Interventions]({{ site.baseurl }}/tools/lastingInjuriesPage.html)<br><br>
-[Open a Loot Casket]({{ site.baseurl }}/tools/lootBox.html)<br><br>
-[Scavenge Weapons]({{ site.baseurl }}/tools/scavengedWeapons.html)<br><br>
-[Spend XP]({{ site.baseurl }}/tools/xpTables.html)<br><br>
+---
+## Scenario Tools
+[Meat for the Grinder]({{ site.baseurl }}/tools/scavengedWeapons.html)<br><br>
+
 
 
 ---
-
-
 ## Reference Pages
 
 Learn more about the rules, world, and design behind the system.

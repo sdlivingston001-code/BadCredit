@@ -157,6 +157,21 @@ const LootBoxEngine = {
     };
   },
 
+  smashOpenLootBox() {
+    const rawRoll = this.rollDiceForTable('loot_box_roll');
+    if (rawRoll === null) {
+      return { error: 'Failed to roll. Data not loaded.' };
+    }
+    const roll = Math.max(1, rawRoll - 1);
+    const result = this.findResult('loot_box_roll', roll);
+    if (!result) {
+      return { rawRoll, roll, error: 'No result found for this roll.' };
+    }
+    const incomeResult = result.income ? this.processIncome(result.income) : null;
+    const randomEffect = this.processRandomEffect(result.randomeffect);
+    return { rawRoll, roll, result, incomeResult, randomEffect };
+  },
+
   openLootBox() {
     const roll = this.rollDiceForTable('loot_box_roll');
     if (roll === null) {

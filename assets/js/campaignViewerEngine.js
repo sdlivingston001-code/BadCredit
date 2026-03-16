@@ -10,6 +10,7 @@ const CampaignViewerEngine = {
   cacheKey: 'mundamanager_campaign_cache',
   cacheTimeKey: 'mundamanager_campaign_cache_time',
   cacheDuration: 15 * 60 * 1000, // 15 minutes in milliseconds
+  staleDuration: 2 * 60 * 60 * 1000, // 2 hours - auto-refresh threshold
 
   /**
    * Get the current campaign ID
@@ -52,6 +53,18 @@ const CampaignViewerEngine = {
     
     const age = Date.now() - parseInt(cacheTime);
     return age < this.cacheDuration;
+  },
+
+  /**
+   * Check if cached data is older than the stale threshold (2 hours)
+   * @returns {boolean}
+   */
+  isCacheStale() {
+    const cacheTime = localStorage.getItem(this.cacheTimeKey);
+    if (!cacheTime) return true;
+
+    const age = Date.now() - parseInt(cacheTime);
+    return age > this.staleDuration;
   },
 
   /**

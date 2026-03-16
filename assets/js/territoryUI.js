@@ -105,10 +105,14 @@ const TerritoryUI = {
 
     // Try to get cached campaign data
     let cached = CampaignViewerEngine.getCachedData();
-    
-    // If no cache exists, try to fetch from default campaign
-    if (!cached) {
-      console.log('TerritoryUI: No cached campaign data available. Fetching from default campaign...');
+    const cacheIsStale = CampaignViewerEngine.isCacheStale();
+
+    // If no cache exists, or cache is older than 2 hours, fetch fresh data
+    if (!cached || cacheIsStale) {
+      const reason = !cached
+        ? 'No cached campaign data available'
+        : 'Campaign data is over 2 hours old';
+      console.log(`TerritoryUI: ${reason}. Fetching from server...`);
       const notice = document.getElementById('territory-container');
       if (notice) notice.innerHTML = '<div class="info-box warning-box">Fetching campaign data, please wait&hellip;</div>';
 
@@ -121,7 +125,11 @@ const TerritoryUI = {
         console.log('TerritoryUI: Successfully fetched campaign data');
       } else {
         console.log('TerritoryUI: Failed to fetch campaign data:', result.error);
-        return;
+        if (cacheIsStale && cached) {
+          console.log('TerritoryUI: Falling back to stale cache');
+        } else {
+          return;
+        }
       }
     } else {
       console.log('TerritoryUI: Using cached campaign data');

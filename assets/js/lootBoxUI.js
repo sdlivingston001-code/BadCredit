@@ -83,20 +83,19 @@ const LootBoxUI = {
   },
 
   bindEvents() {
-    const button = document.getElementById("resolve-loot-box");
-    if (button) {
-      button.addEventListener("click", () => this.openLootBox());
+    const smashBtn = document.getElementById("resolve-loot-box-smash");
+    if (smashBtn) {
+      smashBtn.addEventListener("click", () => this.openLootBoxSmash());
+    }
+    const bypassBtn = document.getElementById("resolve-loot-box-bypass");
+    if (bypassBtn) {
+      bypassBtn.addEventListener("click", () => this.openLootBox());
     }
   },
 
   initTimer() {
-    // Create timer container below the button
-    const button = document.getElementById("resolve-loot-box");
-    if (button && typeof TimerUtil !== 'undefined') {
-      const timerContainer = document.createElement("div");
-      timerContainer.id = "loot-box-timer";
-      timerContainer.className = "mt-15";
-      button.parentNode.insertBefore(timerContainer, button.nextSibling);
+    // Use existing timer container placed after the buttons in HTML
+    if (typeof TimerUtil !== 'undefined') {
       TimerUtil.init('loot-box-timer', 'lootBoxLastRun');
       
       // Setup page cleanup to reset timer on navigation
@@ -104,7 +103,7 @@ const LootBoxUI = {
     }
   },
 
-  createResultBox(result, roll, tableName = null) {
+  createResultBox(result, roll, tableName = null, rawRoll = null) {
     const colour = result.colour || "grey";
     const resultDiv = document.createElement("div");
     resultDiv.className = `result-box result-box-${colour}`;
@@ -116,7 +115,10 @@ const LootBoxUI = {
       const table = tableName ? this.lootData[tableName] : this.lootData.loot_box_roll;
       const sides = table && table.sides;
       const diceType = sides === "d66" ? "D66" : `D${typeof sides === 'number' ? sides : parseInt(sides)}`;
-      rollText.innerHTML = `<b>${diceType} Roll:</b> ${roll}`;
+      const rollDisplay = (rawRoll !== null && rawRoll !== undefined && rawRoll !== roll)
+        ? `${rawRoll} &rarr; ${roll}`
+        : roll;
+      rollText.innerHTML = `<b>${diceType} Roll:</b> ${rollDisplay}`;
       resultDiv.appendChild(rollText);
     }
 
@@ -249,6 +251,15 @@ const LootBoxUI = {
     }
   },
 
+  openLootBoxSmash() {
+    if (typeof TimerUtil !== 'undefined') {
+      TimerUtil.markRun('lootBoxLastRun');
+      TimerUtil.showTimer('loot-box-timer');
+    }
+    const lootResult = LootBoxEngine.smashOpenLootBox();
+    this.displayLootBoxResult(lootResult);
+  },
+
   openLootBox() {
     // Mark the run time and show timer
     if (typeof TimerUtil !== 'undefined') {
@@ -284,7 +295,7 @@ const LootBoxUI = {
     mainContainer.appendChild(title);
 
     // Display main result
-    const resultBox = this.createResultBox(lootResult.result, lootResult.roll);
+    const resultBox = this.createResultBox(lootResult.result, lootResult.roll, null, lootResult.rawRoll);
     mainContainer.appendChild(resultBox);
 
     // Display income if present
