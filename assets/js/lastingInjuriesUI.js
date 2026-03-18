@@ -24,13 +24,14 @@ const LastingInjuriesUI = {
     return div;
   },
 
-  createInjuryBox(injury, colour, rollInfo = null) {
+  createInjuryBox(injury, colour, rollInfo = null, randomRoll = null) {
     const injDiv = document.createElement("div");
     injDiv.className = `result-box result-box-${colour || 'grey'}`;
     injDiv.innerHTML = `
       ${rollInfo ? `<div class="result-heading result-roll">${rollInfo}</div>` : ''}
       <div class="result-heading result-name ${rollInfo ? 'mt-5' : ''}"><b>${injury.name}</b></div>
       ${injury.fixedeffect ? `<div class="result-effect">${injury.fixedeffect}</div>` : ''}
+      ${injury.randomeffect && randomRoll ? `<div class="result-effect mt-10">${this.formatRandomEffect(injury.randomeffect, randomRoll)}</div>` : ''}
     `;
     return injDiv;
   },
@@ -71,7 +72,8 @@ const LastingInjuriesUI = {
       const injDiv = this.createInjuryBox(
         injuryResult.injury,
         injColour,
-        rollLabel
+        rollLabel,
+        injuryResult.randomRoll
       );
       if (index > 0) injDiv.classList.add('mt-10');
       additionalContainer.appendChild(injDiv);
@@ -109,6 +111,8 @@ const LastingInjuriesUI = {
 
       this.bindEvents();
       this.initTimers();
+      this.renderInjuryTable();
+      this.renderTreatmentTable();
 
       // Expose test function to window for console testing
       window.testInjury = (roll) => {
@@ -163,6 +167,14 @@ const LastingInjuriesUI = {
     if (rogueDocButton) {
       rogueDocButton.addEventListener("click", () => {
         this.resolveRogueDoc();
+      });
+    }
+
+    // Rogue Doc mode selector change event
+    const rogueDocModeSelector = document.getElementById("rogue-doc-mode-selector");
+    if (rogueDocModeSelector) {
+      rogueDocModeSelector.addEventListener("change", () => {
+        this.renderTreatmentTable();
       });
     }
   },
@@ -287,29 +299,23 @@ const LastingInjuriesUI = {
       injuryContainer.appendChild(this.createInjuryBox(
         result.stabilisedInjury.injury,
         injColour,
-        `<b>D66 Roll:</b> ${result.stabilisedInjury.roll}`
+        `<b>D66 Roll:</b> ${result.stabilisedInjury.roll}`,
+        result.stabilisedInjury.randomRoll
       ));
       resultDiv.appendChild(injuryContainer);
 
-      if (result.stabilisedInjury.injury.randomeffect && result.stabilisedInjury.randomRoll) {
-        const randomDiv = document.createElement("div");
-        randomDiv.className = 'mt-10';
-        randomDiv.innerHTML = this.formatRandomEffect(
-          result.stabilisedInjury.injury.randomeffect,
-          result.stabilisedInjury.randomRoll
-        );
-        resultDiv.appendChild(randomDiv);
-
-        this.displayAdditionalInjuries(
-          result.stabilisedInjury.additionalInjuries,
-          resultDiv,
-          'D66'
-        );
-      }
+      this.displayAdditionalInjuries(
+        result.stabilisedInjury.additionalInjuries,
+        resultDiv,
+        'D66'
+      );
     }
 
     resultsContainer.innerHTML = "";
     resultsContainer.appendChild(resultDiv);
+    if (typeof TimerUtil !== 'undefined') {
+      TimerUtil.recordRolls('rogueDocLastRun', this.collectRogueDocRolls(result));
+    }
   },
 
   changeMode(mode) {
@@ -319,20 +325,138 @@ const LastingInjuriesUI = {
     if (resultsContainer) {
       resultsContainer.innerHTML = "";
     }
+    this.renderInjuryTable();
+  },
+
+  formatRandomEffectLabel(randomeffect) {
+    if (!randomeffect) return null;
+    if (randomeffect === 'd3xpgain') return 'Gain D3 XP.';
+    if (randomeffect === 'd3multipleinjuries') return 'Suffer D3 injuries (ignoring Captured, Multiple Injuries, Memorable Death, Critical Injury, or Out Cold).';
+    if (randomeffect === 'stabilisedinjury') return 'Roll a lasting injury on the standard table.';
+    return randomeffect;
+  },
+
+  renderInjuryTable() {
+    const container = document.getElementById('injury-table-container');
+    if (!container || !LastingInjuriesEngine.injuriesData) return;
+
+    const modeData = LastingInjuriesEngine.getCurrentModeData();
+    if (!modeData) return;
+
+    const dieLabel = modeData.sides === 'd66' ? 'D66' : `D${modeData.sides}`;
+
+    const rows = Object.values(modeData.results).map(injury => {
+      const colour = injury.colour || 'grey';
+      const rollStr = injury.values.join(', ');
+      const effect = [injury.fixedeffect, this.formatRandomEffectLabel(injury.randomeffect)].filter(Boolean).join('<br>');
+      return `<tr class="row-${colour}">
+        <td>${rollStr}</td>
+        <td><b>${injury.name}</b></td>
+        <td>${effect || '&mdash;'}</td>
+      </tr>`;
+    }).join('');
+
+    container.innerHTML = `
+      <h3>Injury Table (${dieLabel})</h3>
+      <table>
+        <thead><tr><th>Roll</th><th>Result</th><th>Effect</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    `;
+  },
+
+  renderTreatmentTable() {
+    const container = document.getElementById('treatment-table-container');
+    if (!container || !LastingInjuriesEngine.injuriesData) return;
+
+    const modeSelector = document.getElementById('rogue-doc-mode-selector');
+    const mode = modeSelector ? modeSelector.value : 'trading_post_rogue_doc';
+    const modeData = LastingInjuriesEngine.injuriesData[mode];
+    if (!modeData) return;
+
+    const dieLabel = `D${modeData.sides}`;
+    const modeName = mode === 'trading_post_rogue_doc' ? 'Trading Post' : 'Hanger-on';
+
+    let costHtml = '';
+    if (modeData.cost) {
+      const c = modeData.cost;
+      costHtml = `<p><b>Cost:</b> ${c.count}D${c.sides}&times;${c.multiplier} credits</p>`;
+    }
+
+    const rows = Object.values(modeData.results).map(outcome => {
+      const colour = outcome.colour || 'grey';
+      const rollStr = outcome.values.join(', ');
+      const effect = [outcome.fixedeffect, this.formatRandomEffectLabel(outcome.randomeffect)].filter(Boolean).join('<br>');
+      return `<tr class="row-${colour}">
+        <td>${rollStr}</td>
+        <td class="text-capitalize"><b>${outcome.name}</b></td>
+        <td>${effect || '&mdash;'}</td>
+      </tr>`;
+    }).join('');
+
+    container.innerHTML = `
+      <h3>Treatment Table &mdash; ${modeName} (${dieLabel})</h3>
+      ${costHtml}
+      <table>
+        <thead><tr><th>Roll</th><th>Result</th><th>Effect</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    `;
+  },
+
+  collectInjuryRolls(result) {
+    if (!result || result.roll === 'Error') return [];
+    const modeData = LastingInjuriesEngine.getCurrentModeData();
+    const dieLabel = modeData && modeData.sides === 'd66' ? 'D66' : `D${modeData && modeData.sides || 6}`;
+    const rolls = [`${dieLabel}: ${result.roll}`];
+    if (result.randomRoll) {
+      rolls.push(`${result.randomRoll.type.toUpperCase()}: ${result.randomRoll.value}`);
+    }
+    if (result.additionalInjuries) {
+      result.additionalInjuries.forEach((inj, i) => {
+        rolls.push(`Additional ${i + 1}: ${inj.roll}`);
+        if (inj.randomRoll) {
+          rolls.push(`Additional ${i + 1} ${inj.randomRoll.type.toUpperCase()}: ${inj.randomRoll.value}`);
+        }
+      });
+    }
+    return rolls;
+  },
+
+  collectRogueDocRolls(result) {
+    const rolls = [];
+    if (result.cost !== null && result.cost !== undefined) {
+      rolls.push(`Cost: ${result.cost} credits`);
+    }
+    rolls.push(`D6: ${result.roll}`);
+    if (result.stabilisedInjury) {
+      rolls.push(`Stabilised D66: ${result.stabilisedInjury.roll}`);
+      if (result.stabilisedInjury.randomRoll) {
+        rolls.push(`${result.stabilisedInjury.randomRoll.type.toUpperCase()}: ${result.stabilisedInjury.randomRoll.value}`);
+      }
+      if (result.stabilisedInjury.additionalInjuries) {
+        result.stabilisedInjury.additionalInjuries.forEach((inj, i) => {
+          rolls.push(`Stabilised Additional ${i + 1}: ${inj.roll}`);
+          if (inj.randomRoll) {
+            rolls.push(`Stabilised Additional ${i + 1} ${inj.randomRoll.type.toUpperCase()}: ${inj.randomRoll.value}`);
+          }
+        });
+      }
+    }
+    return rolls;
   },
 
   resolveInjury() {
-    // Mark the run time and show this timer
+    const result = LastingInjuriesEngine.resolveInjury();
     if (typeof TimerUtil !== 'undefined') {
-      TimerUtil.markRun('lastingInjuriesLastRun');
+      TimerUtil.markRun('lastingInjuriesLastRun', this.collectInjuryRolls(result));
       TimerUtil.showTimer('lasting-injuries-timer');
     }
-    
+
     // Clear rogue doc results
     const rogueDocResults = document.getElementById("rogue-doc-results");
     if (rogueDocResults) rogueDocResults.innerHTML = "";
-    
-    const result = LastingInjuriesEngine.resolveInjury();
+
     this.displayResult(result);
   },
 

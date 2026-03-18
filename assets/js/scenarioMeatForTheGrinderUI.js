@@ -91,15 +91,16 @@ const scenarioMeatForTheGrinderUI = {
   },
 
   doRoll() {
-    if (typeof TimerUtil !== 'undefined') {
-      TimerUtil.markRun('scenarioMeatForTheGrinderLastRun');
-      TimerUtil.showTimer('scavenged-weapons-timer');
-    }
-
     const container = document.getElementById('scavenged-weapons-results');
     if (!container) return;
 
     const { rolls, total, result, error } = scenarioMeatForTheGrinderEngine.roll();
+
+    if (typeof TimerUtil !== 'undefined') {
+      const rollStrings = rolls ? [`2D6: ${rolls.join(' + ')} = ${total}`] : [];
+      TimerUtil.markRun('scenarioMeatForTheGrinderLastRun', rollStrings);
+      TimerUtil.showTimer('scavenged-weapons-timer');
+    }
 
     if (error) {
       container.innerHTML = `<div class="error-box">${error}</div>`;

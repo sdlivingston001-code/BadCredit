@@ -88,9 +88,12 @@ const LastingInjuriesEngine = {
       const injury = this.findInjury(roll);
       
       if (injury && !excludedIds.includes(injury.id)) {
+        const { randomRoll, additionalInjuries } = this.processRandomEffects(injury);
         injuries.push({
           roll,
-          injury
+          injury,
+          randomRoll,
+          additionalInjuries
         });
       }
     }

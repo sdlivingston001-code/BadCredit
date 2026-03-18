@@ -3,6 +3,7 @@
 const TimerUtil = {
   intervals: {},
   storageKeys: [], // Track all storage keys for cleanup
+  storageToContainer: {}, // Map storageKey → containerId for roll display updates
 
   /**
    * Initialize and display a timer that shows time since last run (with millisecond precision)
@@ -27,6 +28,7 @@ const TimerUtil = {
     if (!this.storageKeys.includes(storageKey)) {
       this.storageKeys.push(storageKey);
     }
+    this.storageToContainer[storageKey] = containerId;
 
     // Update the display
     this.updateDisplay(storageKey, timerDiv);
@@ -60,27 +62,64 @@ const TimerUtil = {
     const now = Date.now();
     const elapsedMs = now - lastRunTime;
 
+    let timeHtml;
     if (elapsedMs < 5000) {
       // Show milliseconds for first 5 seconds
       const totalSeconds = Math.floor(elapsedMs / 1000);
       const milliseconds = elapsedMs % 1000;
-      element.innerHTML = `⏱️ <b>Last Run:</b> ${totalSeconds}.${String(milliseconds).padStart(3, '0')} seconds ago`;
+      timeHtml = `⏱️ <b>Last Run:</b> ${totalSeconds}.${String(milliseconds).padStart(3, '0')} seconds ago`;
       element.classList.remove('timer-grey');
       element.classList.add('timer-green');
     } else {
       // After 5 seconds, just show generic message
-      element.innerHTML = "⏱️ <b>Last Run:</b> More than 5 seconds ago";
+      timeHtml = "⏱️ <b>Last Run:</b> More than 5 seconds ago";
       element.classList.remove('timer-green');
       element.classList.add('timer-grey');
     }
+
+    // Append stored rolls if present
+    let rollsHtml = '';
+    try {
+      const stored = localStorage.getItem(`${storageKey}_rolls`);
+      if (stored) {
+        const rolls = JSON.parse(stored);
+        if (rolls && rolls.length > 0) {
+          rollsHtml = `<div class="timer-rolls">🎲 <b>Rolls:</b> ${rolls.join(', ')}</div>`;
+        }
+      }
+    } catch (e) { /* ignore parse errors */ }
+
+    element.innerHTML = timeHtml + rollsHtml;
   },
 
   /**
    * Mark the current time as the last run time
    * @param {string} storageKey - localStorage key to update
+   * @param {string[]} rolls - Optional roll strings to display in the timer
    */
-  markRun(storageKey) {
+  markRun(storageKey, rolls = []) {
     localStorage.setItem(storageKey, Date.now().toString());
+    if (rolls && rolls.length > 0) {
+      localStorage.setItem(`${storageKey}_rolls`, JSON.stringify(rolls));
+    } else {
+      localStorage.removeItem(`${storageKey}_rolls`);
+    }
+  },
+
+  /**
+   * Update stored rolls for a timer and refresh its display.
+   * Call this when rolls are determined after markRun was already called.
+   * @param {string} storageKey - localStorage key
+   * @param {string[]} rolls - Array of roll strings
+   */
+  recordRolls(storageKey, rolls) {
+    if (!rolls || rolls.length === 0) return;
+    localStorage.setItem(`${storageKey}_rolls`, JSON.stringify(rolls));
+    const containerId = this.storageToContainer[storageKey];
+    if (containerId) {
+      const el = document.getElementById(`${containerId}-display`);
+      if (el) this.updateDisplay(storageKey, el);
+    }
   },
 
   /**
@@ -126,6 +165,7 @@ const TimerUtil = {
   clearAllStorage() {
     this.storageKeys.forEach(key => {
       localStorage.removeItem(key);
+      localStorage.removeItem(`${key}_rolls`);
     });
   },
 

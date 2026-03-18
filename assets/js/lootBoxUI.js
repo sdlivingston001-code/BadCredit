@@ -181,23 +181,27 @@ const LootBoxUI = {
   },
 
   openLootBoxSmash() {
+    const lootResult = LootBoxEngine.smashOpenLootBox();
     if (typeof TimerUtil !== 'undefined') {
-      TimerUtil.markRun('lootBoxLastRun');
+      const rolls = [];
+      if (lootResult.rawRoll !== undefined) rolls.push(`D66: ${lootResult.roll} (smashed from ${lootResult.rawRoll})`);
+      else if (lootResult.roll !== undefined) rolls.push(`D66: ${lootResult.roll}`);
+      if (lootResult.incomeResult && lootResult.incomeResult.roll !== undefined) rolls.push(`Income: ${lootResult.incomeResult.roll}`);
+      TimerUtil.markRun('lootBoxLastRun', rolls);
       TimerUtil.showTimer('loot-box-timer');
     }
-    const lootResult = LootBoxEngine.smashOpenLootBox();
     this.displayLootBoxResult(lootResult);
   },
 
   openLootBox() {
-    // Mark the run time and show timer
+    const lootResult = LootBoxEngine.openLootBox();
     if (typeof TimerUtil !== 'undefined') {
-      TimerUtil.markRun('lootBoxLastRun');
+      const rolls = [];
+      if (lootResult.roll !== undefined) rolls.push(`D66: ${lootResult.roll}`);
+      if (lootResult.incomeResult && lootResult.incomeResult.roll !== undefined) rolls.push(`Income: ${lootResult.incomeResult.roll}`);
+      TimerUtil.markRun('lootBoxLastRun', rolls);
       TimerUtil.showTimer('loot-box-timer');
     }
-
-    // Get loot box result
-    const lootResult = LootBoxEngine.openLootBox();
     this.displayLootBoxResult(lootResult);
   },
 

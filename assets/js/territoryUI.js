@@ -8,6 +8,8 @@ const TerritoryUI = {
   playerGangTerritories: null,
   playerGangTerritoryCounts: null, // Track how many of each territory a gang owns
   territoryNameToIdMap: {},
+  campaignIdInput: null,
+  setCampaignIdButton: null,
 
  async init(jsonPath, gangsPath) {
   try {
@@ -56,6 +58,17 @@ const TerritoryUI = {
     this.renderCheckboxes();
     this.bindEvents();
     this.initTimer();
+
+    // Wire up campaign ID input
+    this.campaignIdInput = document.getElementById('territory-campaign-id-input');
+    this.setCampaignIdButton = document.getElementById('territory-set-campaign-id');
+    if (this.campaignIdInput && this.setCampaignIdButton) {
+      this.campaignIdInput.value = CampaignViewerEngine.getCampaignId();
+      this.setCampaignIdButton.addEventListener('click', () => this.setCampaignId());
+      this.campaignIdInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') this.setCampaignId();
+      });
+    }
   } catch (err) {
     console.error(err);
     const container = document.getElementById("territory-container");
@@ -83,45 +96,44 @@ const TerritoryUI = {
     return name.replace(/\s*\([^)]*\)\s*$/, '').trim();
   },
 
-  async loadCampaignData() {
-    // Check if CampaignViewerEngine is available and has cached data
-    if (typeof CampaignViewerEngine === 'undefined') {
+  setCampaignId() {
+    const newId = this.campaignIdInput ? this.campaignIdInput.value.trim() : '';
+    if (!newId) {
+      alert('Please enter a valid campaign ID');
       return;
     }
-
-    // Try to get cached campaign data
-    let cached = CampaignViewerEngine.getCachedData();
-    const cacheIsStale = CampaignViewerEngine.isCacheStale();
-
-    // If no cache exists, or cache is older than 2 hours, fetch fresh data
-    if (!cached || cacheIsStale) {
-      const reason = !cached ? 'No cached campaign data available' : 'Campaign data is over 2 hours old';
-      const notice = document.getElementById('territory-container');
-      if (notice) notice.innerHTML = '<div class="info-box warning-box">Fetching campaign data, please wait&hellip;</div>';
-
-      const result = await CampaignViewerEngine.fetchCampaignData(false);
-
-      if (notice) notice.innerHTML = '';
-
-      if (result.success) {
-        cached = result.data;
-      } else {
-        if (cacheIsStale && cached) {
-          console.warn('TerritoryUI: Falling back to stale cache');
-        } else {
-          return;
+    if (CampaignViewerEngine.setCampaignId(newId)) {
+      this.loadCampaignData().then((success) => {
+        if (success) {
+          this.renderGangSelector();
+          this.renderCheckboxes();
         }
-      }
+      });
     }
+  },
 
-    // Verify gangs data is loaded
+  async loadCampaignData() {
+    if (typeof CampaignViewerEngine === 'undefined') return false;
+
     if (!this.gangs || Object.keys(this.gangs).length === 0) {
       console.warn('TerritoryUI: Gangs data not loaded yet');
-      return;
+      return false;
     }
 
-    CampaignViewerEngine.campaignData = cached;
-    this.campaignData = cached;
+    const container = document.getElementById('territory-container');
+    if (container) container.innerHTML = '<div class="info-box warning-box">Fetching campaign data, please wait&hellip;</div>';
+
+    const result = await CampaignViewerEngine.fetchCampaignData(false);
+
+    if (container) container.innerHTML = '';
+
+    if (!result.success) {
+      if (container) container.innerHTML = `<div class="error-box">❌ Error fetching campaign data: ${result.error}</div>`;
+      return false;
+    }
+
+    CampaignViewerEngine.campaignData = result.data;
+    this.campaignData = result.data;
     
     // Generate mappings
     this.playerGangMapping = CampaignViewerEngine.getPlayerGangToIdMapping(this.gangs);
@@ -142,6 +154,8 @@ const TerritoryUI = {
       });
       this.playerGangTerritoryCounts[gangName] = counts;
     });
+
+    return true;
   },
 
   renderGangSelector() {
@@ -475,6 +489,14 @@ const TerritoryUI = {
       }
 
       const allResults = TerritoryEngine.resolve_all(selectedTerritories, userInputCounts, selectedGang);
+
+      if (typeof TimerUtil !== 'undefined') {
+        const territoryRolls = allResults.territories
+          .filter(t => t.income && t.income.rolls && t.income.rolls.length > 0)
+          .map(t => `${t.territory.name}: ${t.income.rolls.join('+')} = ${t.income.total}`);
+        if (territoryRolls.length > 0) TimerUtil.recordRolls('territoryLastRun', territoryRolls);
+      }
+
       this.displayResults(allResults.territories, allResults.territoriesWithoutIncome, allResults.territoriesWithoutRecruit, allResults.territoriesWithoutFixedRecruit, allResults.territoriesWithoutReputation, allResults.territoriesWithoutFixedGear, allResults.territoriesWithoutBattleSpecialRules, allResults.territoriesWithoutTradingSpecialRules, allResults.territoriesWithoutScenarioSelectionSpecialRules, allResults.territoriesWithEvents);
     });
   },

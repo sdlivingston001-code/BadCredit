@@ -138,14 +138,14 @@ const XPTablesUI = {
   },
 
   rollAdvancement() {
-    // Mark the run time and show timer
+    const advancementResult = XPTablesEngine.rollAdvancement();
     if (typeof TimerUtil !== 'undefined') {
-      TimerUtil.markRun('xpTablesLastRun');
+      const rolls = advancementResult.rolls
+        ? [`2D6: ${advancementResult.rolls.join(' + ')} = ${advancementResult.total}`]
+        : [];
+      TimerUtil.markRun('xpTablesLastRun', rolls);
       TimerUtil.showTimer('xp-tables-timer');
     }
-
-    // Get advancement result
-    const advancementResult = XPTablesEngine.rollAdvancement();
     this.displayAdvancementResult(advancementResult);
   },
 
