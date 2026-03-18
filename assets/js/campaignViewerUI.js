@@ -1,11 +1,5 @@
 // campaignViewerUI.js - Display Munda Manager campaign data
 
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('button').forEach(button => {
-    button.classList.add('btn');
-  });
-});
-
 const CampaignViewerUI = {
   containerId: null,
   refreshButton: null,
@@ -126,7 +120,7 @@ const CampaignViewerUI = {
 
     const cacheTime = localStorage.getItem(CampaignViewerEngine.cacheTimeKey);
     if (!cacheTime) {
-      this.timerContainer.innerHTML = '<span style="color: #666;">⏱️ Never fetched</span>';
+      this.timerContainer.innerHTML = '<span class="timer-muted">⏱️ Never fetched</span>';
       return;
     }
 
@@ -137,7 +131,7 @@ const CampaignViewerUI = {
       // Still in cooldown
       const minutes = Math.floor(timeRemaining / 60000);
       const seconds = Math.floor((timeRemaining % 60000) / 1000);
-      this.timerContainer.innerHTML = `<span style="color: #dc3545;">⏱️ Next refresh available in ${minutes}:${seconds.toString().padStart(2, '0')}</span>`;
+      this.timerContainer.innerHTML = `<span class="timer-cooldown">⏱️ Next refresh available in ${minutes}:${seconds.toString().padStart(2, '0')}</span>`;
       
       if (this.refreshButton) {
         this.refreshButton.disabled = true;
@@ -147,7 +141,7 @@ const CampaignViewerUI = {
       // Can refresh
       const minutes = Math.floor(age / 60000);
       const seconds = Math.floor((age % 60000) / 1000);
-      this.timerContainer.innerHTML = `<span style="color: #28a745;">⏱️ Last fetched ${minutes}:${seconds.toString().padStart(2, '0')} ago</span>`;
+      this.timerContainer.innerHTML = `<span class="timer-ready">⏱️ Last fetched ${minutes}:${seconds.toString().padStart(2, '0')} ago</span>`;
       
       if (this.refreshButton) {
         this.refreshButton.disabled = false;
@@ -291,7 +285,7 @@ const CampaignViewerUI = {
     section.appendChild(title);
 
     const infoBox = document.createElement('div');
-    infoBox.className = 'result-box blue mb-15';
+    infoBox.className = 'result-box result-box-blue mb-15';
     infoBox.innerHTML = `
       <b>Type:</b> ${campaignInfo.campaign_type_name || 'Unknown'}<br>
       <b>Status:</b> ${campaignInfo.status || 'Unknown'}
@@ -311,7 +305,7 @@ const CampaignViewerUI = {
     section.appendChild(title);
 
     const statsBox = document.createElement('div');
-    statsBox.className = 'result-box green';
+    statsBox.className = 'result-box result-box-green';
     statsBox.innerHTML = `
       <b>Total Gangs:</b> ${stats.total_gangs}<br>
       <b>Total Members:</b> ${stats.total_members}<br>
@@ -345,14 +339,12 @@ const CampaignViewerUI = {
       const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}.`;
       
       gangBox.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: start;">
+        <div class="flex-center" style="justify-content: space-between; align-items: start;">
           <div>
             <b>${medal} ${gang.name}</b><br>
-            <span style="font-size: 0.9em; color: #666;">
-              ${gang.type} • Owner: ${gang.owner}
-            </span>
+            <span class="text-muted">${gang.type} • Owner: ${gang.owner}</span>
           </div>
-          <div style="text-align: right;">
+          <div class="text-right">
             <b>Rating:</b> ${gang.rating}<br>
             <b>Wealth:</b> ${gang.wealth}<br>
             <b>Territories:</b> ${gang.territory_count || 0}
@@ -385,15 +377,13 @@ const CampaignViewerUI = {
 
       territories.owned.forEach(territory => {
         const territoryBox = document.createElement('div');
-        territoryBox.className = 'result-box grey mb-10';
+        territoryBox.className = 'result-box result-box-grey mb-10';
         territoryBox.style.borderLeft = `5px solid ${territory.gang_colour || '#000000'}`;
         
         territoryBox.innerHTML = `
           <b>${territory.name}</b>
-          ${territory.ruined ? ' <span style="color: #dc3545;">(Ruined)</span>' : ''}<br>
-          <span style="font-size: 0.9em; color: #666;">
-            Controlled by: ${territory.gang_name} (${territory.gang_type})
-          </span>
+          ${territory.ruined ? ' <span class="text-danger">(Ruined)</span>' : ''}<br>
+          <span class="text-muted">Controlled by: ${territory.gang_name} (${territory.gang_type})</span>
         `;
         section.appendChild(territoryBox);
       });
@@ -434,7 +424,7 @@ const CampaignViewerUI = {
 
     // Summary box
     const summaryBox = document.createElement('div');
-    summaryBox.className = validation.allValid ? 'result-box green mb-15' : 'result-box yellow mb-15';
+    summaryBox.className = validation.allValid ? 'result-box result-box-green mb-15' : 'result-box result-box-yellow mb-15';
     summaryBox.innerHTML = `
       <b>Validation Summary:</b><br>
       ✅ Valid Mappings: ${validation.valid.length}<br>
@@ -447,8 +437,7 @@ const CampaignViewerUI = {
     if (validation.invalid.length > 0) {
       const invalidTitle = document.createElement('h4');
       invalidTitle.textContent = 'Unmapped Territories';
-      invalidTitle.className = 'mb-10';
-      invalidTitle.style.color = '#dc3545';
+      invalidTitle.className = 'mb-10 text-danger';
       section.appendChild(invalidTitle);
 
       const invalidBox = document.createElement('div');
@@ -466,11 +455,9 @@ const CampaignViewerUI = {
       section.appendChild(validTitle);
 
       const validBox = document.createElement('div');
-      validBox.className = 'info-box mb-15';
-      validBox.style.maxHeight = '200px';
-      validBox.style.overflowY = 'auto';
+      validBox.className = 'info-box mb-15 scrollable-box';
       const mappingList = validation.valid
-        .map(t => `<span style="font-family: monospace;">${t.apiName} → ${t.territoryId}</span>`)
+        .map(t => `<span class="monospace">${t.apiName} → ${t.territoryId}</span>`)
         .join('<br>');
       validBox.innerHTML = mappingList;
       section.appendChild(validBox);
@@ -492,7 +479,7 @@ const CampaignViewerUI = {
 
     // Summary box
     const summaryBox = document.createElement('div');
-    summaryBox.className = validation.allValid ? 'result-box green mb-15' : 'result-box yellow mb-15';
+    summaryBox.className = validation.allValid ? 'result-box result-box-green mb-15' : 'result-box result-box-yellow mb-15';
     summaryBox.innerHTML = `
       <b>Validation Summary:</b><br>
       ✅ Valid Mappings: ${validation.valid.length}<br>
@@ -505,8 +492,7 @@ const CampaignViewerUI = {
     if (validation.invalid.length > 0) {
       const invalidTitle = document.createElement('h4');
       invalidTitle.textContent = 'Unmapped Gang Types';
-      invalidTitle.className = 'mb-10';
-      invalidTitle.style.color = '#dc3545';
+      invalidTitle.className = 'mb-10 text-danger';
       section.appendChild(invalidTitle);
 
       const invalidBox = document.createElement('div');
@@ -524,11 +510,9 @@ const CampaignViewerUI = {
       section.appendChild(validTitle);
 
       const validBox = document.createElement('div');
-      validBox.className = 'info-box mb-15';
-      validBox.style.maxHeight = '200px';
-      validBox.style.overflowY = 'auto';
+      validBox.className = 'info-box mb-15 scrollable-box';
       const mappingList = validation.valid
-        .map(g => `<span style="font-family: monospace;">${g.apiType} → ${g.gangId}</span>`)
+        .map(g => `<span class="monospace">${g.apiType} → ${g.gangId}</span>`)
         .join('<br>');
       validBox.innerHTML = mappingList;
       section.appendChild(validBox);

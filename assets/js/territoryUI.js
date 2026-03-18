@@ -1,11 +1,5 @@
 // territoryUI.js
 
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('button').forEach(button => {
-    button.classList.add('btn');
-  });
-});
-
 const TerritoryUI = {
   territories: [],
   territoryMap: {},
@@ -41,8 +35,6 @@ const TerritoryUI = {
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
           alert(`Territory data validation errors:\n${validation.errors.join('\n')}`);
         }
-      } else {
-        console.log('✓ All territories validated successfully');
       }
     }
 
@@ -50,7 +42,6 @@ const TerritoryUI = {
     const gangsResponse = await fetch(`${gangsPath}?t=${Date.now()}`, { cache: 'no-store' });
     if (gangsResponse.ok) {
       this.gangs = await gangsResponse.json();
-      console.log('Loaded gangs:', this.gangs);
     } else {
       this.gangs = [];
     }
@@ -76,14 +67,10 @@ const TerritoryUI = {
 
   buildTerritoryMap() {
     this.territories.forEach(t => {
-      // Expecting each territory to have a unique `id`
       this.territoryMap[t.id] = t;
-      
-      // Create normalized name mapping (strip gang-specific suffixes)
       const normalizedName = this.normalizeTerritoryName(t.name);
       this.territoryNameToIdMap[normalizedName] = t.id;
     });
-    console.log('TerritoryUI: Built territory name to ID map:', this.territoryNameToIdMap);
   },
 
   /**
@@ -99,7 +86,6 @@ const TerritoryUI = {
   async loadCampaignData() {
     // Check if CampaignViewerEngine is available and has cached data
     if (typeof CampaignViewerEngine === 'undefined') {
-      console.log('TerritoryUI: CampaignViewerEngine not available');
       return;
     }
 
@@ -109,10 +95,7 @@ const TerritoryUI = {
 
     // If no cache exists, or cache is older than 2 hours, fetch fresh data
     if (!cached || cacheIsStale) {
-      const reason = !cached
-        ? 'No cached campaign data available'
-        : 'Campaign data is over 2 hours old';
-      console.log(`TerritoryUI: ${reason}. Fetching from server...`);
+      const reason = !cached ? 'No cached campaign data available' : 'Campaign data is over 2 hours old';
       const notice = document.getElementById('territory-container');
       if (notice) notice.innerHTML = '<div class="info-box warning-box">Fetching campaign data, please wait&hellip;</div>';
 
@@ -122,17 +105,13 @@ const TerritoryUI = {
 
       if (result.success) {
         cached = result.data;
-        console.log('TerritoryUI: Successfully fetched campaign data');
       } else {
-        console.log('TerritoryUI: Failed to fetch campaign data:', result.error);
         if (cacheIsStale && cached) {
-          console.log('TerritoryUI: Falling back to stale cache');
+          console.warn('TerritoryUI: Falling back to stale cache');
         } else {
           return;
         }
       }
-    } else {
-      console.log('TerritoryUI: Using cached campaign data');
     }
 
     // Verify gangs data is loaded
@@ -151,113 +130,64 @@ const TerritoryUI = {
     // Count territories for each gang (handle duplicates)
     this.playerGangTerritoryCounts = {};
     Object.entries(this.playerGangTerritories).forEach(([gangName, territoryNames]) => {
-      console.log(`TerritoryUI: Processing territories for gang "${gangName}":`, territoryNames);
       const counts = {};
       territoryNames.forEach(name => {
-        // Normalize API territory name before lookup
         const normalizedName = this.normalizeTerritoryName(name);
         const territoryId = this.territoryNameToIdMap[normalizedName];
-        console.log(`  Territory: "${name}" -> normalized: "${normalizedName}" -> ID: "${territoryId}"`);
         if (territoryId) {
           counts[territoryId] = (counts[territoryId] || 0) + 1;
-          console.log(`    Count for ${territoryId}: ${counts[territoryId]}`);
         } else {
           console.warn(`TerritoryUI: Could not map territory "${name}" (normalized: "${normalizedName}") to local territory`);
         }
       });
       this.playerGangTerritoryCounts[gangName] = counts;
-      console.log(`TerritoryUI: Final counts for "${gangName}":`, counts);
     });
-    
-    console.log('TerritoryUI: Loaded campaign data');
-    console.log('TerritoryUI: Player gang mapping:', this.playerGangMapping);
-    console.log('TerritoryUI: Player gang territories:', this.playerGangTerritories);
-    console.log('TerritoryUI: Player gang territory counts:', this.playerGangTerritoryCounts);
-    console.log('TerritoryUI: Number of player gangs:', Object.keys(this.playerGangMapping).length);
   },
 
   renderGangSelector() {
     const container = document.getElementById("territory-container");
     if (!container) return;
 
-    // Create gang selector wrapper
-    const selectorWrapper = document.createElement("div");
-    selectorWrapper.className = "selector-wrapper with-divider";
-
-    const label = document.createElement("label");
-    label.className = "selector-label";
-    label.setAttribute("for", "gang-select");
-    label.textContent = "Select Gang: ";
-
-    const select = document.createElement("select");
-    select.id = "gang-select";
-    select.className = "select-input select-input-small";
-
-    // Add default option
-    const defaultOption = document.createElement("option");
-    defaultOption.value = "";
-    defaultOption.textContent = "-- Select Gang --";
-    select.appendChild(defaultOption);
-
-    // If campaign data is available, show player gangs
+    let optionsHTML;
     if (this.playerGangMapping && Object.keys(this.playerGangMapping).length > 0) {
-      // Add separator
-      const campaignOptGroup = document.createElement("optgroup");
-      campaignOptGroup.label = "Campaign Gangs";
-      
-      Object.entries(this.playerGangMapping).forEach(([playerGangName, gangId]) => {
-        const option = document.createElement("option");
-        option.value = `player:${playerGangName}`;
-        option.textContent = playerGangName;
-        option.dataset.gangId = gangId;
-        campaignOptGroup.appendChild(option);
-      });
-      
-      select.appendChild(campaignOptGroup);
-      
-      // Add separator before regular gangs
-      const regularOptGroup = document.createElement("optgroup");
-      regularOptGroup.label = "All Gang Types";
-      
-      // Add regular gang options
-      if (this.gangs && typeof this.gangs === 'object') {
-        Object.entries(this.gangs).forEach(([id, gangData]) => {
-          const option = document.createElement("option");
-          option.value = id;
-          option.textContent = gangData.name;
-          regularOptGroup.appendChild(option);
-        });
-      }
-      
-      select.appendChild(regularOptGroup);
+      const campaignOptions = Object.entries(this.playerGangMapping)
+        .map(([playerGangName, gangId]) =>
+          `<option value="player:${playerGangName}" data-gang-id="${gangId}">${playerGangName}</option>`)
+        .join('');
+      const regularOptions = (this.gangs && typeof this.gangs === 'object')
+        ? Object.entries(this.gangs)
+            .map(([id, gangData]) => `<option value="${id}">${gangData.name}</option>`)
+            .join('')
+        : '';
+      optionsHTML = `
+        <optgroup label="Campaign Gangs">${campaignOptions}</optgroup>
+        <optgroup label="All Gang Types">${regularOptions}</optgroup>`;
     } else {
-      // No campaign data - show regular gangs only
-      if (this.gangs && typeof this.gangs === 'object') {
-        Object.entries(this.gangs).forEach(([id, gangData]) => {
-          const option = document.createElement("option");
-          option.value = id;
-          option.textContent = gangData.name;
-          select.appendChild(option);
-        });
-      }
+      optionsHTML = (this.gangs && typeof this.gangs === 'object')
+        ? Object.entries(this.gangs)
+            .map(([id, gangData]) => `<option value="${id}">${gangData.name}</option>`)
+            .join('')
+        : '';
     }
 
-    selectorWrapper.appendChild(label);
-    selectorWrapper.appendChild(select);
+    const selectorWrapper = document.createElement("div");
+    selectorWrapper.className = "selector-wrapper with-divider";
+    selectorWrapper.innerHTML = `
+      <label class="selector-label" for="gang-select">Select Gang: </label>
+      <select id="gang-select" class="select-input select-input-small">
+        <option value="">-- Select Gang --</option>
+        ${optionsHTML}
+      </select>
+    `;
     container.appendChild(selectorWrapper);
 
-    // Add event listener to handle gang selection
-    select.addEventListener('change', () => {
-      const selectedValue = select.value;
-      
-      // Check if this is a player gang
+    selectorWrapper.querySelector('#gang-select').addEventListener('change', (e) => {
+      const selectedValue = e.target.value;
       if (selectedValue.startsWith('player:')) {
-        const playerGangName = selectedValue.substring(7); // Remove 'player:' prefix
-        this.handlePlayerGangSelection(playerGangName);
+        this.handlePlayerGangSelection(selectedValue.substring(7));
       } else {
-        // Regular gang selection
         this.updateLegacySelector(selectedValue);
-        this.renderCheckboxes(); // Show all territories
+        this.renderCheckboxes();
       }
     });
   },
@@ -288,11 +218,10 @@ const TerritoryUI = {
         const countInput = document.getElementById(`territory-count-${territoryId}`);
         if (checkbox) {
           checkbox.checked = true;
-          // Show and set the count input if the territory has multiple copies
           if (countInput) {
             const count = territoryCounts[territoryId] || 1;
             countInput.value = count;
-            countInput.style.display = 'inline-block';
+            countInput.classList.remove('hidden');
           }
         }
       });
@@ -309,19 +238,14 @@ const TerritoryUI = {
     const container = document.getElementById("territory-container");
     if (!container) return;
 
-    // Remove existing legacy selector if present
     const existingLegacySelector = document.getElementById("legacy-selector-wrapper");
-    if (existingLegacySelector) {
-      existingLegacySelector.remove();
-    }
+    if (existingLegacySelector) existingLegacySelector.remove();
 
-    // Check if selected gang has legacy dominionGangId
     if (!selectedGangKey || !this.gangs || !this.gangs[selectedGangKey]) return;
 
     const selectedGangData = this.gangs[selectedGangKey];
     if (selectedGangData.dominionGangId !== 'legacy') return;
 
-    // Find which legacy type this gang uses
     let legacyType = null;
     if (selectedGangData.legacy_venator === 1) legacyType = 'legacy_venator';
     else if (selectedGangData.legacy_outcast === 1) legacyType = 'legacy_outcast';
@@ -329,45 +253,27 @@ const TerritoryUI = {
 
     if (!legacyType) return;
 
-    // Find all gangs that have this legacy type
     const compatibleGangs = Object.entries(this.gangs)
       .filter(([id, gangData]) => gangData[legacyType] === 1 && gangData.dominionGangId !== 'legacy')
       .map(([id, gangData]) => ({ id, name: gangData.name, dominionGangId: gangData.dominionGangId }));
 
     if (compatibleGangs.length === 0) return;
 
-    // Create legacy selector
+    const optionsHTML = compatibleGangs
+      .map(gang => `<option value="${gang.dominionGangId}">${gang.name}</option>`)
+      .join('');
+
     const legacyWrapper = document.createElement("div");
     legacyWrapper.id = "legacy-selector-wrapper";
     legacyWrapper.className = "selector-wrapper with-divider";
+    legacyWrapper.innerHTML = `
+      <label class="selector-label" for="legacy-gang-select">Select House Affiliation: </label>
+      <select id="legacy-gang-select" class="select-input select-input-small">
+        <option value="">-- Select House --</option>
+        ${optionsHTML}
+      </select>
+    `;
 
-    const legacyLabel = document.createElement("label");
-    legacyLabel.className = "selector-label";
-    legacyLabel.setAttribute("for", "legacy-gang-select");
-    legacyLabel.textContent = "Select House Affiliation: ";
-
-    const legacySelect = document.createElement("select");
-    legacySelect.id = "legacy-gang-select";
-    legacySelect.className = "select-input select-input-small";
-
-    // Add default option
-    const defaultOption = document.createElement("option");
-    defaultOption.value = "";
-    defaultOption.textContent = "-- Select House --";
-    legacySelect.appendChild(defaultOption);
-
-    // Add compatible gang options
-    compatibleGangs.forEach(gang => {
-      const option = document.createElement("option");
-      option.value = gang.dominionGangId;
-      option.textContent = gang.name;
-      legacySelect.appendChild(option);
-    });
-
-    legacyWrapper.appendChild(legacyLabel);
-    legacyWrapper.appendChild(legacySelect);
-
-    // Insert after the gang selector
     const gangSelector = container.querySelector('.gang-selector-wrapper');
     if (gangSelector && gangSelector.nextSibling) {
       container.insertBefore(legacyWrapper, gangSelector.nextSibling);
@@ -435,7 +341,7 @@ const TerritoryUI = {
         const count = territoryCounts && territoryCounts[territory.id] ? territoryCounts[territory.id] : null;
 
         wrapper.innerHTML = `
-          <label for="${id}" style="display: flex; align-items: center; gap: 8px;">
+          <label for="${id}">
             <input type="checkbox"
                    id="${id}"
                    class="territory-checkbox"
@@ -443,26 +349,20 @@ const TerritoryUI = {
             <span>${territory.name}</span>
             <input type="number"
                    id="${countInputId}"
-                   class="territory-count-input"
+                   class="territory-count-input ${count ? '' : 'hidden'}"
                    min="1"
                    max="10"
-                   value="${count || 1}"
-                   style="width: 50px; margin-left: 4px; ${count ? '' : 'display: none;'}">
+                   value="${count || 1}">
           </label>
         `;
 
         section.appendChild(wrapper);
-        
-        // Add event listener to show/hide count input
+
         const checkbox = wrapper.querySelector(`#${id}`);
         const countInput = wrapper.querySelector(`#${countInputId}`);
-        
+
         checkbox.addEventListener('change', () => {
-          if (checkbox.checked) {
-            countInput.style.display = 'inline-block';
-          } else {
-            countInput.style.display = 'none';
-          }
+          countInput.classList.toggle('hidden', !checkbox.checked);
         });
       });
 
@@ -813,7 +713,7 @@ const TerritoryUI = {
     const withoutRulesItems = this.createWithoutRulesItems(withoutRulesCategories);
     if (withoutRulesItems.length > 0) {
       const section = document.createElement("div");
-      section.innerHTML = "<br><br><br><h3>📋 Territories Without Rules</h3>";
+      section.innerHTML = '<h3 class="mt-30">📋 Territories Without Rules</h3>';
       const list = document.createElement("ul");
       withoutRulesItems.forEach(item => list.appendChild(item));
       section.appendChild(list);

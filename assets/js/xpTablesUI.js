@@ -1,11 +1,5 @@
 // xpTablesUI.js
 
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('button').forEach(button => {
-    button.classList.add('btn');
-  });
-});
-
 const XPTablesUI = {
   xpData: null,
 
@@ -23,6 +17,7 @@ const XPTablesUI = {
       this.initTimer();
       this.displayUserChoiceAdvancements();
       this.displaySkillTables();
+      this.displayRandomAdvancementsTable();
 
       // Expose test functions to window for console testing
       window.testAdvancement = (roll) => {
@@ -81,77 +76,26 @@ const XPTablesUI = {
     const container = document.getElementById("user-choice-advancements");
     if (!container || !this.xpData.advancements_userchoice) return;
 
-    const advancementsData = this.xpData.advancements_userchoice;
-    
-    const title = document.createElement("h3");
-    title.textContent = "User Choice Advancements";
-    title.className = "mb-15";
-    container.appendChild(title);
+    const rows = Object.entries(this.xpData.advancements_userchoice).map(([key, data]) => {
+      const rating = data.ratingIncrease !== null ? `+${data.ratingIncrease}` : 'n/a';
+      const buttonRow = data.sides
+        ? `<tr class="skill-button-row"><td colspan="3" class="text-center"><button class="btn-small">Roll for Skill</button></td></tr>`
+        : '';
+      return `<tr><td>${data.cost}</td><td>${data.advancement}</td><td>${rating}</td></tr>${buttonRow}`;
+    }).join('');
 
-    const fighterTypes = document.createElement("p");
-    fighterTypes.innerHTML = "<em>Leaders, Champions, Brutes, Prospects, Juves, Specialists.</em>";
-    fighterTypes.className = "mb-15";
-    container.appendChild(fighterTypes);
-
-    const table = document.createElement("table");
-    table.className = "advancement-table";
-    
-    // Create header
-    const thead = document.createElement("thead");
-    const headerRow = document.createElement("tr");
-    ['Cost', 'Advancement', 'Rating Increase'].forEach(header => {
-      const th = document.createElement("th");
-      th.textContent = header;
-      headerRow.appendChild(th);
+    container.innerHTML = `
+      <h3 class="mb-15">User Choice Advancements</h3>
+      <p class="mb-15"><em>Leaders, Champions, Brutes, Prospects, Juves, Specialists.</em></p>
+      <table class="advancement-table">
+        <thead><tr><th>Cost</th><th>Advancement</th><th>Rating Increase</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <p class="table-footnote">* If you already have the random skill; select one from that skillset instead.</p>
+    `;
+    container.querySelectorAll('.btn-small').forEach(btn => {
+      btn.addEventListener('click', () => this.showSkillTableSelector());
     });
-    thead.appendChild(headerRow);
-    table.appendChild(thead);
-
-    // Create body
-    const tbody = document.createElement("tbody");
-    Object.entries(advancementsData).forEach(([key, data]) => {
-      const row = document.createElement("tr");
-      
-      const costCell = document.createElement("td");
-      costCell.textContent = data.cost;
-      row.appendChild(costCell);
-      
-      const advCell = document.createElement("td");
-      advCell.innerHTML = data.advancement;
-      row.appendChild(advCell);
-      
-      const ratingCell = document.createElement("td");
-      ratingCell.textContent = data.ratingIncrease !== null ? `+${data.ratingIncrease}` : 'n/a';
-      row.appendChild(ratingCell);
-      
-      tbody.appendChild(row);
-
-      // Add skill roll button if this advancement has a sides property
-      if (data.sides) {
-        const buttonRow = document.createElement("tr");
-        buttonRow.className = "skill-button-row";
-        const buttonCell = document.createElement("td");
-        buttonCell.colSpan = 3;
-        buttonCell.className = "text-center";
-        
-        const skillButton = document.createElement("button");
-        skillButton.className = "btn-small";
-        skillButton.textContent = "Roll for Skill";
-        skillButton.onclick = () => this.showSkillTableSelector(key);
-        buttonCell.appendChild(skillButton);
-        
-        buttonRow.appendChild(buttonCell);
-        tbody.appendChild(buttonRow);
-      }
-    });
-    table.appendChild(tbody);
-    
-    container.appendChild(table);
-
-    const note = document.createElement("p");
-    note.className = "table-footnote";
-    note.textContent = "* If you already have the random skill; select one from that skillset instead.";
-    container.appendChild(note);
   },
 
   displaySkillTables() {
@@ -161,60 +105,36 @@ const XPTablesUI = {
     const skillTables = XPTablesEngine.getSkillTables();
     if (skillTables.length === 0) return;
 
-    const title = document.createElement("h3");
-    title.textContent = "Skill Tables";
-    title.className = "mb-15 mt-30";
-    container.appendChild(title);
+    const buttons = skillTables.map(t => `<button class="btn-skill" data-table-id="${t.id}">${t.name}</button>`).join('');
 
-    const description = document.createElement("p");
-    description.textContent = "Roll on these tables when an advancement requires a specific skill selection:";
-    description.className = "mb-15";
-    container.appendChild(description);
-
-    const buttonContainer = document.createElement("div");
-    buttonContainer.className = "skill-buttons-grid";
-
-    skillTables.forEach(table => {
-      const button = document.createElement("button");
-      button.className = "btn-skill";
-      button.textContent = table.name;
-      button.onclick = () => this.rollSkillTable(table.id);
-      buttonContainer.appendChild(button);
+    container.innerHTML = `
+      <h3 class="mb-15 mt-30">Skill Tables</h3>
+      <p class="mb-15">Roll on these tables when an advancement requires a specific skill selection:</p>
+      <div class="skill-buttons-grid">${buttons}</div>
+    `;
+    container.querySelectorAll('[data-table-id]').forEach(btn => {
+      btn.addEventListener('click', () => this.rollSkillTable(btn.dataset.tableId));
     });
-
-    container.appendChild(buttonContainer);
   },
 
-  showSkillTableSelector(advancementKey) {
-    const resultsContainer = document.getElementById("xp-tables-results");
-    if (!resultsContainer) return;
+  showSkillTableSelector() {
+    const container = document.getElementById("xp-tables-results");
+    if (!container) return;
 
-    resultsContainer.innerHTML = "";
+    const buttons = XPTablesEngine.getSkillTables()
+      .map(t => `<button class="btn-skill" data-table-id="${t.id}">${t.name}</button>`)
+      .join('');
 
-    const mainContainer = document.createElement("div");
-    mainContainer.classList.add('mt-20');
-
-    const title = document.createElement("h3");
-    title.textContent = "Select a Skill Table to Roll:";
-    title.classList.add('mb-15');
-    mainContainer.appendChild(title);
-
-    const skillTables = XPTablesEngine.getSkillTables();
-    const buttonContainer = document.createElement("div");
-    buttonContainer.className = "skill-buttons-grid";
-
-    skillTables.forEach(table => {
-      const button = document.createElement("button");
-      button.className = "btn-skill";
-      button.textContent = table.name;
-      button.onclick = () => this.rollSkillTable(table.id);
-      buttonContainer.appendChild(button);
+    container.innerHTML = `
+      <div class="mt-20">
+        <h3 class="mb-15">Select a Skill Table to Roll:</h3>
+        <div class="skill-buttons-grid">${buttons}</div>
+      </div>
+    `;
+    container.querySelectorAll('[data-table-id]').forEach(btn => {
+      btn.addEventListener('click', () => this.rollSkillTable(btn.dataset.tableId));
     });
-
-    mainContainer.appendChild(buttonContainer);
-    resultsContainer.appendChild(mainContainer);
-
-    resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   },
 
   rollAdvancement() {
@@ -308,50 +228,53 @@ const XPTablesUI = {
   },
 
   createAdvancementResultBox(result, rolls, total) {
-    const resultDiv = document.createElement("div");
-    resultDiv.className = "result-box result-box-blue";
-
-    // Display roll info
-    const rollText = document.createElement("div");
-    rollText.className = "result-heading result-roll";
     const diceHtml = rolls ? `(${rolls.join(' + ')}) = ` : '';
-    rollText.innerHTML = `<b>2D6 Roll:</b> ${diceHtml}${total}`;
-    resultDiv.appendChild(rollText);
+    const ratingHtml = result.ratingIncrease != null
+      ? `<div class="result-effect"><b>Rating Increase:</b> +${result.ratingIncrease}</div>`
+      : '';
+    const div = document.createElement('div');
+    div.className = 'result-box result-box-blue';
+    div.innerHTML = `
+      <div class="result-heading result-roll"><b>2D6 Roll:</b> ${diceHtml}${total}</div>
+      <div class="result-heading result-name"><b>${result.advancement}</b></div>
+      ${ratingHtml}
+    `;
+    return div;
+  },
 
-    // Display advancement text
-    const advText = document.createElement("div");
-    advText.className = "result-heading result-name";
-    advText.innerHTML = `<b>${result.advancement}</b>`;
-    resultDiv.appendChild(advText);
+  displayRandomAdvancementsTable() {
+    const container = document.getElementById("random-advancement-table");
+    if (!container) return;
 
-    // Display rating increase if present
-    if (result.ratingIncrease !== null && result.ratingIncrease !== undefined) {
-      const ratingDiv = document.createElement("div");
-      ratingDiv.className = "result-effect";
-      ratingDiv.innerHTML = `<b>Rating Increase:</b> +${result.ratingIncrease}`;
-      resultDiv.appendChild(ratingDiv);
-    }
+    const randomTable = XPTablesEngine.getTable('advancements_random');
+    if (!randomTable || !randomTable.results) return;
 
-    return resultDiv;
+    const rows = Object.values(randomTable.results).map(data => {
+      const rating = data.ratingIncrease != null ? `+${data.ratingIncrease}` : 'n/a';
+      return `<tr>
+        <td>${data.values.join(', ')}</td>
+        <td>${data.advancement}</td>
+        <td>${rating}</td>
+      </tr>`;
+    }).join('');
+
+    container.innerHTML = `
+      <h3 class="mb-15 mt-30">Random Advancement Table</h3>
+      <table class="advancement-table">
+        <thead><tr><th>2D6 Roll</th><th>Advancement</th><th>Rating Increase</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    `;
   },
 
   createSkillResultBox(result, rolls, total) {
-    const resultDiv = document.createElement("div");
-    resultDiv.className = "result-box result-box-green";
-
-    // Display roll info
-    const rollText = document.createElement("div");
-    rollText.className = "result-heading result-roll";
     const diceHtml = rolls ? `(${rolls.join(' + ')}) = ` : '';
-    rollText.innerHTML = `<b>D6 Roll:</b> ${diceHtml}${total}`;
-    resultDiv.appendChild(rollText);
-
-    // Display skill name
-    const nameText = document.createElement("div");
-    nameText.className = "result-heading result-name";
-    nameText.innerHTML = `<b>${result.name}</b>`;
-    resultDiv.appendChild(nameText);
-
-    return resultDiv;
+    const div = document.createElement('div');
+    div.className = 'result-box result-box-green';
+    div.innerHTML = `
+      <div class="result-heading result-roll"><b>D6 Roll:</b> ${diceHtml}${total}</div>
+      <div class="result-heading result-name"><b>${result.name}</b></div>
+    `;
+    return div;
   }
 };

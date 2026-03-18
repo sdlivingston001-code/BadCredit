@@ -7,17 +7,29 @@ title: Lasting Injuries
 <p>Generators on this page reflect the campaigns' House rules (no <b>Into Recovery</b>, or <b>Convalescence</b>).</p>
 <h2>Lasting Injuries</h2>
 
-<div id="lasting-injuries-container"></div>
+<div class="selector-wrapper">
+  <label class="selector-label" for="injury-mode-selector">Select Injury Mode:</label>
+  <select id="injury-mode-selector" class="select-input">
+    <option value="standard_lasting_injuries" selected>Standard (D66)</option>
+    <option value="ironman_lasting_injuries">Ironman (D6)</option>
+  </select>
+</div>
 
 <button id="resolve-lasting-injuries">Resolve Lasting Injuries</button>
 
 <div id="lasting-injuries-results"></div>
 
-<hr style="margin: 40px 0; border-color:#444;">
+<hr class="hr-dark" style="margin: 40px 0;">
 
 <h2>Rogue Doc Treatment</h2>
 
-<div id="rogue-doc-container"></div>
+<div class="selector-wrapper">
+  <label class="selector-label" for="rogue-doc-mode-selector">Select Treatment Mode:</label>
+  <select id="rogue-doc-mode-selector" class="select-input">
+    <option value="trading_post_rogue_doc" selected>Trading Post (Post Battle Action)</option>
+    <option value="hanger_on_rogue_doc">Hanger-on (Patch-Up)</option>
+  </select>
+</div>
 
 <button id="resolve-rogue-doc">Get Treatment</button>
 

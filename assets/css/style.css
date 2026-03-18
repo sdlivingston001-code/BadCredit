@@ -247,6 +247,11 @@ ol li, ul li {
   margin-bottom: 10px;
 }
 
+.result-box-primary {
+  padding: 15px;
+  border-width: 3px;
+}
+
 .result-box-green {
   background-color: #d4edda;
   border-color: #28a745;
@@ -472,19 +477,65 @@ ol li, ul li {
   flex-wrap: wrap;
 }
 
+.flex-row-center {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.input-flex {
+  flex: 1;
+  min-width: 300px;
+}
+
 .text-center {
   text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-muted {
+  color: #666;
+  font-size: 0.9em;
+}
+
+.text-small {
+  font-size: 0.9em;
+}
+
+.text-danger {
+  color: #dc3545;
+}
+
+.text-capitalize {
+  text-transform: capitalize;
+}
+
+.text-base {
+  font-size: 1rem;
+}
+
+.scrollable-box {
+  max-height: 200px;
+  overflow-y: auto;
 }
 
 .mt-5 { margin-top: 5px; }
 .mt-10 { margin-top: 10px; }
 .mt-15 { margin-top: 15px; }
 .mt-20 { margin-top: 20px; }
+.mt-30 { margin-top: 30px; }
 
 .mb-5 { margin-bottom: 5px; }
 .mb-10 { margin-bottom: 10px; }
 .mb-15 { margin-bottom: 15px; }
 .mb-20 { margin-bottom: 20px; }
+.mb-30 { margin-bottom: 30px; }
+
+.ml-10 { margin-left: 10px; }
 
 .mt-0 { margin-top: 0; }
 .mb-0 { margin-bottom: 0; }
@@ -563,6 +614,7 @@ ol li, ul li {
   cursor: pointer;
   display: flex;
   align-items: center;
+  gap: 8px;
   padding: 4px;
 }
 
@@ -572,6 +624,9 @@ ol li, ul li {
 }
 
 .territory-count-input {
+  display: inline-block;
+  width: 50px;
+  margin-left: 4px;
   padding: 2px 4px;
   text-align: center;
   font-size: 0.9em;
@@ -616,6 +671,22 @@ ol li, ul li {
   font-style: italic;
   margin-top: 8px;
   opacity: 0.8;
+}
+
+/* ======================
+   TIMER COLOURS
+   ====================== */
+
+.timer-muted { color: #666; }
+.timer-cooldown { color: #dc3545; }
+.timer-ready { color: #28a745; }
+
+/* ======================
+   HR
+   ====================== */
+
+.hr-dark {
+  border-color: #444;
 }
 
 /* ======================

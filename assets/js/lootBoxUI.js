@@ -1,11 +1,5 @@
 // lootBoxUI.js
 
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('button').forEach(button => {
-    button.classList.add('btn');
-  });
-});
-
 const LootBoxUI = {
   lootData: null,
 
@@ -34,35 +28,18 @@ const LootBoxUI = {
       window.testNestedTable = (tableName, roll = null) => {
         const result = LootBoxEngine.testNestedTable(tableName, roll);
         if (result && !result.error) {
-          // Display as nested result
           const container = document.getElementById('loot-box-results');
           if (container) {
-            container.innerHTML = '';
-            const mainContainer = document.createElement('div');
-            mainContainer.classList.add('mt-20');
-            
-            const title = document.createElement('h3');
-            title.textContent = `Testing: ${tableName}`;
-            title.classList.add('mb-15');
-            mainContainer.appendChild(title);
-            
-            // Display reroll history if present
+            container.innerHTML = `<div class="mt-20"><h3 class="mb-15">Testing: ${tableName}</h3></div>`;
+            const mainContainer = container.querySelector('div');
             if (result.rerollHistory && result.rerollHistory.length > 0) {
               const rerollDiv = document.createElement('div');
               rerollDiv.className = 'info-box reroll-history-box';
-              const rerollList = result.rerollHistory.map(r => `${r.name} (${r.roll})`).join(', ');
-              rerollDiv.innerHTML = `🔄 <b>Rerolled:</b> ${rerollList}`;
+              rerollDiv.innerHTML = `🔄 <b>Rerolled:</b> ${result.rerollHistory.map(r => `${r.name} (${r.roll})`).join(', ')}`;
               mainContainer.appendChild(rerollDiv);
             }
-            
-            const resultBox = this.createResultBox(result.result, result.roll, result.tableName);
-            mainContainer.appendChild(resultBox);
-            
-            if (result.randomEffect) {
-              this.displayNestedEffect(result.randomEffect, mainContainer);
-            }
-            
-            container.appendChild(mainContainer);
+            mainContainer.appendChild(this.createResultBox(result.result, result.roll, result.tableName));
+            if (result.randomEffect) this.displayNestedEffect(result.randomEffect, mainContainer);
           }
           console.log('Test nested table result:', result);
         } else if (result && result.error) {
@@ -105,38 +82,21 @@ const LootBoxUI = {
 
   createResultBox(result, roll, tableName = null, rawRoll = null) {
     const colour = result.colour || "grey";
-    const resultDiv = document.createElement("div");
-    resultDiv.className = `result-box result-box-${colour}`;
+    const table = tableName ? this.lootData[tableName] : this.lootData.loot_box_roll;
+    const sides = table && table.sides;
+    const diceType = sides === "d66" ? "D66" : `D${typeof sides === 'number' ? sides : parseInt(sides)}`;
+    const rollDisplay = (rawRoll !== null && rawRoll !== undefined && rawRoll !== roll)
+      ? `${rawRoll} &rarr; ${roll}`
+      : roll;
 
-    // Display roll info
-    if (roll !== null && roll !== undefined) {
-      const rollText = document.createElement("div");
-      rollText.className = "result-heading result-roll";
-      const table = tableName ? this.lootData[tableName] : this.lootData.loot_box_roll;
-      const sides = table && table.sides;
-      const diceType = sides === "d66" ? "D66" : `D${typeof sides === 'number' ? sides : parseInt(sides)}`;
-      const rollDisplay = (rawRoll !== null && rawRoll !== undefined && rawRoll !== roll)
-        ? `${rawRoll} &rarr; ${roll}`
-        : roll;
-      rollText.innerHTML = `<b>${diceType} Roll:</b> ${rollDisplay}`;
-      resultDiv.appendChild(rollText);
-    }
-
-    // Display result name
-    const nameText = document.createElement("div");
-    nameText.className = "result-heading result-name";
-    nameText.innerHTML = `<b>${result.name}</b>`;
-    resultDiv.appendChild(nameText);
-
-    // Display fixed effect
-    if (result.fixedeffect) {
-      const effectDiv = document.createElement("div");
-      effectDiv.className = "result-effect";
-      effectDiv.innerHTML = result.fixedeffect;
-      resultDiv.appendChild(effectDiv);
-    }
-
-    return resultDiv;
+    const div = document.createElement("div");
+    div.className = `result-box result-box-${colour}`;
+    div.innerHTML = `
+      ${roll !== null && roll !== undefined ? `<div class="result-heading result-roll"><b>${diceType} Roll:</b> ${rollDisplay}</div>` : ''}
+      <div class="result-heading result-name"><b>${result.name}</b></div>
+      ${result.fixedeffect ? `<div class="result-effect">${result.fixedeffect}</div>` : ''}
+    `;
+    return div;
   },
 
   createIncomeBox(incomeResult) {
@@ -160,60 +120,39 @@ const LootBoxUI = {
     if (!randomEffect) return;
 
     if (randomEffect.type === 'reroll') {
-      const rerollDiv = document.createElement("div");
-      rerollDiv.className = "info-box reroll-box";
-      rerollDiv.innerHTML = "🔄 <b>Reroll:</b> This result requires a reroll.";
-      parentDiv.appendChild(rerollDiv);
+      const div = document.createElement("div");
+      div.className = "info-box reroll-box";
+      div.innerHTML = "🔄 <b>Reroll:</b> This result requires a reroll.";
+      parentDiv.appendChild(div);
       return;
     }
 
     if (randomEffect.type === 'pending_roll') {
       const buttonContainer = document.createElement("div");
       buttonContainer.className = "nested-content mt-15";
-      
-      const buttonText = document.createElement("div");
-      buttonText.className = "info-box mb-10";
-      buttonText.innerHTML = `⚡ <b>Additional Roll Required... Click to proceed.</b>`;
-      buttonContainer.appendChild(buttonText);
-
-      const rollButton = document.createElement("button");
-      rollButton.className = "btn";
-      rollButton.textContent = `Roll the dice`;
-      rollButton.onclick = () => {
+      buttonContainer.innerHTML = `
+        <div class="info-box mb-10">⚡ <b>Additional Roll Required... Click to proceed.</b></div>
+        <button class="btn">Roll the dice</button>
+      `;
+      buttonContainer.querySelector('button').addEventListener('click', () => {
         this.rollNestedTable(randomEffect.tableName, buttonContainer);
-      };
-      buttonContainer.appendChild(rollButton);
-
+      });
       parentDiv.appendChild(buttonContainer);
     }
 
     if (randomEffect.type === 'nested_table' && randomEffect.result) {
       const nestedContainer = document.createElement("div");
       nestedContainer.className = "nested-content";
-
-      const nestedTitle = document.createElement("div");
-      nestedTitle.className = "nested-title";
-      nestedTitle.innerHTML = `<b>➡️ Additional Result:</b>`;
-      nestedContainer.appendChild(nestedTitle);
-
-      const nestedBox = this.createResultBox(
-        randomEffect.result,
-        randomEffect.roll,
-        randomEffect.tableName
-      );
-      nestedContainer.appendChild(nestedBox);
-
-      // Recursively display nested effects
+      nestedContainer.innerHTML = `<div class="nested-title"><b>➡️ Additional Result:</b></div>`;
+      nestedContainer.appendChild(this.createResultBox(randomEffect.result, randomEffect.roll, randomEffect.tableName));
       if (randomEffect.nestedEffect) {
         this.displayNestedEffect(randomEffect.nestedEffect, nestedContainer);
       }
-
       parentDiv.appendChild(nestedContainer);
     }
   },
 
   rollNestedTable(tableName, containerDiv) {
-    // Roll the nested table
     const result = LootBoxEngine.rollNestedTable(tableName);
 
     if (result.error) {
@@ -221,31 +160,21 @@ const LootBoxUI = {
       return;
     }
 
-    // Clear the button container and show the result
     containerDiv.innerHTML = "";
 
-    // Display reroll history if present
     if (result.rerollHistory && result.rerollHistory.length > 0) {
       const rerollDiv = document.createElement("div");
       rerollDiv.className = "info-box reroll-history-box";
-      const rerollList = result.rerollHistory.map(r => `${r.name} (${r.roll})`).join(", ");
-      rerollDiv.innerHTML = `🔄 <b>Rerolled:</b> ${rerollList}`;
+      rerollDiv.innerHTML = `🔄 <b>Rerolled:</b> ${result.rerollHistory.map(r => `${r.name} (${r.roll})`).join(", ")}`;
       containerDiv.appendChild(rerollDiv);
     }
 
-    const nestedTitle = document.createElement("div");
-    nestedTitle.className = "nested-title";
-    nestedTitle.innerHTML = `<b>➡️ Additional Result:</b>`;
-    containerDiv.appendChild(nestedTitle);
+    const titleDiv = document.createElement("div");
+    titleDiv.className = "nested-title";
+    titleDiv.innerHTML = `<b>➡️ Additional Result:</b>`;
+    containerDiv.appendChild(titleDiv);
+    containerDiv.appendChild(this.createResultBox(result.result, result.roll, result.tableName));
 
-    const nestedBox = this.createResultBox(
-      result.result,
-      result.roll,
-      result.tableName
-    );
-    containerDiv.appendChild(nestedBox);
-
-    // Check if there's another nested effect
     if (result.randomEffect) {
       this.displayNestedEffect(result.randomEffect, containerDiv);
     }
@@ -276,7 +205,6 @@ const LootBoxUI = {
     const resultsContainer = document.getElementById("loot-box-results");
     if (!resultsContainer) return;
 
-    // Clear previous results
     resultsContainer.innerHTML = "";
 
     if (lootResult.error) {
@@ -284,34 +212,20 @@ const LootBoxUI = {
       return;
     }
 
-    // Create main result container
     const mainContainer = document.createElement("div");
-    mainContainer.classList.add('mt-20');
+    mainContainer.className = "mt-20";
+    mainContainer.innerHTML = '<h3 class="mb-15">Loot Box Contents:</h3>';
+    mainContainer.appendChild(this.createResultBox(lootResult.result, lootResult.roll, null, lootResult.rawRoll));
 
-    // Display title
-    const title = document.createElement("h3");
-    title.textContent = "Loot Box Contents:";
-    title.classList.add('mb-15');
-    mainContainer.appendChild(title);
-
-    // Display main result
-    const resultBox = this.createResultBox(lootResult.result, lootResult.roll, null, lootResult.rawRoll);
-    mainContainer.appendChild(resultBox);
-
-    // Display income if present
     if (lootResult.incomeResult) {
-      const incomeBox = this.createIncomeBox(lootResult.incomeResult);
-      mainContainer.appendChild(incomeBox);
+      mainContainer.appendChild(this.createIncomeBox(lootResult.incomeResult));
     }
 
-    // Display random effects (nested tables)
     if (lootResult.randomEffect) {
       this.displayNestedEffect(lootResult.randomEffect, mainContainer);
     }
 
     resultsContainer.appendChild(mainContainer);
-
-    // Scroll to results
     resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 };

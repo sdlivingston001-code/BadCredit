@@ -1,11 +1,5 @@
 // scenarioMeatForTheGrinderUI.js
 
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('button').forEach(button => {
-    button.classList.add('btn');
-  });
-});
-
 const scenarioMeatForTheGrinderUI = {
   async init(jsonPath) {
     try {

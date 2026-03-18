@@ -7,20 +7,19 @@ title: Campaign Viewer
 
 <p>View live data from your Necromunda campaign on Munda Manager.</p>
 
-<div class="selector-wrapper with-divider" style="margin-bottom: 15px;">
+<div class="selector-wrapper with-divider">
   <label class="selector-label" for="campaign-id-input">Campaign ID:</label>
   <input type="text" 
          id="campaign-id-input" 
-         class="select-input" 
+         class="select-input input-flex" 
          placeholder="e2785818-5736-4c50-bfb2-d243953541f8"
-         style="flex: 1; min-width: 300px;"
   />
-  <button id="set-campaign-id" class="btn" style="margin-left: 10px;">Set Campaign</button>
+  <button id="set-campaign-id" class="btn ml-10">Set Campaign</button>
 </div>
 
-<div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+<div class="flex-row-center">
   <button id="refresh-campaign" class="btn">🔄 Refresh Data</button>
-  <div id="campaign-timer" style="font-family: monospace; font-size: 14px;"></div>
+  <div id="campaign-timer" class="monospace"></div>
 </div>
 
 <div id="campaign-data"></div>

@@ -1,11 +1,5 @@
 // lastingInjuriesUI.js
 
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('button').forEach(button => {
-    button.classList.add('btn');
-  });
-});
-
 const LastingInjuriesUI = {
   injuriesData: null,
 
@@ -33,26 +27,11 @@ const LastingInjuriesUI = {
   createInjuryBox(injury, colour, rollInfo = null) {
     const injDiv = document.createElement("div");
     injDiv.className = `result-box result-box-${colour || 'grey'}`;
-
-    if (rollInfo) {
-      const rollText = document.createElement("div");
-      rollText.className = "result-heading result-roll";
-      rollText.innerHTML = rollInfo;
-      injDiv.appendChild(rollText);
-    }
-
-    const nameText = document.createElement("div");
-    nameText.className = `result-heading result-name ${rollInfo ? 'mt-5' : ''}`;
-    nameText.innerHTML = `<b>${injury.name}</b>`;
-    injDiv.appendChild(nameText);
-
-    if (injury.fixedeffect) {
-      const effectDiv = document.createElement("div");
-      effectDiv.className = "result-effect";
-      effectDiv.innerHTML = injury.fixedeffect;
-      injDiv.appendChild(effectDiv);
-    }
-
+    injDiv.innerHTML = `
+      ${rollInfo ? `<div class="result-heading result-roll">${rollInfo}</div>` : ''}
+      <div class="result-heading result-name ${rollInfo ? 'mt-5' : ''}"><b>${injury.name}</b></div>
+      ${injury.fixedeffect ? `<div class="result-effect">${injury.fixedeffect}</div>` : ''}
+    `;
     return injDiv;
   },
 
@@ -120,29 +99,14 @@ const LastingInjuriesUI = {
 
   async init(jsonPath) {
     try {
-      console.log('🔍 Loading injuries from:', jsonPath);
-      const fullPath = `${jsonPath}?t=${Date.now()}`;
-      console.log('🔍 Full fetch URL:', fullPath);
-      
-      const response = await fetch(fullPath, { cache: 'no-store' });
-      console.log('🔍 Response status:', response.status, response.statusText);
-      
+      const response = await fetch(`${jsonPath}?t=${Date.now()}`, { cache: 'no-store' });
       if (!response.ok) {
-        throw new Error(`Failed to load lasting injuries: ${response.status} from ${jsonPath}`);
+        throw new Error(`Failed to load lasting injuries: ${response.status}`);
       }
 
       this.injuriesData = await response.json();
-      console.log('✅ Injuries data loaded successfully');
-      console.log('🔍 Data keys:', Object.keys(this.injuriesData));
-
-      // Pass data to engine
       LastingInjuriesEngine.loadInjuries(this.injuriesData);
-      console.log('✅ Data passed to engine');
 
-      // Render mode selector
-      this.renderModeSelector();
-      this.renderRogueDocSelector();
-      
       this.bindEvents();
       this.initTimers();
 
@@ -166,86 +130,15 @@ const LastingInjuriesUI = {
       console.log('Use: testInjury(roll) - e.g., testInjury(11) for Standard mode or testInjury(6) for Ironman mode');
       console.log('Use: testRogueDoc(mode) - e.g., testRogueDoc("trading_post_rogue_doc") or testRogueDoc("hanger_on_rogue_doc")');
     } catch (err) {
-      console.error('❌ Error in init:', err);
-      console.error('❌ Error message:', err.message);
-      console.error('❌ Error stack:', err.stack);
-      const container = document.getElementById("lasting-injuries-container");
+      console.error(err);
+      const container = document.getElementById("lasting-injuries-results");
       if (container) {
-        container.innerHTML = `<div style="color: red; padding: 20px; border: 2px solid red; border-radius: 4px;">
+        container.innerHTML = `<div class="error-box">
           <b>Error loading lasting injuries data:</b><br>
-          ${err.message}<br>
-          <em>Check console for details</em>
+          ${err.message}
         </div>`;
       }
     }
-  },
-
-  renderModeSelector() {
-    const container = document.getElementById("lasting-injuries-container");
-    if (!container) return;
-
-    container.innerHTML = '';
-
-    // Create mode selector
-    const selectorDiv = document.createElement("div");
-    selectorDiv.className = "selector-wrapper";
-
-    const label = document.createElement("label");
-    label.className = "selector-label";
-    label.textContent = "Select Injury Mode: ";
-    selectorDiv.appendChild(label);
-
-    const select = document.createElement("select");
-    select.id = "injury-mode-selector";
-    select.className = "select-input";
-
-    // Add options
-    const standardOption = document.createElement("option");
-    standardOption.value = "standard_lasting_injuries";
-    standardOption.textContent = "Standard (D66)";
-    standardOption.selected = true;
-    select.appendChild(standardOption);
-
-    const ironmanOption = document.createElement("option");
-    ironmanOption.value = "ironman_lasting_injuries";
-    ironmanOption.textContent = "Ironman (D6)";
-    select.appendChild(ironmanOption);
-
-    selectorDiv.appendChild(select);
-    container.appendChild(selectorDiv);
-  },
-
-  renderRogueDocSelector() {
-    const container = document.getElementById("rogue-doc-container");
-    if (!container) return;
-
-    container.innerHTML = '';
-
-    const selectorDiv = document.createElement("div");
-    selectorDiv.className = "selector-wrapper";
-
-    const label = document.createElement("label");
-    label.className = "selector-label";
-    label.textContent = "Select Treatment Mode: ";
-    selectorDiv.appendChild(label);
-
-    const select = document.createElement("select");
-    select.id = "rogue-doc-mode-selector";
-    select.className = "select-input";
-
-    const tradingPostOption = document.createElement("option");
-    tradingPostOption.value = "trading_post_rogue_doc";
-    tradingPostOption.textContent = "Trading Post (Post Battle Action)";
-    tradingPostOption.selected = true;
-    select.appendChild(tradingPostOption);
-
-    const hangerOnOption = document.createElement("option");
-    hangerOnOption.value = "hanger_on_rogue_doc";
-    hangerOnOption.textContent = "Hanger-on (Patch-Up)";
-    select.appendChild(hangerOnOption);
-
-    selectorDiv.appendChild(select);
-    container.appendChild(selectorDiv);
   },
 
   bindEvents() {
@@ -332,170 +225,90 @@ const LastingInjuriesUI = {
 
     resultsContainer.innerHTML = "";
 
-    // Check if data failed to load
     if (cost === null) {
       resultsContainer.innerHTML = '<div class="error-box">Error: Injury data not loaded. Please refresh the page.</div>';
       return;
     }
 
-    const costDiv = document.createElement("div");
-    costDiv.className = "cost-box";
+    resultsContainer.innerHTML = `
+      <div class="cost-box">
+        <h2>Treatment Cost</h2>
+        <h1>${cost} credits</h1>
+        <p class="text-base mb-20">Do you want to proceed with treatment?</p>
+        <div class="flex-center">
+          <button id="proceed-treatment" class="btn btn-success">Proceed with Treatment</button>
+          <button id="refuse-treatment" class="btn btn-danger">Refuse Treatment</button>
+        </div>
+      </div>
+    `;
 
-    const costTitle = document.createElement("h2");
-    costTitle.textContent = "Treatment Cost";
-    costDiv.appendChild(costTitle);
-
-    const costAmount = document.createElement("h1");
-    costAmount.textContent = `${cost} credits`;
-    costDiv.appendChild(costAmount);
-
-    const warningText = document.createElement("p");
-    warningText.textContent = "Do you want to proceed with treatment?";
-    warningText.style.fontSize = "16px";
-    warningText.classList.add('mb-20');
-    costDiv.appendChild(warningText);
-
-    const buttonContainer = document.createElement("div");
-    buttonContainer.className = "flex-center";
-
-    const proceedButton = document.createElement("button");
-    proceedButton.textContent = "Proceed with Treatment";
-    proceedButton.className = "btn btn-success";
-    proceedButton.addEventListener("click", () => {
+    resultsContainer.querySelector('#proceed-treatment').addEventListener('click', () => {
       const result = LastingInjuriesEngine.resolveRogueDoc(mode, cost);
       this.displayRogueDocResult(result);
     });
-    buttonContainer.appendChild(proceedButton);
-
-    const refuseButton = document.createElement("button");
-    refuseButton.textContent = "Refuse Treatment";
-    refuseButton.className = "btn btn-danger";
-    refuseButton.addEventListener("click", () => {
+    resultsContainer.querySelector('#refuse-treatment').addEventListener('click', () => {
       this.displayFighterDeath();
     });
-    buttonContainer.appendChild(refuseButton);
-
-    costDiv.appendChild(buttonContainer);
-    resultsContainer.appendChild(costDiv);
   },
 
   displayFighterDeath() {
     const resultsContainer = document.getElementById("rogue-doc-results");
     if (!resultsContainer) return;
 
-    resultsContainer.innerHTML = "";
-
-    const deathDiv = document.createElement("div");
-    deathDiv.className = "death-box";
-
-    const deathTitle = document.createElement("h2");
-    deathTitle.textContent = "💀 Fighter Dies 💀";
-    deathTitle.classList.add('mt-0');
-    deathDiv.appendChild(deathTitle);
-
-    const deathText = document.createElement("p");
-    deathText.innerHTML = "Without medical treatment, the fighter succumbs to their injuries and dies.<br><br>You recover their equipment.";
-    deathText.style.fontSize = "16px";
-    deathText.classList.add('mb-0');
-    deathDiv.appendChild(deathText);
-
-    resultsContainer.appendChild(deathDiv);
+    resultsContainer.innerHTML = `
+      <div class="death-box">
+        <h2 class="mt-0">💀 Fighter Dies 💀</h2>
+        <p class="text-base mb-0">Without medical treatment, the fighter succumbs to their injuries and dies.<br><br>You recover their equipment.</p>
+      </div>
+    `;
   },
 
   displayRogueDocResult(result) {
     const resultsContainer = document.getElementById("rogue-doc-results");
     if (!resultsContainer) return;
 
-    resultsContainer.innerHTML = "";
-
-    const resultDiv = document.createElement("div");
     const colour = result.outcome.colour || "grey";
-    resultDiv.className = `result-box result-box-${colour} mt-20`;
-    resultDiv.style.padding = "15px";
-    resultDiv.style.borderWidth = "3px";
+    const resultDiv = document.createElement("div");
+    resultDiv.className = `result-box result-box-${colour} result-box-primary mt-20`;
+    resultDiv.innerHTML = `
+      ${result.cost !== null ? `<h3 class="result-heading mt-0">Cost: ${result.cost} credits</h3>` : ''}
+      <h3 class="result-heading ${result.cost !== null ? 'mt-10' : 'mt-0'}">Treatment Roll: ${result.roll}</h3>
+      <h2 class="result-heading text-capitalize">${result.outcome.name}</h2>
+      ${result.outcome.fixedeffect ? `<div class="result-effect mt-10">${result.outcome.fixedeffect}</div>` : ''}
+      ${result.outcome.randomeffect === 'stabilisedinjury' ? `<div class="mt-10">The fighter is stabilised. Roll a lasting injury.</div>` : ''}
+    `;
 
-    // Display cost if applicable
-    if (result.cost !== null) {
-      const costText = document.createElement("h3");
-      costText.className = "result-heading mt-0";
-      costText.textContent = `Cost: ${result.cost} credits`;
-      resultDiv.appendChild(costText);
-    }
+    if (result.outcome.randomeffect === 'stabilisedinjury' && result.stabilisedInjury) {
+      const injuryContainer = document.createElement("div");
+      injuryContainer.className = "additional-injuries-container";
+      injuryContainer.innerHTML = '<h4>Stabilised Injury:</h4>';
 
-    // Display roll
-    const rollText = document.createElement("h3");
-    rollText.className = `result-heading ${result.cost !== null ? 'mt-10' : 'mt-0'}`;
-    rollText.textContent = `Treatment Roll: ${result.roll}`;
-    resultDiv.appendChild(rollText);
+      const injColour = result.stabilisedInjury.injury.colour || "grey";
+      injuryContainer.appendChild(this.createInjuryBox(
+        result.stabilisedInjury.injury,
+        injColour,
+        `<b>D66 Roll:</b> ${result.stabilisedInjury.roll}`
+      ));
+      resultDiv.appendChild(injuryContainer);
 
-    // Display outcome name
-    const nameText = document.createElement("h2");
-    nameText.className = "result-heading";
-    nameText.textContent = result.outcome.name;
-    nameText.style.textTransform = "capitalize";
-    resultDiv.appendChild(nameText);
-
-    // Display fixed effect
-    if (result.outcome.fixedeffect) {
-      const fixedEffectDiv = document.createElement("div");
-      fixedEffectDiv.className = "result-effect";
-      fixedEffectDiv.style.marginTop = "10px";
-      fixedEffectDiv.innerHTML = result.outcome.fixedeffect;
-      resultDiv.appendChild(fixedEffectDiv);
-    }
-
-    // Display random effect
-    if (result.outcome.randomeffect === 'stabilisedinjury') {
-      const randomEffectDiv = document.createElement("div");
-      randomEffectDiv.classList.add('mt-10');
-      randomEffectDiv.innerHTML = "The fighter is stabilised. Roll a lasting injury.";
-      resultDiv.appendChild(randomEffectDiv);
-
-      // Display the stabilised injury if present
-      if (result.stabilisedInjury) {
-        const injuryContainer = document.createElement("div");
-        injuryContainer.className = "additional-injuries-container";
-
-        const injuryTitle = document.createElement("h4");
-        injuryTitle.textContent = "Stabilised Injury:";
-        injuryContainer.appendChild(injuryTitle);
-
-        const injColour = result.stabilisedInjury.injury.colour || "grey";
-
-        const injDiv = this.createInjuryBox(
-          result.stabilisedInjury.injury,
-          injColour,
-          `<b>D66 Roll:</b> ${result.stabilisedInjury.roll}`
+      if (result.stabilisedInjury.injury.randomeffect && result.stabilisedInjury.randomRoll) {
+        const randomDiv = document.createElement("div");
+        randomDiv.className = 'mt-10';
+        randomDiv.innerHTML = this.formatRandomEffect(
+          result.stabilisedInjury.injury.randomeffect,
+          result.stabilisedInjury.randomRoll
         );
+        resultDiv.appendChild(randomDiv);
 
-        injuryContainer.appendChild(injDiv);
-        resultDiv.appendChild(injuryContainer);
-
-        // Display random effects on the stabilised injury
-        if (result.stabilisedInjury.injury.randomeffect && result.stabilisedInjury.randomRoll) {
-          const randomDiv = document.createElement("div");
-          randomDiv.classList.add('mt-10');
-          randomDiv.innerHTML = this.formatRandomEffect(
-            result.stabilisedInjury.injury.randomeffect,
-            result.stabilisedInjury.randomRoll
-          );
-          resultDiv.appendChild(randomDiv);
-
-          // Display additional injuries using DRY helper
-          this.displayAdditionalInjuries(
-            result.stabilisedInjury.additionalInjuries,
-            resultDiv,
-            'D66'
-          );
-        }
-
-        // Always show Into Recovery warning for stabilised injuries
-        //resultDiv.appendChild(
-        //  this.createWarningBox("recovery", "This fighter goes into recovery. They cannot make Post Battle actions AND they miss the next battle.")
-        //);
+        this.displayAdditionalInjuries(
+          result.stabilisedInjury.additionalInjuries,
+          resultDiv,
+          'D66'
+        );
       }
     }
 
+    resultsContainer.innerHTML = "";
     resultsContainer.appendChild(resultDiv);
   },
 
@@ -527,47 +340,20 @@ const LastingInjuriesUI = {
     const resultsContainer = document.getElementById("lasting-injuries-results");
     if (!resultsContainer) return;
 
-    resultsContainer.innerHTML = "";
-
     const colour = result.injury.colour || "grey";
+    const nameText = colour === 'black' ? `💀 ${result.injury.name} 💀` : result.injury.name;
+
     const resultDiv = document.createElement("div");
-    resultDiv.className = `result-box result-box-${colour} mt-20`;
-    resultDiv.style.padding = "15px";
-    resultDiv.style.borderWidth = "3px";
+    resultDiv.className = `result-box result-box-${colour} result-box-primary mt-20`;
+    resultDiv.innerHTML = `
+      <h2 class="result-heading mt-0">Roll: ${result.roll}</h2>
+      <h3 class="result-heading">${nameText}</h3>
+      ${result.injury.fixedeffect ? `<div class="result-effect mt-10">${result.injury.fixedeffect}</div>` : ''}
+      ${result.injury.randomeffect ? `<div class="mt-15">${this.formatRandomEffect(result.injury.randomeffect, result.randomRoll)}</div>` : ''}
+    `;
 
-    // Display roll
-    const rollText = document.createElement("h2");
-    rollText.className = "result-heading mt-0";
-    rollText.textContent = `Roll: ${result.roll}`;
-    resultDiv.appendChild(rollText);
-
-    // Display injury name
-    const nameText = document.createElement("h3");
-    nameText.className = "result-heading";
-    nameText.textContent = colour === 'black' ? `💀 ${result.injury.name} 💀` : result.injury.name;
-    resultDiv.appendChild(nameText);
-
-    // Display fixed effect
-    if (result.injury.fixedeffect) {
-      const fixedEffectDiv = document.createElement("div");
-      fixedEffectDiv.className = "result-effect";
-      fixedEffectDiv.style.marginTop = "10px";
-      fixedEffectDiv.innerHTML = result.injury.fixedeffect;
-      resultDiv.appendChild(fixedEffectDiv);
-    }
-
-    // Display random effect
-    if (result.injury.randomeffect) {
-      const randomEffectDiv = document.createElement("div");
-      randomEffectDiv.classList.add('mt-15');
-      randomEffectDiv.innerHTML = this.formatRandomEffect(result.injury.randomeffect, result.randomRoll);
-      resultDiv.appendChild(randomEffectDiv);
-    }
-
-    // Display additional injuries using DRY helper
     this.displayAdditionalInjuries(result.additionalInjuries, resultDiv, 'Roll');
 
-    // Display single injury warnings
     if (result.injury.convalescence === 1) {
       resultDiv.appendChild(
         this.createWarningBox("convalescence", "This fighter make Post Battle actions (but recovers in time for the next battle).")
@@ -580,6 +366,7 @@ const LastingInjuriesUI = {
       );
     }
 
+    resultsContainer.innerHTML = "";
     resultsContainer.appendChild(resultDiv);
   }
 };
