@@ -235,7 +235,6 @@ const XPTablesUI = {
     const div = document.createElement('div');
     div.className = 'result-box result-box-blue';
     div.innerHTML = `
-      <div class="result-heading result-roll"><b>2D6 Roll:</b> ${diceHtml}${total}</div>
       <div class="result-heading result-name"><b>${result.advancement}</b></div>
       ${ratingHtml}
     `;
@@ -272,7 +271,6 @@ const XPTablesUI = {
     const div = document.createElement('div');
     div.className = 'result-box result-box-green';
     div.innerHTML = `
-      <div class="result-heading result-roll"><b>D6 Roll:</b> ${diceHtml}${total}</div>
       <div class="result-heading result-name"><b>${result.name}</b></div>
     `;
     return div;

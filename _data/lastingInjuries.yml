@@ -14,26 +14,26 @@ standard_lasting_injuries:
     impressive_scars:
       values: [12]
       name: Impressive Scars
-      fixedeffect: "Increase <b>Cool</b> by 1.<br><br>This bonus only applies once, treat all further results as Out Cold."
+      fixedeffect: "Increase <b>Cool</b> by 1. This bonus only applies once, treat all further results as Out Cold."
       convalescence: 0
       intoRecovery: 0
       colour: green
     horrid_scars:
       values: [13]
       name: Horrid Scars
-      fixedeffect: "Gain <b>Fearsome</b> skill.<br><br>This bonus only applies once, treat all further results as Out Cold."
+      fixedeffect: "Gain <b>Fearsome</b> skill. This bonus only applies once, treat all further results as Out Cold."
       convalescence: 0
       intoRecovery: 0
       colour: green
     bitter_emnity:
       values: [14]
       name: Bitter Emnity
-      fixedeffect: "When fighting a battle against the gang that inflicted this injury, the fighter gains the Berserker skill. If they already have the Berserker skill or roll this result a second time, treat it as Out Cold."
+      fixedeffect: "When fighting a battle against the gang that inflicted this injury, the fighter gains the <b>Berserker skill</b>. If they already have the Berserker skill or roll this result a second time, treat it as Out Cold."
       convalescence: 0
       intoRecovery: 0
       colour: green
     out_cold:
-      values: [15-26, 31-36] #Extended to capture convalescence results as well.
+      values: [15-26, 31-36, 41] #Extended to capture convalescence & old battle wound results as well.
       name: Out Cold
       convalescence: 0
       intoRecovery: 0
@@ -44,16 +44,16 @@ standard_lasting_injuries:
 #      convalescence: 0
 #      intoRecovery: 0
 #      colour: yellow
-    old_battle_wound:
-      values: [41]
-      name: Old Battle Wound
-      fixedeffect: "At the end of each Battle this fighter participates in roll a D6, on a 1 the fighter goes into Convalescence."
-      convalescence: 0
-      intoRecovery: 0
-      colour: blue
-    partially_defeaned:
+#    old_battle_wound:
+#      values: [41]
+#      name: Old Battle Wound
+#      fixedeffect: "At the end of each Battle this fighter participates in roll a D6, on a 1 the fighter goes into Convalescence."
+#      convalescence: 0
+#      intoRecovery: 0
+#      colour: blue
+    partially_deafened:
       values: [42]
-      name: Partially Defeaned
+      name: Partially Deafened
       fixedeffect: "The fighter suffers no penalty if they are partially deafened, however, suffering this injury again reduces their Leadership by 1."
       convalescence: 0
       intoRecovery: 0
@@ -61,63 +61,62 @@ standard_lasting_injuries:
     humiliated:
       values: [43]
       name: Humiliated
-      fixedeffect: "Reduce Leadership and Cool by 1."
+      fixedeffect: "Reduce <b>Leadership</b> and <b>Cool</b> by 1."
       convalescence: 0
       intoRecovery: 0
       colour: yellow
     eye_injury:
       values: [44]
       name: Eye Injury
-      fixedeffect: "Reduce Ballistic Skill by 1."
+      fixedeffect: "Reduce <b>Ballistic Skill</b> by 1."
       convalescence: 0
       intorecovery: 0
       colour: red
     hand_injury:
       values: [45]
       name: Hand Injury
-      fixedeffect: "Reduce Weapon Skill by 1."
+      fixedeffect: "Reduce <b>Weapon Skill</b> by 1."
       convalescence: 0
       intorecovery: 0
       colour: red
     hobbled:
       values: [46]
       name: Hobbled
-      fixedeffect: "Reduce Movement by 1."
+      fixedeffect: "Reduce <b>Movement</b> by 1."
       convalescence: 0
       intorecovery: 0
       colour: red
     spinal_injury:
       values: [51]
       name: Spinal Injury
-      fixedeffect: "Reduce Strength by 1."
+      fixedeffect: "Reduce <b>Strength</b> by 1."
       convalescence: 0
       intorecovery: 0
       colour: red
     enfeebled:
       values: [52]
       name: Enfeebled
-      fixedeffect: "Reduce Toughness by 1."
+      fixedeffect: "Reduce <b>Toughness</b> by 1."
       convalescence: 0
       intorecovery: 0
       colour: red
     head_injury:
       values: [53]
       name: Head Injury
-      fixedeffect: "Reduce Intelligence and Willpower by 1."
+      fixedeffect: "Reduce <b>Intelligence</b> and <b>Willpower</b> by 1."
       convalescence: 0
       intorecovery: 0
       colour: red
     multiple_injuries:
       values: [54]
       name: Multiple Injuries
-      fixedeffect: "Suffer d3 injuries (ignoring Captured, Multiple Injuries, Memorable Death, Critical Injury, or Out Cold)!"
       randomeffect: d3multipleinjuries
       convalescence: 0
       intoRecovery: 0
     captured:
       values: [55-56]
       name: Captured
-      fixedeffect: "In the wrap-up, test to see if this fighter was captured."
+      fixedeffect: "In the wrap-up, test to see if this fighter was <b>captured</b>."
       convalescence: 0
       intoRecovery: 0
       colour: blue
@@ -155,7 +154,7 @@ ironman_lasting_injuries:
     memorable_death:
       values: [6]
       name: Memorable Death
-      fixedeffect: " The fighter is killed instantly – not even the most talented Doc can save them.<br><br>If the injury was caused by an Attack action, the attacker gains 1 additional XP.<br><br>Equipment is only recovered if a friendly fighter is on the battlefield at the end of the game."
+      fixedeffect: " The fighter is killed instantly – not even the most talented Doc can save them.<br>If the injury was caused by an Attack action, the attacker gains 1 additional XP.<br><br>Equipment is only recovered if a friendly fighter is on the battlefield at the end of the game."
       convalescence: 0
       intoRecovery: 0
       colour: black
@@ -171,7 +170,7 @@ trading_post_rogue_doc:
     complications:
       values: [1]
       name: complications
-      fixedeffect: "This fighter has died.<br><br>You recover all his equipment."
+      fixedeffect: "This fighter has died - Recover all his equipment."
       convalescence: 0
       intoRecovery: 0
       colour: black
@@ -195,7 +194,7 @@ hanger_on_rogue_doc:
     complications:
       values: [1]
       name: complications
-      fixedeffect: "This fighter has died.<br><br>You recover all his equipment."
+      fixedeffect: "This fighter has died - Recover all his equipment."
       convalescence: 0
       intoRecovery: 0
       colour: black

@@ -92,7 +92,6 @@ const LootBoxUI = {
     const div = document.createElement("div");
     div.className = `result-box result-box-${colour}`;
     div.innerHTML = `
-      ${roll !== null && roll !== undefined ? `<div class="result-heading result-roll"><b>${diceType} Roll:</b> ${rollDisplay}</div>` : ''}
       <div class="result-heading result-name"><b>${result.name}</b></div>
       ${result.fixedeffect ? `<div class="result-effect">${result.fixedeffect}</div>` : ''}
     `;
@@ -158,6 +157,24 @@ const LootBoxUI = {
     if (result.error) {
       containerDiv.innerHTML = `<div class="error-box">${result.error}</div>`;
       return;
+    }
+
+    if (typeof TimerUtil !== 'undefined') {
+      const table = this.lootData && this.lootData[result.tableName];
+      const sides = table && table.sides;
+      const diceType = sides === 'd66' ? 'D66' : `D${typeof sides === 'number' ? sides : parseInt(sides)}`;
+      const nestedRolls = [];
+      if (result.rerollHistory) {
+        result.rerollHistory.forEach(r => nestedRolls.push(`${diceType} (rerolled): ${r.roll}`));
+      }
+      nestedRolls.push(`${diceType}: ${result.roll}`);
+      try {
+        const stored = localStorage.getItem('lootBoxLastRun_rolls');
+        const existingRolls = stored ? JSON.parse(stored) : [];
+        TimerUtil.recordRolls('lootBoxLastRun', [...existingRolls, ...nestedRolls]);
+      } catch (e) {
+        TimerUtil.recordRolls('lootBoxLastRun', nestedRolls);
+      }
     }
 
     containerDiv.innerHTML = "";

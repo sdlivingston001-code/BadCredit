@@ -490,12 +490,7 @@ const TerritoryUI = {
 
       const allResults = TerritoryEngine.resolve_all(selectedTerritories, userInputCounts, selectedGang);
 
-      if (typeof TimerUtil !== 'undefined') {
-        const territoryRolls = allResults.territories
-          .filter(t => t.income && t.income.rolls && t.income.rolls.length > 0)
-          .map(t => `${t.territory.name}: ${t.income.rolls.join('+')} = ${t.income.total}`);
-        if (territoryRolls.length > 0) TimerUtil.recordRolls('territoryLastRun', territoryRolls);
-      }
+
 
       this.displayResults(allResults.territories, allResults.territoriesWithoutIncome, allResults.territoriesWithoutRecruit, allResults.territoriesWithoutFixedRecruit, allResults.territoriesWithoutReputation, allResults.territoriesWithoutFixedGear, allResults.territoriesWithoutBattleSpecialRules, allResults.territoriesWithoutTradingSpecialRules, allResults.territoriesWithoutScenarioSelectionSpecialRules, allResults.territoriesWithEvents);
     });

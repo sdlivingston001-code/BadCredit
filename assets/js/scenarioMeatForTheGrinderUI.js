@@ -115,7 +115,6 @@ const scenarioMeatForTheGrinderUI = {
 
     container.innerHTML = `
       <div class="result-box result-box-${colour} mt-20">
-        <div class="result-heading result-roll"><b>2D6 Roll:</b> ${diceHtml}${total}</div>
         <div class="result-heading result-name"><b>${result.name}</b></div>
         ${effectHtml}
       </div>

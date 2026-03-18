@@ -28,19 +28,19 @@ advancements_random:
       ratingIncrease: null
     random_secondary_skill:
       values: [3-5]
-      advancement: "Random SECONDARY skill.<br>If you already have the randomly generated skill; select one from that skillset instead."
+      advancement: "Randomly generate a SECONDARY skill.<br><br>If you already have the randomly generated skill; select one from that skillset instead."
       ratingIncrease: 20
     random_primary_skill:
       values: [6-7]
-      advancement: "Random PRIMARY skill.<br>If you already have the randomly generated skill; select one from that skillset instead."
+      advancement: "Randomly generate a PRIMARY skill.<br><br>If you already have the randomly generated skill; select one from that skillset instead."
       ratingIncrease: 20
     choose_primary_skill:
       values: [8-10]
-      advancement: "Select PRIMARY skill."
+      advancement: "Select a PRIMARY skill."
       ratingIncrease: 20
     choose_secondary_skill:
       values: [11-12]
-      advancement: "Select SECONDARY skill."
+      advancement: "Select a SECONDARY skill."
       ratingIncrease: 30
 
 skills:

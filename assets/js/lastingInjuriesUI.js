@@ -27,12 +27,11 @@ const LastingInjuriesUI = {
   createInjuryBox(injury, colour, rollInfo = null, randomRoll = null) {
     const injDiv = document.createElement("div");
     injDiv.className = `result-box result-box-${colour || 'grey'}`;
-    injDiv.innerHTML = `
-      ${rollInfo ? `<div class="result-heading result-roll">${rollInfo}</div>` : ''}
-      <div class="result-heading result-name ${rollInfo ? 'mt-5' : ''}"><b>${injury.name}</b></div>
-      ${injury.fixedeffect ? `<div class="result-effect">${injury.fixedeffect}</div>` : ''}
-      ${injury.randomeffect && randomRoll ? `<div class="result-effect mt-10">${this.formatRandomEffect(injury.randomeffect, randomRoll)}</div>` : ''}
-    `;
+    injDiv.innerHTML = [
+      `<div class="result-heading result-name"><b>${injury.name}</b></div>`,
+      injury.fixedeffect ? `<div class="result-effect">${injury.fixedeffect}</div>` : '',
+      injury.randomeffect && injury.randomeffect !== 'd3multipleinjuries' && randomRoll ? `<div class="result-effect mt-10">${this.formatRandomEffect(injury.randomeffect, randomRoll)}</div>` : '',
+    ].filter(Boolean).join('');
     return injDiv;
   },
 
@@ -40,10 +39,8 @@ const LastingInjuriesUI = {
     if (!randomRoll) return randomeffect;
 
     if (randomeffect === 'd3xpgain') {
-      return `Rolled ${randomRoll.type.toUpperCase()}: <b>${randomRoll.value}</b> - Gain ${randomRoll.value} XP!`;
-    } else if (randomeffect === 'd3multipleinjuries') {
-      return `Rolled ${randomRoll.type.toUpperCase()}: <b>${randomRoll.value}</b> - Suffer ${randomRoll.value} additional injuries (see below)`;
-    }
+      return `Gain ${randomRoll.value} XP!`;
+    } 
     return randomeffect;
   },
 
@@ -55,7 +52,6 @@ const LastingInjuriesUI = {
     additionalContainer.className = "additional-injuries-container";
 
     const additionalTitle = document.createElement("h4");
-    additionalTitle.textContent = "Additional Injuries:";
     additionalContainer.appendChild(additionalTitle);
 
     // Track warnings to show once at the end
@@ -282,18 +278,14 @@ const LastingInjuriesUI = {
     const colour = result.outcome.colour || "grey";
     const resultDiv = document.createElement("div");
     resultDiv.className = `result-box result-box-${colour} result-box-primary mt-20`;
-    resultDiv.innerHTML = `
-      ${result.cost !== null ? `<h3 class="result-heading mt-0">Cost: ${result.cost} credits</h3>` : ''}
-      <h3 class="result-heading ${result.cost !== null ? 'mt-10' : 'mt-0'}">Treatment Roll: ${result.roll}</h3>
-      <h2 class="result-heading text-capitalize">${result.outcome.name}</h2>
-      ${result.outcome.fixedeffect ? `<div class="result-effect mt-10">${result.outcome.fixedeffect}</div>` : ''}
-      ${result.outcome.randomeffect === 'stabilisedinjury' ? `<div class="mt-10">The fighter is stabilised. Roll a lasting injury.</div>` : ''}
-    `;
+    resultDiv.innerHTML = [
+      `<h2 class="result-heading text-capitalize mt-0">${result.outcome.name}</h2>`,
+      result.outcome.fixedeffect ? `<div class="result-effect mt-10">${result.outcome.fixedeffect}</div>` : ''
+    ].filter(Boolean).join('');
 
     if (result.outcome.randomeffect === 'stabilisedinjury' && result.stabilisedInjury) {
       const injuryContainer = document.createElement("div");
       injuryContainer.className = "additional-injuries-container";
-      injuryContainer.innerHTML = '<h4>Stabilised Injury:</h4>';
 
       const injColour = result.stabilisedInjury.injury.colour || "grey";
       injuryContainer.appendChild(this.createInjuryBox(
@@ -469,12 +461,11 @@ const LastingInjuriesUI = {
 
     const resultDiv = document.createElement("div");
     resultDiv.className = `result-box result-box-${colour} result-box-primary mt-20`;
-    resultDiv.innerHTML = `
-      <h2 class="result-heading mt-0">Roll: ${result.roll}</h2>
-      <h3 class="result-heading">${nameText}</h3>
-      ${result.injury.fixedeffect ? `<div class="result-effect mt-10">${result.injury.fixedeffect}</div>` : ''}
-      ${result.injury.randomeffect ? `<div class="mt-15">${this.formatRandomEffect(result.injury.randomeffect, result.randomRoll)}</div>` : ''}
-    `;
+    resultDiv.innerHTML = [
+      `<h3 class="result-heading mt-0 mb-0">${nameText}</h3>`,
+      result.injury.fixedeffect ? `<div class="result-effect mt-10">${result.injury.fixedeffect}</div>` : '',
+      result.injury.randomeffect && result.injury.randomeffect !== 'd3multipleinjuries' ? `<div class="mt-15">${this.formatRandomEffect(result.injury.randomeffect, result.randomRoll)}</div>` : '',
+    ].filter(Boolean).join('');
 
     this.displayAdditionalInjuries(result.additionalInjuries, resultDiv, 'Roll');
 

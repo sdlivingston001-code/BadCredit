@@ -51,9 +51,9 @@ standard_lasting_injuries:
       convalescence: 0
       intoRecovery: 0
       colour: blue
-    partially_defeaned:
+    partially_deafened:
       values: [42]
-      name: Partially Defeaned
+      name: Partially Deafened
       fixedeffect: "The fighter suffers no penalty if they are partially deafened, however, suffering this injury again reduces their Leadership by 1."
       convalescence: 0
       intoRecovery: 0
@@ -110,7 +110,7 @@ standard_lasting_injuries:
     multiple_injuries:
       values: [54]
       name: Multiple Injuries
-      fixedeffect: "Suffer d3 injuries (ignoring Captured, Multiple Injuries, Memorable Death, Critical Injury, or Out Cold)!"
+      fixedeffect: "Suffer D3 injuries (ignoring Captured, Multiple Injuries, Memorable Death, Critical Injury, or Out Cold)!"
       randomeffect: d3multipleinjuries
       convalescence: 0
       intoRecovery: 0

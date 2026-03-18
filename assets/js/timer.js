@@ -80,11 +80,20 @@ const TimerUtil = {
     // Append stored rolls if present
     let rollsHtml = '';
     try {
+      const prevStored = localStorage.getItem(`${storageKey}_prev_rolls`);
+      if (prevStored) {
+        const prevRolls = JSON.parse(prevStored);
+        if (prevRolls && prevRolls.length > 0) {
+          rollsHtml += `<div class="timer-rolls timer-rolls-prev">🎲 <b>Prev:</b> ${prevRolls.join(', ')}</div>`;
+        }
+      }
+    } catch (e) { /* ignore parse errors */ }
+    try {
       const stored = localStorage.getItem(`${storageKey}_rolls`);
       if (stored) {
         const rolls = JSON.parse(stored);
         if (rolls && rolls.length > 0) {
-          rollsHtml = `<div class="timer-rolls">🎲 <b>Rolls:</b> ${rolls.join(', ')}</div>`;
+          rollsHtml += `<div class="timer-rolls">🎲 <b>Rolls:</b> ${rolls.join(', ')}</div>`;
         }
       }
     } catch (e) { /* ignore parse errors */ }
@@ -98,6 +107,13 @@ const TimerUtil = {
    * @param {string[]} rolls - Optional roll strings to display in the timer
    */
   markRun(storageKey, rolls = []) {
+    // Archive previous rolls as struck-through before replacing
+    const prevRolls = localStorage.getItem(`${storageKey}_rolls`);
+    if (prevRolls) {
+      localStorage.setItem(`${storageKey}_prev_rolls`, prevRolls);
+    } else {
+      localStorage.removeItem(`${storageKey}_prev_rolls`);
+    }
     localStorage.setItem(storageKey, Date.now().toString());
     if (rolls && rolls.length > 0) {
       localStorage.setItem(`${storageKey}_rolls`, JSON.stringify(rolls));
@@ -166,6 +182,7 @@ const TimerUtil = {
     this.storageKeys.forEach(key => {
       localStorage.removeItem(key);
       localStorage.removeItem(`${key}_rolls`);
+      localStorage.removeItem(`${key}_prev_rolls`);
     });
   },
 

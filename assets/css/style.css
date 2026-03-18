@@ -616,6 +616,11 @@ ol li, ul li {
   color: #333;
 }
 
+.timer-rolls-prev {
+  text-decoration: line-through;
+  color: #999;
+}
+
 /* ======================
    TERRITORY ITEMS
    ====================== */
