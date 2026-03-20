@@ -28,5 +28,5 @@ Learn more about the rules, world, and design behind the system.
 
 [Advancements and Promotions]({{ site.baseurl }}/advancements/)<br><br>
 [Pre-Battle Sequence]({{ site.baseurl }}/pre-battle/)<br><br>
-[Post-Battle Sequence]({{ site.baseurl }}/post-battle/)<br><br>
+[Post-Battle Sequence]({{ site.baseurl }}/tools/post-battle.html)<br><br>
 [Campaign Viewer]({{ site.baseurl }}/tools/campaignViewer.html)<br><br>

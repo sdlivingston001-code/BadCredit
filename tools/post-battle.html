@@ -1,0 +1,117 @@
+---
+layout: default
+title: "Post Battle Sequence"
+---
+
+<h1>The Post Battle Sequence</h1>
+
+<div class="selector-wrapper">
+  <label class="selector-label" for="pb-injury-mode">Select Injury Mode:</label>
+  <select id="pb-injury-mode" class="select-input">
+    <option value="standard_lasting_injuries" selected>Standard (D66)</option>
+    <option value="ironman_lasting_injuries">Ironman (D6)</option>
+  </select>
+</div>
+
+<hr class="hr-dark" style="margin: 30px 0;">
+
+<h1>Immediately after the game</h1>
+<p>The rules here reflect campaign House rules.</p>
+
+<h2>1. Wrap-Up ("Main" game only)</h2>
+<h3>A. Succumbing to Injuries</h3>
+<p>If a fighter was:</p>
+<ul>
+  <li>Prone &amp; Seriously Injured when the Battle ended, or</li>
+  <li>Prone &amp; Seriously Injured when they fled the battle (e.g. after a gang had bottled out)</li>
+</ul>
+<p>Roll 1D6, on a 1 or 2 they suffer a Lasting Injury.</p>
+
+
+<button id="pb-roll-succumb">Did the fighter succumb to their injuries?</button>
+
+<div id="pb-succumb-results" class="mt-15"></div>
+
+<button id="pb-resolve-injury" style="display:none;">Resolve Lasting Injury</button>
+
+<div id="pb-injury-results" class="mt-15"></div>
+
+<h3>B. Treat Critical Injuries</h3>
+
+
+
+<h3>C. Did Captured fighters escape?</h3>
+<p>For each friendly fighter that suffered a lasting injury of <b>CAPTURED</b>, test to see if they escape.</p>
+
+<div class="selector-wrapper" style="flex-direction:column; align-items:flex-start; gap:0.4rem;">
+  <label class="selector-label">Modifiers:<br></label>
+  <label class="checkbox-label"><input type="checkbox" id="pb-cap-draw"> &minus;1 &nbsp;The battle was a <b>Draw</b><br></label>
+  <label class="checkbox-label"><input type="checkbox" id="pb-cap-lost"> &minus;2 &nbsp;The fighter's gang <b>lost</b> the battle<br></label>
+  <label class="checkbox-label"><input type="checkbox" id="pb-cap-webbed"> &minus;2 &nbsp;Fighter was taken Out of Action whilst <b>Webbed</b><br></label>
+  <label class="checkbox-label"><input type="checkbox" id="pb-cap-skinblade"> +2 &nbsp;Fighter has a <b>Skinblade</b><br></label>
+</div>
+
+<button id="pb-roll-escape" style="margin-top:10px;">Roll to Escape</button>
+
+<div id="pb-escape-timer" class="mt-15"></div>
+
+<div id="pb-escape-results" class="mt-15"></div>
+
+<h3>D. Ransoming Captured fighters</h3>
+<p>Fighters are always released back to their gangs after the battle. The question is whether they will have all their body parts...</p>
+<ul>
+  <li><b>Enhanced Guilder Bounties!</b> A leader or champion of the <b>Bountied Gang</b> may be ransomed back for <b>50%</b> of their credit value</li>
+  <li><b>Standard Bounties:</b> Any other fighters can be ransomed back for <b>25%</b> of their credit value.</li>
+  <li><b>Prisoner Exchange:</b> If both gangs agree, other fighters can be exchanged on a fighter-for-fighter basis without either gang paying a ransom.</li>
+</ul>
+
+<p>Fighters that weren't exchanged or ransomed suffer a <b>Lasting Injury!</b></p>
+
+<button id="pb-resolve-ransom-injury">Resolve Lasting Injury</button>
+
+<div id="pb-ransom-injury-results" class="mt-15"></div>
+
+<h2>2. Assign / Reassign Territories ("Main" game only)</h2>
+
+<h2>3. Receive Rewards ("Main" game only)</h2>
+
+
+<h2>Guilder Bounties — Performance Bonus</h2>
+<p>If fighting the "Bountied Gang" then you can earn additional credits from <b>ONE</b> of the following options:</p>
+<ul>
+  <li><b>100 credits</b> if at least one Leader or Champion was <b>killed</b> (includes if they die during treatment for Critical Injuries).</li>
+  <li><b>50 credits</b> if at least one Leader or Champion went <b>Out of Action</b>.</li>
+</ul>
+<p>The 100 / 50 credits are paid by local guilders.</p>
+
+
+<hr class="hr-dark" style="margin: 30px 0;">
+
+<h2>Standard Post Battle Steps</h2>
+<p>Track your progress through the standard post-battle sequence. Check off each step as you complete it.</p>
+
+<div id="post-battle-checklist"></div>
+
+<h1>At Players' Leisure</h1>
+
+<h2>Post Battle Actions</h2>
+<p>The following actions have been <b>removed</b>:</p>
+<ul>
+  <li>Sell to Guilders</li>
+  <li>Claim Bounties</li>
+  <li>Dispose of Captives</li>
+</ul>
+
+<h2>Update Roster</h2>
+<p>As normal, in this order:</p>
+
+<script src="{{ '/assets/js/dice.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/timer.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/lastingInjuriesEngine.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/postBattleEngine.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/postBattleUI.js' | relative_url }}"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    PostBattleUI.init("{{ '/data/lastingInjuries.json' | relative_url }}");
+  });
+</script>
