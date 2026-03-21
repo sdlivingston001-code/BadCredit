@@ -50,6 +50,12 @@ const PostBattleUI = {
       ransomBtn.addEventListener('click', () => this.onResolveRansomInjury());
     }
 
+    // Critical injury treatment button
+    const criticalBtn = document.getElementById('pb-resolve-critical-injury');
+    if (criticalBtn) {
+      criticalBtn.addEventListener('click', () => this.onResolveCriticalInjury());
+    }
+
     // Draw / Lost are mutually exclusive
     const drawBox = document.getElementById('pb-cap-draw');
     const lostBox = document.getElementById('pb-cap-lost');
@@ -99,6 +105,16 @@ const PostBattleUI = {
       timerDiv.className = 'mt-15';
       ransomBtn.parentNode.insertBefore(timerDiv, ransomBtn.nextSibling);
       TimerUtil.init('pb-ransom-injury-timer', 'pbRansomInjuryLastRun');
+    }
+
+    // Timer for the critical injury treatment button
+    const criticalBtn = document.getElementById('pb-resolve-critical-injury');
+    if (criticalBtn) {
+      const timerDiv = document.createElement('div');
+      timerDiv.id = 'pb-critical-injury-timer';
+      timerDiv.className = 'mt-15';
+      criticalBtn.parentNode.insertBefore(timerDiv, criticalBtn.nextSibling);
+      TimerUtil.init('pb-critical-injury-timer', 'pbCriticalInjuryLastRun');
     }
   },
 
@@ -218,6 +234,150 @@ const PostBattleUI = {
       });
     }
 
+    return rolls;
+  },
+
+  onResolveCriticalInjury() {
+    if (typeof TimerUtil !== 'undefined') {
+      TimerUtil.markRun('pbCriticalInjuryLastRun');
+      TimerUtil.showTimer('pb-critical-injury-timer');
+    }
+
+    const modeSelector = document.getElementById('pb-rogue-doc-mode');
+    const mode = modeSelector ? modeSelector.value : 'trading_post_rogue_doc';
+
+    if (mode === 'trading_post_rogue_doc') {
+      this.showCriticalInjuryCost(mode);
+    } else {
+      const result = LastingInjuriesEngine.resolveRogueDoc(mode);
+      this.displayCriticalRogueDocResult(result);
+    }
+  },
+
+  showCriticalInjuryCost(mode) {
+    const cost = LastingInjuriesEngine.calculateRogueDocCost(mode);
+    const container = document.getElementById('pb-critical-injury-results');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    if (cost === null) {
+      container.innerHTML = '<div class="error-box">Error: Injury data not loaded. Please refresh the page.</div>';
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="cost-box">
+        <h2>Treatment Cost</h2>
+        <h1>${cost} credits</h1>
+        <p class="text-base mb-20">Do you want to proceed with treatment?</p>
+        <div class="flex-center">
+          <button id="pb-proceed-critical-treatment" class="btn btn-success">Proceed with Treatment</button>
+          <button id="pb-refuse-critical-treatment" class="btn btn-danger">Refuse Treatment</button>
+        </div>
+      </div>
+    `;
+
+    container.querySelector('#pb-proceed-critical-treatment').addEventListener('click', () => {
+      const result = LastingInjuriesEngine.resolveRogueDoc(mode, cost);
+      this.displayCriticalRogueDocResult(result);
+    });
+    container.querySelector('#pb-refuse-critical-treatment').addEventListener('click', () => {
+      this.displayCriticalFighterDeath();
+    });
+  },
+
+  displayCriticalFighterDeath() {
+    const container = document.getElementById('pb-critical-injury-results');
+    if (!container) return;
+
+    container.innerHTML = `
+      <div class="death-box">
+        <h2 class="mt-0">💀 Fighter Dies 💀</h2>
+        <p class="text-base mb-0">Without medical treatment, the fighter succumbs to their injuries and dies.<br><br>You recover their equipment.</p>
+      </div>
+    `;
+  },
+
+  createCriticalInjuryBox(injury, colour, randomRoll) {
+    const injDiv = document.createElement('div');
+    injDiv.className = `result-box result-box-${colour || 'grey'}`;
+
+    let randomEffectHtml = '';
+    if (randomRoll && injury.randomeffect === 'd3xpgain') {
+      randomEffectHtml = `<div class="result-effect mt-10">Gain ${randomRoll.value} XP!</div>`;
+    }
+
+    injDiv.innerHTML = [
+      `<div class="result-heading result-name"><b>${injury.name}</b></div>`,
+      injury.fixedeffect ? `<div class="result-effect">${injury.fixedeffect}</div>` : '',
+      randomEffectHtml,
+    ].filter(Boolean).join('');
+    return injDiv;
+  },
+
+  displayCriticalRogueDocResult(result) {
+    const container = document.getElementById('pb-critical-injury-results');
+    if (!container) return;
+
+    const colour = result.outcome.colour || 'grey';
+    const resultDiv = document.createElement('div');
+    resultDiv.className = `result-box result-box-${colour} result-box-primary mt-20`;
+    resultDiv.innerHTML = [
+      `<h2 class="result-heading text-capitalize mt-0">${result.outcome.name}</h2>`,
+      result.outcome.fixedeffect ? `<div class="result-effect mt-10">${result.outcome.fixedeffect}</div>` : ''
+    ].filter(Boolean).join('');
+
+    if (result.outcome.randomeffect === 'stabilisedinjury' && result.stabilisedInjury) {
+      const injuryContainer = document.createElement('div');
+      injuryContainer.className = 'additional-injuries-container';
+      const injColour = result.stabilisedInjury.injury.colour || 'grey';
+      injuryContainer.appendChild(
+        this.createCriticalInjuryBox(result.stabilisedInjury.injury, injColour, result.stabilisedInjury.randomRoll)
+      );
+      resultDiv.appendChild(injuryContainer);
+
+      if (result.stabilisedInjury.additionalInjuries && result.stabilisedInjury.additionalInjuries.length > 0) {
+        const addlContainer = document.createElement('div');
+        addlContainer.className = 'additional-injuries-container';
+        result.stabilisedInjury.additionalInjuries.forEach((injResult, index) => {
+          const box = this.createCriticalInjuryBox(
+            injResult.injury,
+            injResult.injury.colour || 'grey',
+            injResult.randomRoll
+          );
+          if (index > 0) box.classList.add('mt-10');
+          addlContainer.appendChild(box);
+        });
+        resultDiv.appendChild(addlContainer);
+      }
+    }
+
+    container.innerHTML = '';
+    container.appendChild(resultDiv);
+
+    if (typeof TimerUtil !== 'undefined') {
+      TimerUtil.recordRolls('pbCriticalInjuryLastRun', this.buildCriticalRogueDocRolls(result));
+    }
+  },
+
+  buildCriticalRogueDocRolls(result) {
+    const rolls = [];
+    if (result.cost !== null && result.cost !== undefined) {
+      rolls.push(`Cost: ${result.cost} credits`);
+    }
+    rolls.push(`D6: ${result.roll}`);
+    if (result.stabilisedInjury) {
+      rolls.push(`Stabilised D66: ${result.stabilisedInjury.roll}`);
+      if (result.stabilisedInjury.randomRoll) {
+        rolls.push(`${result.stabilisedInjury.randomRoll.type.toUpperCase()}: ${result.stabilisedInjury.randomRoll.value}`);
+      }
+      if (result.stabilisedInjury.additionalInjuries) {
+        result.stabilisedInjury.additionalInjuries.forEach((inj, i) => {
+          rolls.push(`Stabilised Additional ${i + 1}: ${inj.roll}`);
+        });
+      }
+    }
     return rolls;
   },
 

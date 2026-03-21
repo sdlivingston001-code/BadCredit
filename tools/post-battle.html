@@ -36,11 +36,9 @@ title: "Post Battle Sequence"
 
 <div id="pb-injury-results" class="mt-15"></div>
 
-<h3>B. Treat Critical Injuries</h3>
 
 
-
-<h3>C. Did Captured fighters escape?</h3>
+<h3>B. Did Captured fighters escape?</h3>
 <p>For each friendly fighter that suffered a lasting injury of <b>CAPTURED</b>, test to see if they escape.</p>
 
 <div class="selector-wrapper" style="flex-direction:column; align-items:flex-start; gap:0.4rem;">
@@ -57,7 +55,7 @@ title: "Post Battle Sequence"
 
 <div id="pb-escape-results" class="mt-15"></div>
 
-<h3>D. Ransoming Captured fighters</h3>
+<h3>C. Ransoming Captured fighters</h3>
 <p>Fighters are always released back to their gangs after the battle. The question is whether they will have all their body parts...</p>
 <ul>
   <li><b>Enhanced Guilder Bounties!</b> A leader or champion of the <b>Bountied Gang</b> may be ransomed back for <b>50%</b> of their credit value</li>
@@ -71,18 +69,45 @@ title: "Post Battle Sequence"
 
 <div id="pb-ransom-injury-results" class="mt-15"></div>
 
+<h3>D. Treat Critical Injuries</h3>
+<p>House rules simplify the treatment of critical injuries (they no longer require a Post Battle Action). Typical reasons for suffering a Critical Injury include:</p>
+<ul>
+  <li><b>Out of Action</b> during the battle</li>
+  <li><b>Succumbed to Injuries</b> in Wrap-Up</li>
+  <li><b>Release from Captivity</b> without Ransom / Prisoner Exchange</li>
+</ul>
+
+<div class="selector-wrapper">
+  <label class="selector-label" for="pb-rogue-doc-mode">Select Treatment Mode:</label>
+  <select id="pb-rogue-doc-mode" class="select-input">
+    <option value="trading_post_rogue_doc" selected>Trading Post (Post Battle Action)</option>
+    <option value="hanger_on_rogue_doc">Hanger-on (Patch-Up)</option>
+  </select>
+</div>
+
+<button id="pb-resolve-critical-injury">Get Treatment</button>
+
+<div id="pb-critical-injury-results" class="mt-15"></div>
+
+
+
+
+
 <h2>2. Assign / Reassign Territories ("Main" game only)</h2>
+<p>Gangs will be able to pick up a single territory each campaign period. Typically, the order of selection is determined by the outcome of the battle.</p>
+
 
 <h2>3. Receive Rewards ("Main" game only)</h2>
+<p>Follow the scenario rules collect income, reputation, and other rewards as normal.</p>
+<p>Do not generate income from territories during this phase.</p>
 
-
-<h2>Guilder Bounties — Performance Bonus</h2>
+<h2>Guilder Bounties — Performance Bonus (Any game)</h2>
 <p>If fighting the "Bountied Gang" then you can earn additional credits from <b>ONE</b> of the following options:</p>
 <ul>
   <li><b>100 credits</b> if at least one Leader or Champion was <b>killed</b> (includes if they die during treatment for Critical Injuries).</li>
   <li><b>50 credits</b> if at least one Leader or Champion went <b>Out of Action</b>.</li>
 </ul>
-<p>The 100 / 50 credits are paid by local guilders.</p>
+<p>The 100 / 50 credits are paid by local guilders (not your opponent).</p>
 
 
 <hr class="hr-dark" style="margin: 30px 0;">
