@@ -140,40 +140,56 @@ const CampaignViewerEngine = {
       }
     }
 
-    try {
-      // Use CORS proxy if needed
-      const apiUrl = this.getApiUrl();
-      const url = this.useCorsProxy 
-        ? `${this.corsProxy}${encodeURIComponent(apiUrl)}`
-        : apiUrl;
-      
-      const response = await fetch(url);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+    const TIMEOUT_MS = 10000;
+    const MAX_RETRIES = 2;
+    const apiUrl = this.getApiUrl();
+    const url = this.useCorsProxy
+      ? `${this.corsProxy}${encodeURIComponent(apiUrl)}`
+      : apiUrl;
+
+    let lastError;
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+      try {
+        const response = await fetch(url, { signal: controller.signal });
+        clearTimeout(timer);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        // allorigins.win wraps the response: { contents: "...", status: { ... } }
+        let data;
+        if (this.useCorsProxy) {
+          const wrapper = await response.json();
+          data = JSON.parse(wrapper.contents);
+        } else {
+          data = await response.json();
+        }
+        this.campaignData = data;
+
+        // Save to cache
+        this.saveToCache(data);
+
+        return { success: true, data, fromCache: false };
+      } catch (error) {
+        clearTimeout(timer);
+        lastError = error;
+        const isAbort = error.name === 'AbortError';
+        console.warn(`Fetch attempt ${attempt + 1} failed${isAbort ? ' (timeout)' : ''}: ${error.message}`);
+        // Don't retry non-transient HTTP errors (e.g. 404)
+        if (!isAbort && error.message.startsWith('HTTP error!')) break;
       }
-      
-      // allorigins.win wraps the response: { contents: "...", status: { ... } }
-      let data;
-      if (this.useCorsProxy) {
-        const wrapper = await response.json();
-        data = JSON.parse(wrapper.contents);
-      } else {
-        data = await response.json();
-      }
-      this.campaignData = data;
-      
-      // Save to cache
-      this.saveToCache(data);
-      
-      return { success: true, data, fromCache: false };
-    } catch (error) {
-      console.error('Error fetching campaign data:', error);
-      return { 
-        success: false, 
-        error: error.message || 'Failed to fetch campaign data'
-      };
     }
+
+    console.error('Error fetching campaign data:', lastError);
+    return {
+      success: false,
+      error: lastError.name === 'AbortError'
+        ? 'Request timed out. Check your connection and try again.'
+        : (lastError.message || 'Failed to fetch campaign data')
+    };
   },
 
   /**
