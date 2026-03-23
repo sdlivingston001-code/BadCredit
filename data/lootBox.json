@@ -1,5 +1,0 @@
----
-layout: null
-permalink: /data/lootBox.json
----
-{{ site.data.lootBox | jsonify }}

@@ -1,40 +1,41 @@
-// lootBoxUI.js
+// lootCasketUI.js
 
-const LootBoxUI = {
+const LootCasketUI = {
   lootData: null,
 
   async init(jsonPath) {
     try {
       const response = await fetch(`${jsonPath}?t=${Date.now()}`, { cache: 'no-store' });
       if (!response.ok) {
-        throw new Error(`Failed to load loot box data: ${response.status}`);
+        throw new Error(`Failed to load loot casket data: ${response.status}`);
       }
 
       this.lootData = await response.json();
-      LootBoxEngine.loadLootData(this.lootData);
+      LootCasketEngine.loadLootData(this.lootData);
 
       this.bindEvents();
       this.initTimer();
+      this.renderReferenceTables();
 
       // Expose test functions to window for console testing
-      window.testLootBox = (roll, autoResolve = false) => {
-        const result = LootBoxEngine.testRoll(roll, autoResolve);
+      window.testLootCasket = (roll, autoResolve = false) => {
+        const result = LootCasketEngine.testRoll(roll, autoResolve);
         if (result) {
-          this.displayLootBoxResult(result);
-          console.log('Test loot box result for roll ' + roll + ':', result);
+          this.displayLootCasketResult(result);
+          console.log('Test loot casket result for roll ' + roll + ':', result);
         }
       };
 
       window.testNestedTable = (tableName, roll = null) => {
-        const result = LootBoxEngine.testNestedTable(tableName, roll);
+        const result = LootCasketEngine.testNestedTable(tableName, roll);
         if (result && !result.error) {
-          const container = document.getElementById('loot-box-results');
+          const container = document.getElementById('loot-casket-results');
           if (container) {
             container.innerHTML = `<div class="mt-20"><h3 class="mb-15">Testing: ${tableName}</h3></div>`;
             const mainContainer = container.querySelector('div');
             if (result.rerollHistory && result.rerollHistory.length > 0) {
               const rerollDiv = document.createElement('div');
-              rerollDiv.className = 'info-box reroll-history-box';
+              rerollDiv.className = 'info-casket reroll-history-casket';
               rerollDiv.innerHTML = `🔄 <b>Rerolled:</b> ${result.rerollHistory.map(r => `${r.name} (${r.roll})`).join(', ')}`;
               mainContainer.appendChild(rerollDiv);
             }
@@ -47,42 +48,74 @@ const LootBoxUI = {
         }
       };
 
-      console.log('%c🎁 Loot Box Testing Enabled', 'color: #FFD700; font-weight: bold; font-size: 14px;');
-      console.log('Use: testLootBox(roll, autoResolve) - e.g., testLootBox(4) or testLootBox(4, true)');
+      console.log('%c🎁 Loot Casket Testing Enabled', 'color: #FFD700; font-weight: bold; font-size: 14px;');
+      console.log('Use: testlootCasket(roll, autoResolve) - e.g., testlootCasket(4) or testlootCasket(4, true)');
       console.log('Use: testNestedTable(tableName, roll) - e.g., testNestedTable("d66drugs", 11) or testNestedTable("d3skull")');
     } catch (err) {
       console.error(err);
-      const container = document.getElementById("loot-box-container");
+      const container = document.getElementById("loot-casket-container");
       if (container) {
-        container.innerHTML = '<div class="error-box">Error loading loot box data.</div>';
+        container.innerHTML = '<div class="error-box">Error loading loot casket data.</div>';
       }
     }
   },
 
+  renderReferenceTables() {
+    const container = document.getElementById('loot-table-container');
+    if (!container || !this.lootData) return;
+
+    const tableOrder = [
+      { key: 'loot_casket_roll', title: 'Loot Casket (D6)' },
+      { key: 'd66drugs',      title: 'Drugs Cache (D66)' },
+      { key: 'd6ammo',        title: 'Ammo Stash (D6)' },
+      { key: 'd6fancy',       title: 'Fancy Loot (D6)' },
+      { key: 'd3skull',       title: 'Servo Skull (D3)' },
+    ];
+
+    container.innerHTML = tableOrder.map(({ key, title }) => {
+      const tableData = this.lootData[key];
+      if (!tableData || !tableData.results) return '';
+
+      const rows = Object.values(tableData.results).map(entry => {
+        const colour = entry.colour || 'grey';
+        const rollStr = Array.isArray(entry.values) ? entry.values.join(', ') : entry.values;
+        return `<tr class="row-${colour}">
+          <td>${rollStr}</td>
+          <td><b>${entry.name}</b></td>
+          <td>${entry.fixedeffect || '&mdash;'}</td>
+        </tr>`;
+      }).join('');
+
+      return `
+        <h3>${title}</h3>
+        <table>
+          <thead><tr><th>Roll</th><th>Result</th><th>Effect</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>`;
+    }).join('');
+  },
+
   bindEvents() {
-    const smashBtn = document.getElementById("resolve-loot-box-smash");
+    const smashBtn = document.getElementById("resolve-loot-casket-smash");
     if (smashBtn) {
-      smashBtn.addEventListener("click", () => this.openLootBoxSmash());
+      smashBtn.addEventListener("click", () => this.openLootCasketSmash());
     }
-    const bypassBtn = document.getElementById("resolve-loot-box-bypass");
+    const bypassBtn = document.getElementById("resolve-loot-casket-bypass");
     if (bypassBtn) {
-      bypassBtn.addEventListener("click", () => this.openLootBox());
+      bypassBtn.addEventListener("click", () => this.openLootCasketBypass());
     }
   },
 
   initTimer() {
-    // Use existing timer container placed after the buttons in HTML
     if (typeof TimerUtil !== 'undefined') {
-      TimerUtil.init('loot-box-timer', 'lootBoxLastRun');
-      
-      // Setup page cleanup to reset timer on navigation
+      TimerUtil.init('page-roll-info', 'lootCasketLastRun');
       TimerUtil.setupPageCleanup();
     }
   },
 
   createResultBox(result, roll, tableName = null, rawRoll = null) {
     const colour = result.colour || "grey";
-    const table = tableName ? this.lootData[tableName] : this.lootData.loot_box_roll;
+    const table = tableName ? this.lootData[tableName] : this.lootData.loot_casket_roll;
     const sides = table && table.sides;
     const diceType = sides === "d66" ? "D66" : `D${typeof sides === 'number' ? sides : parseInt(sides)}`;
     const rollDisplay = (rawRoll !== null && rawRoll !== undefined && rawRoll !== roll)
@@ -101,6 +134,7 @@ const LootBoxUI = {
   createIncomeBox(incomeResult) {
     const incomeDiv = document.createElement("div");
     incomeDiv.className = "info-box income-box";
+    incomeDiv.style.animation = 'result-pop-in 0.2s ease-out both';
 
     const rollInfo = incomeResult.sides 
       ? `D${incomeResult.sides} Roll: <b>${incomeResult.roll}</b>`
@@ -129,6 +163,7 @@ const LootBoxUI = {
     if (randomEffect.type === 'pending_roll') {
       const buttonContainer = document.createElement("div");
       buttonContainer.className = "nested-content mt-15";
+      buttonContainer.style.animation = 'result-pop-in 0.2s ease-out both';
       buttonContainer.innerHTML = `
         <div class="info-box mb-10">⚡ <b>Additional Roll Required... Click to proceed.</b></div>
         <button class="btn">Roll the dice</button>
@@ -142,6 +177,7 @@ const LootBoxUI = {
     if (randomEffect.type === 'nested_table' && randomEffect.result) {
       const nestedContainer = document.createElement("div");
       nestedContainer.className = "nested-content";
+      nestedContainer.style.animation = 'result-pop-in 0.2s ease-out both';
       nestedContainer.innerHTML = `<div class="nested-title"><b>➡️ Additional Result:</b></div>`;
       nestedContainer.appendChild(this.createResultBox(randomEffect.result, randomEffect.roll, randomEffect.tableName));
       if (randomEffect.nestedEffect) {
@@ -152,7 +188,7 @@ const LootBoxUI = {
   },
 
   rollNestedTable(tableName, containerDiv) {
-    const result = LootBoxEngine.rollNestedTable(tableName);
+    const result = LootCasketEngine.rollNestedTable(tableName);
 
     if (result.error) {
       containerDiv.innerHTML = `<div class="error-box">${result.error}</div>`;
@@ -169,11 +205,11 @@ const LootBoxUI = {
       }
       nestedRolls.push(`${diceType}: ${result.roll}`);
       try {
-        const stored = localStorage.getItem('lootBoxLastRun_rolls');
+        const stored = localStorage.getItem('lootCasketLastRun_rolls');
         const existingRolls = stored ? JSON.parse(stored) : [];
-        TimerUtil.recordRolls('lootBoxLastRun', [...existingRolls, ...nestedRolls]);
+        TimerUtil.recordRolls('lootCasketLastRun', [...existingRolls, ...nestedRolls]);
       } catch (e) {
-        TimerUtil.recordRolls('lootBoxLastRun', nestedRolls);
+        TimerUtil.recordRolls('lootCasketLastRun', nestedRolls);
       }
     }
 
@@ -182,6 +218,7 @@ const LootBoxUI = {
     if (result.rerollHistory && result.rerollHistory.length > 0) {
       const rerollDiv = document.createElement("div");
       rerollDiv.className = "info-box reroll-history-box";
+      rerollDiv.style.animation = 'result-pop-in 0.2s ease-out both';
       rerollDiv.innerHTML = `🔄 <b>Rerolled:</b> ${result.rerollHistory.map(r => `${r.name} (${r.roll})`).join(", ")}`;
       containerDiv.appendChild(rerollDiv);
     }
@@ -197,33 +234,33 @@ const LootBoxUI = {
     }
   },
 
-  openLootBoxSmash() {
-    const lootResult = LootBoxEngine.smashOpenLootBox();
+  openLootCasketSmash() {
+    const lootResult = LootCasketEngine.smashOpenLootCasket();
     if (typeof TimerUtil !== 'undefined') {
       const rolls = [];
       if (lootResult.rawRoll !== undefined) rolls.push(`D66: ${lootResult.roll} (smashed from ${lootResult.rawRoll})`);
       else if (lootResult.roll !== undefined) rolls.push(`D66: ${lootResult.roll}`);
       if (lootResult.incomeResult && lootResult.incomeResult.roll !== undefined) rolls.push(`Income: ${lootResult.incomeResult.roll}`);
-      TimerUtil.markRun('lootBoxLastRun', rolls);
-      TimerUtil.showTimer('loot-box-timer');
+      rolls.unshift('[Smash]');
+      TimerUtil.markRun('lootCasketLastRun', rolls);
     }
-    this.displayLootBoxResult(lootResult);
+    this.displayLootCasketResult(lootResult);
   },
 
-  openLootBox() {
-    const lootResult = LootBoxEngine.openLootBox();
+  openLootCasketBypass() {
+    const lootResult = LootCasketEngine.openLootCasketBypass();
     if (typeof TimerUtil !== 'undefined') {
       const rolls = [];
       if (lootResult.roll !== undefined) rolls.push(`D66: ${lootResult.roll}`);
       if (lootResult.incomeResult && lootResult.incomeResult.roll !== undefined) rolls.push(`Income: ${lootResult.incomeResult.roll}`);
-      TimerUtil.markRun('lootBoxLastRun', rolls);
-      TimerUtil.showTimer('loot-box-timer');
+      rolls.unshift('[Bypass]');
+      TimerUtil.markRun('lootCasketLastRun', rolls);
     }
-    this.displayLootBoxResult(lootResult);
+    this.displayLootCasketResult(lootResult);
   },
 
-  displayLootBoxResult(lootResult) {
-    const resultsContainer = document.getElementById("loot-box-results");
+  displayLootCasketResult(lootResult) {
+    const resultsContainer = document.getElementById("loot-casket-results");
     if (!resultsContainer) return;
 
     resultsContainer.innerHTML = "";
@@ -235,7 +272,7 @@ const LootBoxUI = {
 
     const mainContainer = document.createElement("div");
     mainContainer.className = "mt-20";
-    mainContainer.innerHTML = '<h3 class="mb-15">Loot Box Contents:</h3>';
+    mainContainer.innerHTML = '<h3 class="mb-15">Loot Casket Contents:</h3>';
     mainContainer.appendChild(this.createResultBox(lootResult.result, lootResult.roll, null, lootResult.rawRoll));
 
     if (lootResult.incomeResult) {

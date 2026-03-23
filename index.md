@@ -10,14 +10,14 @@ title: BadCredit
 
 ## Randomisers...
 
-[Territory Income & Boons]({{ site.baseurl }}/tools/territoryPage.html)<br><br>
-[Lasting Injuries & Medical Interventions]({{ site.baseurl }}/tools/lastingInjuriesPage.html)<br><br>
-[Loot Boxes]({{ site.baseurl }}/tools/lootBox.html)<br><br>
+[Income & Boons]({{ site.baseurl }}/tools/territory.html)<br><br>
+[Lasting Injuries]({{ site.baseurl }}/tools/lastingInjuries.html)<br><br>
+[Loot Caskets]({{ site.baseurl }}/tools/lootCasket.html)<br><br>
 [Experience]({{ site.baseurl }}/tools/xpTables.html)<br><br>
 
 ---
 ## Scenario Tools
-[Meat for the Grinder]({{ site.baseurl }}/tools/scenarioMeatForTheGrinder.html)<br><br>
+[Meat for the Grinder]({{ site.baseurl }}/tools/scenario_MeatForTheGrinder.html)<br><br>
 
 
 

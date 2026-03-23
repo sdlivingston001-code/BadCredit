@@ -24,23 +24,23 @@ advancements_random:
   results:
     become_specialist:
       values: [2]
-      advancement: "Become a SPECIALIST! Select a PRIMARY skill."
+      advancement: "<b>Become a SPECIALIST!</b> Select a PRIMARY skill."
       ratingIncrease: null
     random_secondary_skill:
       values: [3-5]
-      advancement: "Randomly generate a SECONDARY skill.<br><br>If you already have the randomly generated skill; select one from that skillset instead."
+      advancement: "<b>Randomly generate a SECONDARY skill</b>.<br><br>If you already have the randomly generated skill; select one from that skillset instead."
       ratingIncrease: 20
     random_primary_skill:
       values: [6-7]
-      advancement: "Randomly generate a PRIMARY skill.<br><br>If you already have the randomly generated skill; select one from that skillset instead."
+      advancement: "<b>Randomly generate a PRIMARY skill</b>.<br><br>If you already have the randomly generated skill; select one from that skillset instead."
       ratingIncrease: 20
     choose_primary_skill:
       values: [8-10]
-      advancement: "Select a PRIMARY skill."
+      advancement: "<b>Select a PRIMARY skill</b>."
       ratingIncrease: 20
     choose_secondary_skill:
       values: [11-12]
-      advancement: "Select a SECONDARY skill."
+      advancement: "<b>Select a SECONDARY skill</b>."
       ratingIncrease: 30
 
 skills:

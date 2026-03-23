@@ -3,189 +3,61 @@
 const TerritoryUI = {
   territories: [],
   territoryMap: {},
-  campaignData: null,
-  playerGangMapping: null,
-  playerGangTerritories: null,
-  playerGangTerritoryCounts: null, // Track how many of each territory a gang owns
-  territoryNameToIdMap: {},
-  campaignIdInput: null,
-  setCampaignIdButton: null,
+  gangs: null,
 
- async init(jsonPath, gangsPath) {
-  try {
-    const response = await fetch(`${jsonPath}?t=${Date.now()}`, { cache: 'no-store' });
-    if (!response.ok) {
-      throw new Error(`Failed to load territories: ${response.status}`);
-    }
+  async init(jsonPath, gangsPath) {
+    try {
+      const response = await fetch(`${jsonPath}?t=${Date.now()}`, { cache: 'no-store' });
+      if (!response.ok) throw new Error(`Failed to load territories: ${response.status}`);
 
-    this.territories = await response.json();
+      this.territories = await response.json();
 
-    // ✅ Convert object → array if needed
-    if (!Array.isArray(this.territories)) {
-      this.territories = Object.entries(this.territories).map(([id, data]) => ({
-        id,
-        ...data
-      }));
-    }
+      if (!Array.isArray(this.territories)) {
+        this.territories = Object.entries(this.territories).map(([id, data]) => ({ id, ...data }));
+      }
 
-    // Validate territories data if schema validation is available
-    if (typeof TerritorySchemas !== 'undefined' && TerritorySchemas.validateAll) {
-      const validation = TerritorySchemas.validateAll(this.territories);
-      if (!validation.valid) {
-        console.warn('Territory validation errors:', validation.errors);
-        // Optionally show errors to user in development
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-          alert(`Territory data validation errors:\n${validation.errors.join('\n')}`);
+      if (typeof TerritorySchemas !== 'undefined' && TerritorySchemas.validateAll) {
+        const validation = TerritorySchemas.validateAll(this.territories);
+        if (!validation.valid) {
+          console.warn('Territory validation errors:', validation.errors);
+          if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            alert(`Territory data validation errors:\n${validation.errors.join('\n')}`);
+          }
         }
       }
+
+      const gangsResponse = await fetch(`${gangsPath}?t=${Date.now()}`, { cache: 'no-store' });
+      this.gangs = gangsResponse.ok ? await gangsResponse.json() : {};
+
+      this.buildTerritoryMap();
+      this.renderGangSelector();
+      this.renderCheckboxes();
+      this.bindEvents();
+      this.initTimer();
+    } catch (err) {
+      console.error(err);
+      const container = document.getElementById('territory-container');
+      if (container) container.textContent = 'Error loading territories data.';
     }
-
-    // Load gangs data
-    const gangsResponse = await fetch(`${gangsPath}?t=${Date.now()}`, { cache: 'no-store' });
-    if (gangsResponse.ok) {
-      this.gangs = await gangsResponse.json();
-    } else {
-      this.gangs = [];
-    }
-
-    // Build territory map BEFORE loading campaign data (needed for territory counting)
-    this.buildTerritoryMap();
-
-    // Load campaign data if available
-    await this.loadCampaignData();
-
-    this.renderGangSelector();
-    this.renderCheckboxes();
-    this.bindEvents();
-    this.initTimer();
-
-    // Wire up campaign ID input
-    this.campaignIdInput = document.getElementById('territory-campaign-id-input');
-    this.setCampaignIdButton = document.getElementById('territory-set-campaign-id');
-    if (this.campaignIdInput && this.setCampaignIdButton) {
-      this.campaignIdInput.value = CampaignViewerEngine.getCampaignId();
-      this.setCampaignIdButton.addEventListener('click', () => this.setCampaignId());
-      this.campaignIdInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') this.setCampaignId();
-      });
-    }
-  } catch (err) {
-    console.error(err);
-    const container = document.getElementById("territory-container");
-    if (container) {
-      container.textContent = "Error loading territories data.";
-    }
-  }
-},
+  },
 
   buildTerritoryMap() {
     this.territories.forEach(t => {
       this.territoryMap[t.id] = t;
-      const normalizedName = this.normalizeTerritoryName(t.name);
-      this.territoryNameToIdMap[normalizedName] = t.id;
     });
   },
-
-  /**
-   * Normalize territory name by removing gang-specific suffixes like (*), (AWN), etc.
-   * @param {string} name - Territory name from local data
-   * @returns {string} Normalized name
-   */
-  normalizeTerritoryName(name) {
-    // Remove patterns like (*), (AWN), (Pal Enf), etc.
-    return name.replace(/\s*\([^)]*\)\s*$/, '').trim();
-  },
-
-  setCampaignId() {
-    const newId = this.campaignIdInput ? this.campaignIdInput.value.trim() : '';
-    if (!newId) {
-      alert('Please enter a valid campaign ID');
-      return;
-    }
-    if (CampaignViewerEngine.setCampaignId(newId)) {
-      this.loadCampaignData().then((success) => {
-        if (success) {
-          this.renderGangSelector();
-          this.renderCheckboxes();
-        }
-      });
-    }
-  },
-
-  async loadCampaignData() {
-    if (typeof CampaignViewerEngine === 'undefined') return false;
-
-    if (!this.gangs || Object.keys(this.gangs).length === 0) {
-      console.warn('TerritoryUI: Gangs data not loaded yet');
-      return false;
-    }
-
-    const container = document.getElementById('territory-container');
-    if (container) container.innerHTML = '<div class="info-box warning-box">Fetching campaign data, please wait&hellip;</div>';
-
-    const result = await CampaignViewerEngine.fetchCampaignData(false);
-
-    if (container) container.innerHTML = '';
-
-    if (!result.success) {
-      if (container) container.innerHTML = `<div class="error-box">❌ Error fetching campaign data: ${result.error}</div>`;
-      return false;
-    }
-
-    CampaignViewerEngine.campaignData = result.data;
-    this.campaignData = result.data;
-    
-    // Generate mappings
-    this.playerGangMapping = CampaignViewerEngine.getPlayerGangToIdMapping(this.gangs);
-    this.playerGangTerritories = CampaignViewerEngine.getPlayerGangTerritories();
-    
-    // Count territories for each gang (handle duplicates)
-    this.playerGangTerritoryCounts = {};
-    Object.entries(this.playerGangTerritories).forEach(([gangName, territoryNames]) => {
-      const counts = {};
-      territoryNames.forEach(name => {
-        const normalizedName = this.normalizeTerritoryName(name);
-        const territoryId = this.territoryNameToIdMap[normalizedName];
-        if (territoryId) {
-          counts[territoryId] = (counts[territoryId] || 0) + 1;
-        } else {
-          console.warn(`TerritoryUI: Could not map territory "${name}" (normalized: "${normalizedName}") to local territory`);
-        }
-      });
-      this.playerGangTerritoryCounts[gangName] = counts;
-    });
-
-    return true;
-  },
-
   renderGangSelector() {
-    const container = document.getElementById("territory-container");
+    const container = document.getElementById('territory-container');
     if (!container) return;
 
-    let optionsHTML;
-    if (this.playerGangMapping && Object.keys(this.playerGangMapping).length > 0) {
-      const campaignOptions = Object.entries(this.playerGangMapping)
-        .map(([playerGangName, gangId]) =>
-          `<option value="player:${playerGangName}" data-gang-id="${gangId}">${playerGangName}</option>`)
-        .join('');
-      const regularOptions = (this.gangs && typeof this.gangs === 'object')
-        ? Object.entries(this.gangs)
-            .map(([id, gangData]) => `<option value="${id}">${gangData.name}</option>`)
-            .join('')
-        : '';
-      optionsHTML = `
-        <optgroup label="Campaign Gangs">${campaignOptions}</optgroup>
-        <optgroup label="All Gang Types">${regularOptions}</optgroup>`;
-    } else {
-      optionsHTML = (this.gangs && typeof this.gangs === 'object')
-        ? Object.entries(this.gangs)
-            .map(([id, gangData]) => `<option value="${id}">${gangData.name}</option>`)
-            .join('')
-        : '';
-    }
+    const optionsHTML = (this.gangs && typeof this.gangs === 'object')
+      ? Object.entries(this.gangs)
+          .map(([id, gangData]) => `<option value="${id}">${gangData.name}</option>`)
+          .join('')
+      : '';
 
-    const selectorWrapper = document.createElement("div");
-    selectorWrapper.className = "selector-wrapper with-divider";
+    const selectorWrapper = document.createElement('div');
+    selectorWrapper.className = 'selector-wrapper with-divider';
     selectorWrapper.innerHTML = `
       <label class="selector-label" for="gang-select">Select Gang: </label>
       <select id="gang-select" class="select-input select-input-small">
@@ -196,56 +68,9 @@ const TerritoryUI = {
     container.appendChild(selectorWrapper);
 
     selectorWrapper.querySelector('#gang-select').addEventListener('change', (e) => {
-      const selectedValue = e.target.value;
-      if (selectedValue.startsWith('player:')) {
-        this.handlePlayerGangSelection(selectedValue.substring(7));
-      } else {
-        this.updateLegacySelector(selectedValue);
-        this.renderCheckboxes();
-      }
+      this.updateLegacySelector(e.target.value);
+      this.renderCheckboxes();
     });
-  },
-
-  handlePlayerGangSelection(playerGangName) {
-    // Get the gang's territories (API names)
-    const controlledTerritoryNames = this.playerGangTerritories[playerGangName] || [];
-    const territoryCounts = this.playerGangTerritoryCounts[playerGangName] || {};
-    
-    // Convert API territory names to local territory IDs (normalizing first)
-    const controlledTerritoryIds = controlledTerritoryNames
-      .map(apiName => {
-        const normalizedName = this.normalizeTerritoryName(apiName);
-        return this.territoryNameToIdMap[normalizedName];
-      })
-      .filter(id => id); // Remove undefined values
-    
-    // Get unique territory IDs
-    const uniqueTerritoryIds = [...new Set(controlledTerritoryIds)];
-    
-    // Re-render checkboxes with filter and counts
-    this.renderCheckboxes(uniqueTerritoryIds, territoryCounts);
-    
-    // Auto-select the controlled territories
-    setTimeout(() => {
-      uniqueTerritoryIds.forEach(territoryId => {
-        const checkbox = document.getElementById(`territory-${territoryId}`);
-        const countInput = document.getElementById(`territory-count-${territoryId}`);
-        if (checkbox) {
-          checkbox.checked = true;
-          if (countInput) {
-            const count = territoryCounts[territoryId] || 1;
-            countInput.value = count;
-            countInput.classList.remove('hidden');
-          }
-        }
-      });
-    }, 100);
-    
-    // No legacy selector needed for player gangs
-    const existingLegacySelector = document.getElementById("legacy-selector-wrapper");
-    if (existingLegacySelector) {
-      existingLegacySelector.remove();
-    }
   },
 
   updateLegacySelector(selectedGangKey) {
@@ -296,9 +121,18 @@ const TerritoryUI = {
     }
   },
 
-  renderCheckboxes(filterTerritoryIds = null, territoryCounts = null) {
+  renderCheckboxes() {
     const container = document.getElementById("territory-container");
     if (!container) return;
+
+    // Preserve current checked state before clearing
+    const previouslyChecked = new Set(
+      [...container.querySelectorAll('.territory-checkbox:checked')].map(cb => cb.value)
+    );
+    const previouslyCounts = {};
+    container.querySelectorAll('.territory-count-input').forEach(input => {
+      previouslyCounts[input.id] = input.value;
+    });
 
     // Don't clear the entire container - just remove old checkboxes and sections
     const oldCheckboxes = container.querySelectorAll(".territory-item");
@@ -308,13 +142,6 @@ const TerritoryUI = {
 
     // Filter territories
     let territoriesToShow = this.territories.filter(territory => territory.campaign === 1);
-    
-    // Apply player gang filter if provided
-    if (filterTerritoryIds && Array.isArray(filterTerritoryIds) && filterTerritoryIds.length > 0) {
-      territoriesToShow = territoriesToShow.filter(territory => 
-        filterTerritoryIds.includes(territory.id)
-      );
-    }
 
     // Group by level
     const territoriesByLevel = {};
@@ -350,9 +177,6 @@ const TerritoryUI = {
 
         const id = `territory-${territory.id}`;
         const countInputId = `territory-count-${territory.id}`;
-        
-        // Check if this territory has multiple copies (from campaign data)
-        const count = territoryCounts && territoryCounts[territory.id] ? territoryCounts[territory.id] : null;
 
         wrapper.innerHTML = `
           <label for="${id}">
@@ -363,10 +187,10 @@ const TerritoryUI = {
             <span>${territory.name}</span>
             <input type="number"
                    id="${countInputId}"
-                   class="territory-count-input ${count ? '' : 'hidden'}"
+                   class="territory-count-input hidden"
                    min="1"
                    max="10"
-                   value="${count || 1}">
+                   value="1">
           </label>
         `;
 
@@ -374,6 +198,14 @@ const TerritoryUI = {
 
         const checkbox = wrapper.querySelector(`#${id}`);
         const countInput = wrapper.querySelector(`#${countInputId}`);
+
+        // Restore previous checked state
+        if (previouslyChecked.has(territory.id)) {
+          checkbox.checked = true;
+          const savedCount = previouslyCounts[countInputId];
+          if (savedCount) countInput.value = savedCount;
+          countInput.classList.remove('hidden');
+        }
 
         checkbox.addEventListener('change', () => {
           countInput.classList.toggle('hidden', !checkbox.checked);
@@ -392,7 +224,6 @@ const TerritoryUI = {
       // Mark the run time and show timer
       if (typeof TimerUtil !== 'undefined') {
         TimerUtil.markRun('territoryLastRun');
-        TimerUtil.showTimer('territory-timer');
       }
       
       const selectedIds = this.getSelectedTerritoriesWithCounts();
@@ -410,19 +241,9 @@ const TerritoryUI = {
         return;
       }
 
-      // Get the dominionGangId for the selected gang
-      let selectedGang;
-      if (selectedGangKey.startsWith('player:')) {
-        const playerGangName = selectedGangKey.substring(7);
-        const localGangId = this.playerGangMapping && this.playerGangMapping[playerGangName];
-        selectedGang = localGangId
-          ? (this.gangs[localGangId] && this.gangs[localGangId].dominionGangId || localGangId)
-          : selectedGangKey;
-      } else {
-        selectedGang = this.gangs && this.gangs[selectedGangKey] && this.gangs[selectedGangKey].dominionGangId
+      let selectedGang = this.gangs && this.gangs[selectedGangKey] && this.gangs[selectedGangKey].dominionGangId
           ? this.gangs[selectedGangKey].dominionGangId
           : selectedGangKey;
-      }
 
       // If legacy gang, check for legacy gang selection
       if (selectedGang === 'legacy') {
@@ -533,16 +354,8 @@ const TerritoryUI = {
   },
 
   initTimer() {
-    // Create timer container below the button
-    const button = document.getElementById("resolve-territories");
-    if (button && typeof TimerUtil !== 'undefined') {
-      const timerContainer = document.createElement("div");
-      timerContainer.id = "territory-timer";
-      timerContainer.className = "mt-15";
-      button.parentNode.insertBefore(timerContainer, button.nextSibling);
-      TimerUtil.init('territory-timer', 'territoryLastRun');
-      
-      // Setup page cleanup to reset timer on navigation
+    if (typeof TimerUtil !== 'undefined') {
+      TimerUtil.init('page-roll-info', 'territoryLastRun');
       TimerUtil.setupPageCleanup();
     }
   },

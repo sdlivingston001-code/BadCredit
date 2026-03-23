@@ -1,16 +1,17 @@
-// scenarioMeatForTheGrinderUI.js
+// scenario_MeatForTheGrinderUI.js
 
-const scenarioMeatForTheGrinderUI = {
+const scenario_MeatForTheGrinderUI = {
   async init(jsonPath) {
     try {
       const response = await fetch(`${jsonPath}?t=${Date.now()}`, { cache: 'no-store' });
       if (!response.ok) throw new Error(`Failed to load data: ${response.status}`);
 
       const data = await response.json();
-      scenarioMeatForTheGrinderEngine.loadData(data);
+      scenario_MeatForTheGrinderEngine.loadData(data);
       this.bindEvents();
       this.initTimer();
       this.renderWeaponTable(data);
+      this.renderRollTable(data);
     } catch (err) {
       console.error(err);
       const container = document.getElementById('scavenged-weapons-results');
@@ -24,13 +25,8 @@ const scenarioMeatForTheGrinderUI = {
   },
 
   initTimer() {
-    const button = document.getElementById('roll-scavenged-weapon');
-    if (button && typeof TimerUtil !== 'undefined') {
-      const timerContainer = document.createElement('div');
-      timerContainer.id = 'scavenged-weapons-timer';
-      timerContainer.className = 'mt-15';
-      button.parentNode.insertBefore(timerContainer, button.nextSibling);
-      TimerUtil.init('scavenged-weapons-timer', 'scenarioMeatForTheGrinderLastRun');
+    if (typeof TimerUtil !== 'undefined') {
+      TimerUtil.init('page-roll-info', 'scenario_MeatForTheGrinderLastRun');
       TimerUtil.setupPageCleanup();
     }
   },
@@ -43,6 +39,42 @@ const scenarioMeatForTheGrinderUI = {
       }
     }
     return profile;
+  },
+
+  renderRollTable(data) {
+    const container = document.getElementById('roll-table-container');
+    if (!container || !data.scavenged_weapon_roll) return;
+
+    const { results } = data.scavenged_weapon_roll;
+    const rows = Object.values(results).map(entry => {
+      const rollStr = Array.isArray(entry.values) ? entry.values.join(', ') : entry.values;
+      return `<tr><td>${rollStr}</td><td><b>${entry.name}</b></td></tr>`;
+    }).join('');
+
+    container.innerHTML = `
+      <h3>Scavenged Weapon (2D6)</h3>
+      <table>
+        <thead><tr><th>Roll</th><th>Weapon</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  },
+
+  renderRollTable(data) {
+    const container = document.getElementById('roll-table-container');
+    if (!container || !data.scavenged_weapon_roll) return;
+
+    const { results } = data.scavenged_weapon_roll;
+    const rows = Object.values(results).map(entry => {
+      const rollStr = Array.isArray(entry.values) ? entry.values.join(', ') : entry.values;
+      return `<tr><td>${rollStr}</td><td><b>${entry.name}</b></td></tr>`;
+    }).join('');
+
+    container.innerHTML = `
+      <h3>Scavenged Weapon (2D6)</h3>
+      <table>
+        <thead><tr><th>Roll</th><th>Weapon</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
   },
 
   renderWeaponTable(data) {
@@ -94,12 +126,11 @@ const scenarioMeatForTheGrinderUI = {
     const container = document.getElementById('scavenged-weapons-results');
     if (!container) return;
 
-    const { rolls, total, result, error } = scenarioMeatForTheGrinderEngine.roll();
+    const { rolls, total, result, error } = scenario_MeatForTheGrinderEngine.roll();
 
     if (typeof TimerUtil !== 'undefined') {
       const rollStrings = rolls ? [`2D6: ${rolls.join(' + ')} = ${total}`] : [];
-      TimerUtil.markRun('scenarioMeatForTheGrinderLastRun', rollStrings);
-      TimerUtil.showTimer('scavenged-weapons-timer');
+      TimerUtil.markRun('scenario_MeatForTheGrinderLastRun', rollStrings);
     }
 
     if (error) {

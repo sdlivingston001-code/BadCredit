@@ -1,6 +1,6 @@
-// lootBoxEngine.js
+// lootCasketEngine.js
 
-const LootBoxEngine = {
+const LootCasketEngine = {
   lootData: null,
 
   loadLootData(data) {
@@ -157,13 +157,13 @@ const LootBoxEngine = {
     };
   },
 
-  smashOpenLootBox() {
-    const rawRoll = this.rollDiceForTable('loot_box_roll');
+  smashOpenLootCasket() {
+    const rawRoll = this.rollDiceForTable('loot_casket_roll');
     if (rawRoll === null) {
       return { error: 'Failed to roll. Data not loaded.' };
     }
     const roll = Math.max(1, rawRoll - 1);
-    const result = this.findResult('loot_box_roll', roll);
+    const result = this.findResult('loot_casket_roll', roll);
     if (!result) {
       return { rawRoll, roll, error: 'No result found for this roll.' };
     }
@@ -172,15 +172,15 @@ const LootBoxEngine = {
     return { rawRoll, roll, result, incomeResult, randomEffect };
   },
 
-  openLootBox() {
-    const roll = this.rollDiceForTable('loot_box_roll');
+  openLootCasketBypass() {
+    const roll = this.rollDiceForTable('loot_casket_roll');
     if (roll === null) {
       return {
         error: 'Failed to roll. Data not loaded.'
       };
     }
 
-    const result = this.findResult('loot_box_roll', roll);
+    const result = this.findResult('loot_casket_roll', roll);
     if (!result) {
       return {
         roll,
@@ -210,7 +210,7 @@ const LootBoxEngine = {
       return null;
     }
 
-    const result = this.findResult('loot_box_roll', roll);
+    const result = this.findResult('loot_casket_roll', roll);
     if (!result) {
       return {
         roll,

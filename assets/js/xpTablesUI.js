@@ -58,16 +58,8 @@ const XPTablesUI = {
   },
 
   initTimer() {
-    // Create timer container below the button
-    const button = document.getElementById("roll-advancement");
-    if (button && typeof TimerUtil !== 'undefined') {
-      const timerContainer = document.createElement("div");
-      timerContainer.id = "xp-tables-timer";
-      timerContainer.className = "mt-15";
-      button.parentNode.insertBefore(timerContainer, button.nextSibling);
-      TimerUtil.init('xp-tables-timer', 'xpTablesLastRun');
-      
-      // Setup page cleanup to reset timer on navigation
+    if (typeof TimerUtil !== 'undefined') {
+      TimerUtil.init('page-roll-info', 'xpTablesLastRun');
       TimerUtil.setupPageCleanup();
     }
   },
@@ -144,7 +136,6 @@ const XPTablesUI = {
         ? [`2D6: ${advancementResult.rolls.join(' + ')} = ${advancementResult.total}`]
         : [];
       TimerUtil.markRun('xpTablesLastRun', rolls);
-      TimerUtil.showTimer('xp-tables-timer');
     }
     this.displayAdvancementResult(advancementResult);
   },
@@ -230,12 +221,12 @@ const XPTablesUI = {
   createAdvancementResultBox(result, rolls, total) {
     const diceHtml = rolls ? `(${rolls.join(' + ')}) = ` : '';
     const ratingHtml = result.ratingIncrease != null
-      ? `<div class="result-effect"><b>Rating Increase:</b> +${result.ratingIncrease}</div>`
+      ? `<div class="result-effect"><br>Rating Increase: +${result.ratingIncrease}</div>`
       : '';
     const div = document.createElement('div');
     div.className = 'result-box result-box-blue';
     div.innerHTML = `
-      <div class="result-heading result-name"><b>${result.advancement}</b></div>
+      <div class="result-heading result-name">${result.advancement}</div>
       ${ratingHtml}
     `;
     return div;

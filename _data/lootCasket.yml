@@ -1,12 +1,12 @@
-#D6 roll for loot box rolls
+#D6 roll for loot casket rolls
 
-loot_box_roll:
+loot_casket_roll:
   sides: 6
   results:
     booby_trap:
       values: [1]
       name: Booby trap!
-      fixedeffect: "Str 3 Dam 1 Ap -. Blast(5) centred on loot box. Knockback."
+      fixedeffect: "Str 3 Dam 1 Ap -. Blast(5) centred on loot casket. Knockback."
       colour: red
     credits_cache:
       values: [2-3]
@@ -99,10 +99,12 @@ d66drugs:
     kalma:
       values: [24-26]
       name: Kalma
+      fixedeffect: "This result is automatically rerolled to another Drugs result given House rules."
       randomeffect: reroll #No captives in out campaign, so this is just a reroll of the drugs cache result
     obscura:
       values: [31-33]
       name: Obscura
+      fixedeffect: "This result is automatically rerolled to another Drugs result given House rules."
       randomeffect: reroll #No captives in out campaign, so this is just a reroll of the drugs cache result
     slaut:
       values: [34-36]

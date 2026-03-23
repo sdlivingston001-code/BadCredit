@@ -21,27 +21,10 @@ title: Lasting Injuries
 
 <hr class="hr-dark" style="margin: 40px 0;">
 
-<h2>Rogue Doc Treatment</h2>
-
-<div class="selector-wrapper">
-  <label class="selector-label" for="rogue-doc-mode-selector">Select Treatment Mode:</label>
-  <select id="rogue-doc-mode-selector" class="select-input">
-    <option value="trading_post_rogue_doc" selected>Trading Post (Post Battle Action)</option>
-    <option value="hanger_on_rogue_doc">Hanger-on (Patch-Up)</option>
-  </select>
-</div>
-
-<button id="resolve-rogue-doc">Get Treatment</button>
-
-<div id="rogue-doc-results"></div>
-
-<hr class="hr-dark" style="margin: 40px 0;">
-
-<h2>Reference Tables</h2>
-
-<div id="injury-table-container" class="mt-20"></div>
-
-<div id="treatment-table-container" class="mt-20"></div>
+<details class="reference-tables-collapsible">
+  <summary>Reference Tables</summary>
+  <div id="injury-table-container" class="mt-20"></div>
+</details>
 
 <!-- Adjust this path if your built JSON lives elsewhere -->
 <script src="{{ '/assets/js/dice.js' | relative_url }}"></script>

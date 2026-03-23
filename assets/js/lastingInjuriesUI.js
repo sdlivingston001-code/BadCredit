@@ -72,6 +72,7 @@ const LastingInjuriesUI = {
         injuryResult.randomRoll
       );
       if (index > 0) injDiv.classList.add('mt-10');
+      injDiv.style.animationDelay = `${(index + 1) * 180}ms`;
       additionalContainer.appendChild(injDiv);
 
       // Check flags
@@ -108,7 +109,6 @@ const LastingInjuriesUI = {
       this.bindEvents();
       this.initTimers();
       this.renderInjuryTable();
-      this.renderTreatmentTable();
 
       // Expose test function to window for console testing
       window.testInjury = (roll) => {
@@ -119,16 +119,8 @@ const LastingInjuriesUI = {
         }
       };
 
-      window.testRogueDoc = (mode) => {
-        const validMode = mode || 'trading_post_rogue_doc';
-        const result = LastingInjuriesEngine.resolveRogueDoc(validMode);
-        this.displayRogueDocResult(result);
-        console.log('Test rogue doc result for mode ' + validMode + ':', result);
-      };
-
       console.log('%c💉 Injury Testing Enabled', 'color: #c71585; font-weight: bold; font-size: 14px;');
       console.log('Use: testInjury(roll) - e.g., testInjury(11) for Standard mode or testInjury(6) for Ironman mode');
-      console.log('Use: testRogueDoc(mode) - e.g., testRogueDoc("trading_post_rogue_doc") or testRogueDoc("hanger_on_rogue_doc")');
     } catch (err) {
       console.error(err);
       const container = document.getElementById("lasting-injuries-results");
@@ -158,42 +150,12 @@ const LastingInjuriesUI = {
       });
     }
 
-    // Rogue Doc button event
-    const rogueDocButton = document.getElementById("resolve-rogue-doc");
-    if (rogueDocButton) {
-      rogueDocButton.addEventListener("click", () => {
-        this.resolveRogueDoc();
-      });
-    }
-
-    // Rogue Doc mode selector change event
-    const rogueDocModeSelector = document.getElementById("rogue-doc-mode-selector");
-    if (rogueDocModeSelector) {
-      rogueDocModeSelector.addEventListener("change", () => {
-        this.renderTreatmentTable();
-      });
-    }
   },
 
   initTimers() {
-    // Create timer container for lasting injuries button
-    const injuryButton = document.getElementById("resolve-lasting-injuries");
-    if (injuryButton && typeof TimerUtil !== 'undefined') {
-      const timerContainer = document.createElement("div");
-      timerContainer.id = "lasting-injuries-timer";
-      timerContainer.className = "mt-15";
-      injuryButton.parentNode.insertBefore(timerContainer, injuryButton.nextSibling);
-      TimerUtil.init('lasting-injuries-timer', 'lastingInjuriesLastRun');
-    }
-
-    // Create timer container for rogue doc button
-    const rogueDocButton = document.getElementById("resolve-rogue-doc");
-    if (rogueDocButton && typeof TimerUtil !== 'undefined') {
-      const rogueTimerContainer = document.createElement("div");
-      rogueTimerContainer.id = "rogue-doc-timer";
-      rogueTimerContainer.className = "mt-15";
-      rogueDocButton.parentNode.insertBefore(rogueTimerContainer, rogueDocButton.nextSibling);
-      TimerUtil.init('rogue-doc-timer', 'rogueDocLastRun');
+    const timerContainer = document.getElementById("page-roll-info");
+    if (timerContainer && typeof TimerUtil !== 'undefined') {
+      TimerUtil.init('page-roll-info', 'lastingInjuriesLastRun');
     }
 
     // Setup page cleanup to reset timers on navigation
@@ -442,7 +404,7 @@ const LastingInjuriesUI = {
     const result = LastingInjuriesEngine.resolveInjury();
     if (typeof TimerUtil !== 'undefined') {
       TimerUtil.markRun('lastingInjuriesLastRun', this.collectInjuryRolls(result));
-      TimerUtil.showTimer('lasting-injuries-timer');
+      TimerUtil.showTimer('page-roll-info');
     }
 
     // Clear rogue doc results

@@ -9,6 +9,45 @@ body {
 }
 
 /* BOTTOM-BAR */
+.page-bottom-sticky {
+  position: sticky;
+  bottom: 0;
+  z-index: 100;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+}
+
+#page-roll-info {
+  background: #2a2a2a;
+  color: #ddd;
+  padding: 0.4rem 1.5rem;
+}
+
+#page-roll-info:empty {
+  display: none;
+}
+
+#page-roll-info .timer-display {
+  margin: 0;
+  padding: 0.25rem 0;
+  border: none;
+  background: transparent;
+  color: #ddd;
+  border-radius: 0;
+  font-size: 13px;
+}
+
+#page-roll-info .timer-green {
+  color: #6fcf7a;
+}
+
+#page-roll-info .timer-grey {
+  color: #adb5bd;
+}
+
+#page-roll-info .timer-rolls {
+  color: #ccc;
+}
+
 .bottom-bar {
   width: 100%;
   padding: 0.75rem 1.5rem;
@@ -17,11 +56,6 @@ body {
   display: flex;
   justify-content: center;
   gap: 1.5rem;
-  /* Make it sticky at bottom */
-  position: sticky;
-  bottom: 0;
-  z-index: 100;
-  box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
 }
 
 .bottom-bar a {
@@ -248,11 +282,24 @@ ol li, ul li {
    RESULT BOX COMPONENTS
    ====================== */
 
+@keyframes result-pop-in {
+  from {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 .result-box {
   padding: 12px;
-  border-radius: 4px;
+  border-radius: 8px;
   border: 2px solid;
   margin-bottom: 10px;
+  text-align: center;
+  animation: result-pop-in 0.3s ease-out both;
 }
 
 .result-box-primary {
@@ -377,11 +424,13 @@ ol li, ul li {
 
 .death-box {
   background-color: #000;
-  border-color: #000;
+  border: 2px solid #000;
+  border-radius: 8px;
   color: #fff;
   text-align: center;
   margin-top: 20px;
   padding: 20px;
+  animation: result-pop-in 0.2s ease-out;
 }
 
 .cost-box {
@@ -448,6 +497,10 @@ ol li, ul li {
   cursor: pointer;
   font-weight: bold;
   transition: opacity 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+  background-color: #f0c000;
+  color: black;
 }
 
 .btn:hover {
@@ -617,7 +670,6 @@ ol li, ul li {
 }
 
 .timer-rolls-prev {
-  text-decoration: line-through;
   color: #999;
 }
 
@@ -625,8 +677,16 @@ ol li, ul li {
    TERRITORY ITEMS
    ====================== */
 
+.territory-level-section {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  column-count: 2;
+  column-gap: 16px;
+}
+
 .territory-item {
-  margin-bottom: 8px;
+  break-inside: avoid;
+  margin-bottom: 4px;
 }
 
 .territory-item label {
@@ -634,12 +694,15 @@ ol li, ul li {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 4px;
+  padding: 2px 4px;
 }
 
 .territory-item input[type="checkbox"] {
   margin-right: 8px;
   cursor: pointer;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
 }
 
 .territory-count-input {
@@ -658,11 +721,6 @@ ol li, ul li {
 .territory-count-input::-webkit-inner-spin-button,
 .territory-count-input::-webkit-outer-spin-button {
   opacity: 1;
-}
-
-.territory-level-section {
-  margin-bottom: 20px;
-  padding-bottom: 20px;
 }
 
 /* ======================
@@ -708,6 +766,40 @@ ol li, ul li {
   border-color: #444;
 }
 
+/* COLLAPSIBLE REFERENCE TABLES */
+.reference-tables-collapsible > summary {
+  font-size: 1.5em;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0.4rem 0;
+  margin: 0.5rem 0;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  user-select: none;
+}
+
+.reference-tables-collapsible > summary::before {
+  content: '▶';
+  font-size: 0.65em;
+  transition: transform 0.2s;
+}
+
+.reference-tables-collapsible[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.reference-tables-collapsible .reference-tables-collapsible {
+  margin-left: 1.25rem;
+  border-left: 2px solid #ccc;
+  padding-left: 0.75rem;
+}
+
+.reference-tables-collapsible .reference-tables-collapsible > summary {
+  font-size: 1.1em;
+}
+
 /* ======================
    RESPONSIVE / MOBILE
    ====================== */
@@ -736,11 +828,6 @@ ol li, ul li {
   table.weapon-profiles-table td {
     padding: 4px 3px;
     word-break: break-word; /* allows long trait names to wrap */
-  }
-
-  /* Reduce excessive horizontal padding on buttons */
-  .btn {
-    padding: 14px 24px;
   }
 
   /* Prevent iOS auto-zoom on number inputs */

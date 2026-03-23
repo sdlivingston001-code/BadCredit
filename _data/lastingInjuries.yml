@@ -116,7 +116,7 @@ standard_lasting_injuries:
     captured:
       values: [55-56]
       name: Captured
-      fixedeffect: "In the wrap-up, test to see if this fighter was <b>captured</b>."
+      fixedeffect: "In the wrap-up, test to see if this fighter <b>escapes capture!</b>"
       convalescence: 0
       intoRecovery: 0
       colour: blue

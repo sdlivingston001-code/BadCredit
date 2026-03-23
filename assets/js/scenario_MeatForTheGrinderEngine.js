@@ -1,6 +1,6 @@
-// scenarioMeatForTheGrinderEngine.js
+// scenario_MeatForTheGrinderEngine.js
 
-const scenarioMeatForTheGrinderEngine = {
+const scenario_MeatForTheGrinderEngine = {
   data: null,
 
   loadData(data) {

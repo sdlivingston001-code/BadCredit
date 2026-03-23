@@ -67,55 +67,8 @@ const PostBattleUI = {
 
   initTimers() {
     if (typeof TimerUtil === 'undefined') return;
-
-    // Timer for the Roll D6 to Succumb button
-    const rollBtn = document.getElementById('pb-roll-succumb');
-    if (rollBtn) {
-      const timerDiv = document.createElement('div');
-      timerDiv.id = 'pb-succumb-timer';
-      timerDiv.className = 'mt-15';
-      rollBtn.parentNode.insertBefore(timerDiv, rollBtn.nextSibling);
-      TimerUtil.init('pb-succumb-timer', 'pbSuccumbLastRun');
-    }
-
-    // Timer for the Resolve Lasting Injury button
-    const resolveBtn = document.getElementById('pb-resolve-injury');
-    if (resolveBtn) {
-      const timerDiv = document.createElement('div');
-      timerDiv.id = 'pb-injury-timer';
-      timerDiv.className = 'mt-15';
-      timerDiv.style.display = 'none';
-      resolveBtn.parentNode.insertBefore(timerDiv, resolveBtn.nextSibling);
-      TimerUtil.init('pb-injury-timer', 'pbInjuryLastRun');
-    }
-
+    TimerUtil.init('page-roll-info', 'postBattleLastRun');
     TimerUtil.setupPageCleanup();
-
-    // Timer for the Roll to Escape button
-    const escapeBtn = document.getElementById('pb-roll-escape');
-    if (escapeBtn) {
-      TimerUtil.init('pb-escape-timer', 'pbEscapeLastRun');
-    }
-
-    // Timer for the Ransom lasting injury button
-    const ransomBtn = document.getElementById('pb-resolve-ransom-injury');
-    if (ransomBtn) {
-      const timerDiv = document.createElement('div');
-      timerDiv.id = 'pb-ransom-injury-timer';
-      timerDiv.className = 'mt-15';
-      ransomBtn.parentNode.insertBefore(timerDiv, ransomBtn.nextSibling);
-      TimerUtil.init('pb-ransom-injury-timer', 'pbRansomInjuryLastRun');
-    }
-
-    // Timer for the critical injury treatment button
-    const criticalBtn = document.getElementById('pb-resolve-critical-injury');
-    if (criticalBtn) {
-      const timerDiv = document.createElement('div');
-      timerDiv.id = 'pb-critical-injury-timer';
-      timerDiv.className = 'mt-15';
-      criticalBtn.parentNode.insertBefore(timerDiv, criticalBtn.nextSibling);
-      TimerUtil.init('pb-critical-injury-timer', 'pbCriticalInjuryLastRun');
-    }
   },
 
   onRollEscape() {
@@ -129,9 +82,9 @@ const PostBattleUI = {
 
     if (typeof TimerUtil !== 'undefined') {
       const modStr = modifier >= 0 ? `+${modifier}` : `${modifier}`;
-      const timerRolls = [`D6: ${roll}`, `Mod: ${modStr}`, `Total: ${total}`];
+      const timerRolls = [`[Escape] D6: ${roll}`, `Mod: ${modStr}`, `Total: ${total}`];
       if (natural6) timerRolls.push('Natural 6!');
-      TimerUtil.markRun('pbEscapeLastRun', timerRolls);
+      TimerUtil.markRun('postBattleLastRun', timerRolls);
     }
 
     const container = document.getElementById('pb-escape-results');
@@ -160,7 +113,7 @@ const PostBattleUI = {
     const { roll, succumbed } = PostBattleEngine.rollSuccumb();
 
     if (typeof TimerUtil !== 'undefined') {
-      TimerUtil.markRun('pbSuccumbLastRun', [`D6: ${roll}`]);
+      TimerUtil.markRun('postBattleLastRun', [`[Succumb] D6: ${roll}`]);
     }
 
     const succumbResults = document.getElementById('pb-succumb-results');
@@ -178,13 +131,9 @@ const PostBattleUI = {
       succumbResults.innerHTML = `<div class="result-box result-box-${colour}">${label}</div>`;
     }
 
-    // Show/hide the Resolve Lasting Injury button and its timer
+    // Show/hide the Resolve Lasting Injury button
     if (resolveBtn) {
       resolveBtn.style.display = succumbed ? '' : 'none';
-    }
-    const injuryTimer = document.getElementById('pb-injury-timer');
-    if (injuryTimer) {
-      injuryTimer.style.display = succumbed ? '' : 'none';
     }
   },
 
@@ -195,7 +144,7 @@ const PostBattleUI = {
       const modeData = LastingInjuriesEngine.getCurrentModeData();
       const sides = modeData && modeData.sides;
       const diceLabel = sides === 'd66' ? 'D66' : `D${sides}`;
-      TimerUtil.markRun('pbInjuryLastRun', this.buildInjuryRolls(result, diceLabel));
+      TimerUtil.markRun('postBattleLastRun', this.buildInjuryRolls(result, diceLabel, '[Lasting Injury]'));
     }
 
     this.displayInjuryResult(result, 'pb-injury-results');
@@ -208,14 +157,15 @@ const PostBattleUI = {
       const modeData = LastingInjuriesEngine.getCurrentModeData();
       const sides = modeData && modeData.sides;
       const diceLabel = sides === 'd66' ? 'D66' : `D${sides}`;
-      TimerUtil.markRun('pbRansomInjuryLastRun', this.buildInjuryRolls(result, diceLabel));
+      TimerUtil.markRun('postBattleLastRun', this.buildInjuryRolls(result, diceLabel, '[Ransom]'));
     }
 
     this.displayInjuryResult(result, 'pb-ransom-injury-results');
   },
 
-  buildInjuryRolls(result, diceLabel) {
-    const rolls = [`${diceLabel}: ${result.roll}`];
+  buildInjuryRolls(result, diceLabel, prefix = '') {
+    const firstRoll = prefix ? `${prefix} ${diceLabel}: ${result.roll}` : `${diceLabel}: ${result.roll}`;
+    const rolls = [firstRoll];
 
     if (result.randomRoll) {
       if (result.injury.randomeffect === 'd3xpgain') {
@@ -239,8 +189,7 @@ const PostBattleUI = {
 
   onResolveCriticalInjury() {
     if (typeof TimerUtil !== 'undefined') {
-      TimerUtil.markRun('pbCriticalInjuryLastRun');
-      TimerUtil.showTimer('pb-critical-injury-timer');
+      TimerUtil.markRun('postBattleLastRun', ['[Critical Injury]']);
     }
 
     const modeSelector = document.getElementById('pb-rogue-doc-mode');
@@ -357,12 +306,12 @@ const PostBattleUI = {
     container.appendChild(resultDiv);
 
     if (typeof TimerUtil !== 'undefined') {
-      TimerUtil.recordRolls('pbCriticalInjuryLastRun', this.buildCriticalRogueDocRolls(result));
+      TimerUtil.recordRolls('postBattleLastRun', this.buildCriticalRogueDocRolls(result));
     }
   },
 
   buildCriticalRogueDocRolls(result) {
-    const rolls = [];
+    const rolls = ['[Critical Injury]'];
     if (result.cost !== null && result.cost !== undefined) {
       rolls.push(`Cost: ${result.cost} credits`);
     }
@@ -396,6 +345,7 @@ const PostBattleUI = {
 
     const box = document.createElement('div');
     box.className = `result-box result-box-${colour} result-box-primary mt-20`;
+    box.style.animationDelay = '0ms';
     box.innerHTML = [
       `<h3 class="result-heading mt-0 mb-0">${result.injury.name}</h3>`,
       result.injury.fixedeffect ? `<div class="result-effect mt-10">${result.injury.fixedeffect}</div>` : '',
@@ -417,6 +367,7 @@ const PostBattleUI = {
         const injColour = injResult.injury.colour || 'grey';
         const injBox = document.createElement('div');
         injBox.className = `result-box result-box-${injColour}${index > 0 ? ' mt-10' : ''}`;
+        injBox.style.animationDelay = `${(index + 1) * 180}ms`;
         injBox.innerHTML = [
           `<div class="result-heading result-name"><b>${injResult.injury.name}</b></div>`,
           injResult.injury.fixedeffect ? `<div class="result-effect">${injResult.injury.fixedeffect}</div>` : '',
