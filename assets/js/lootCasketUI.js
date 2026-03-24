@@ -36,7 +36,7 @@ const LootCasketUI = {
             if (result.rerollHistory && result.rerollHistory.length > 0) {
               const rerollDiv = document.createElement('div');
               rerollDiv.className = 'info-casket reroll-history-casket';
-              rerollDiv.innerHTML = `🔄 <b>Rerolled:</b> ${result.rerollHistory.map(r => `${r.name} (${r.roll})`).join(', ')}`;
+              rerollDiv.innerHTML = `${Icons.rotateCcw} <b>Rerolled:</b> ${result.rerollHistory.map(r => `${r.name} (${r.roll})`).join(', ')}`;
               mainContainer.appendChild(rerollDiv);
             }
             mainContainer.appendChild(this.createResultBox(result.result, result.roll, result.tableName));
@@ -155,7 +155,7 @@ const LootCasketUI = {
     if (randomEffect.type === 'reroll') {
       const div = document.createElement("div");
       div.className = "info-box reroll-box";
-      div.innerHTML = "🔄 <b>Reroll:</b> This result requires a reroll.";
+      div.innerHTML = `${Icons.rotateCcw} <b>Reroll:</b> This result requires a reroll.`;
       parentDiv.appendChild(div);
       return;
     }
@@ -165,7 +165,7 @@ const LootCasketUI = {
       buttonContainer.className = "nested-content mt-15";
       buttonContainer.style.animation = 'result-pop-in 0.2s ease-out both';
       buttonContainer.innerHTML = `
-        <div class="info-box mb-10">⚡ <b>Additional Roll Required... Click to proceed.</b></div>
+        <div class="info-box mb-10">${Icons.zap} <b>Additional Roll Required... Click to proceed.</b></div>
         <button class="btn">Roll the dice</button>
       `;
       buttonContainer.querySelector('button').addEventListener('click', () => {
@@ -178,7 +178,7 @@ const LootCasketUI = {
       const nestedContainer = document.createElement("div");
       nestedContainer.className = "nested-content";
       nestedContainer.style.animation = 'result-pop-in 0.2s ease-out both';
-      nestedContainer.innerHTML = `<div class="nested-title"><b>➡️ Additional Result:</b></div>`;
+      nestedContainer.innerHTML = `<div class="nested-title"><b>${Icons.arrowRight} Additional Result:</b></div>`;
       nestedContainer.appendChild(this.createResultBox(randomEffect.result, randomEffect.roll, randomEffect.tableName));
       if (randomEffect.nestedEffect) {
         this.displayNestedEffect(randomEffect.nestedEffect, nestedContainer);
@@ -219,13 +219,13 @@ const LootCasketUI = {
       const rerollDiv = document.createElement("div");
       rerollDiv.className = "info-box reroll-history-box";
       rerollDiv.style.animation = 'result-pop-in 0.2s ease-out both';
-      rerollDiv.innerHTML = `🔄 <b>Rerolled:</b> ${result.rerollHistory.map(r => `${r.name} (${r.roll})`).join(", ")}`;
+      rerollDiv.innerHTML = `${Icons.rotateCcw} <b>Rerolled:</b> ${result.rerollHistory.map(r => `${r.name} (${r.roll})`).join(", ")}`;
       containerDiv.appendChild(rerollDiv);
     }
 
     const titleDiv = document.createElement("div");
     titleDiv.className = "nested-title";
-    titleDiv.innerHTML = `<b>➡️ Additional Result:</b>`;
+    titleDiv.innerHTML = `<b>${Icons.arrowRight} Additional Result:</b>`;
     containerDiv.appendChild(titleDiv);
     containerDiv.appendChild(this.createResultBox(result.result, result.roll, result.tableName));
 

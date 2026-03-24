@@ -155,14 +155,14 @@ const CampaignViewerUI = {
     if (!container) return;
 
     // Show loading state
-    container.innerHTML = '<div class="info-box">⏳ Loading campaign data...</div>';
+    container.innerHTML = `<div class="info-box">${Icons.hourglass} Loading campaign data...</div>`;
 
     // Fetch data
     const result = await CampaignViewerEngine.fetchCampaignData();
 
     if (!result.success) {
       if (result.rateLimited) {
-        container.innerHTML = `<div class="info-box yellow">⏳ ${result.error}</div>`;
+        container.innerHTML = `<div class="info-box yellow">${Icons.hourglass} ${result.error}</div>`;
       } else {
         container.innerHTML = `<div class="error-box">❌ Error: ${result.error}</div>`;
       }
@@ -175,7 +175,7 @@ const CampaignViewerUI = {
     
     // Update refresh button
     if (this.refreshButton) {
-      this.refreshButton.textContent = '🔄 Refresh Data';
+      this.refreshButton.innerHTML = `${Icons.rotateCcw} Refresh Data`;
     }
 
     // Update timer
@@ -193,13 +193,13 @@ const CampaignViewerUI = {
 
     if (this.refreshButton) {
       this.refreshButton.disabled = true;
-      this.refreshButton.textContent = '⏳ Refreshing...';
+      this.refreshButton.innerHTML = `${Icons.hourglass} Refreshing...`;
     }
 
     // Force refresh
     const container = document.getElementById(this.containerId);
     if (container) {
-      container.innerHTML = '<div class="info-box">⏳ Fetching fresh data from Munda Manager...</div>';
+      container.innerHTML = `<div class="info-box">${Icons.hourglass} Fetching fresh data from Munda Manager...</div>`;
     }
 
     const result = await CampaignViewerEngine.fetchCampaignData(true);
@@ -216,7 +216,7 @@ const CampaignViewerUI = {
       }
       if (this.refreshButton) {
         this.refreshButton.disabled = false;
-        this.refreshButton.textContent = '🔄 Refresh Data';
+        this.refreshButton.innerHTML = `${Icons.rotateCcw} Refresh Data`;
       }
       return;
     }
@@ -225,7 +225,7 @@ const CampaignViewerUI = {
     this.updateTimerDisplay();
 
     if (this.refreshButton) {
-      this.refreshButton.textContent = '🔄 Refresh Data';
+      this.refreshButton.innerHTML = `${Icons.rotateCcw} Refresh Data`;
     }
   },
 
@@ -236,7 +236,7 @@ const CampaignViewerUI = {
     if (fromCache) {
       const cacheNotice = document.createElement('div');
       cacheNotice.className = 'info-box mb-15';
-      cacheNotice.innerHTML = '💾 <b>Showing cached data</b> (to respect Munda Manager\'s rate limits)';
+      cacheNotice.innerHTML = `${Icons.save} <b>Showing cached data</b> (to respect Munda Manager's rate limits)`;
       container.appendChild(cacheNotice);
     }
 
@@ -427,8 +427,8 @@ const CampaignViewerUI = {
     summaryBox.className = validation.allValid ? 'result-box result-box-green mb-15' : 'result-box result-box-yellow mb-15';
     summaryBox.innerHTML = `
       <b>Validation Summary:</b><br>
-      ✅ Valid Mappings: ${validation.valid.length}<br>
-      ${validation.invalid.length > 0 ? `⚠️ Invalid Mappings: ${validation.invalid.length}<br>` : ''}
+      ${Icons.circleCheck} Valid Mappings: ${validation.valid.length}<br>
+      ${validation.invalid.length > 0 ? `${Icons.warning} Invalid Mappings: ${validation.invalid.length}<br>` : ''}
       <b>Total Territories Checked:</b> ${validation.totalChecked}
     `;
     section.appendChild(summaryBox);
@@ -482,8 +482,8 @@ const CampaignViewerUI = {
     summaryBox.className = validation.allValid ? 'result-box result-box-green mb-15' : 'result-box result-box-yellow mb-15';
     summaryBox.innerHTML = `
       <b>Validation Summary:</b><br>
-      ✅ Valid Mappings: ${validation.valid.length}<br>
-      ${validation.invalid.length > 0 ? `⚠️ Invalid Mappings: ${validation.invalid.length}<br>` : ''}
+      ${Icons.circleCheck} Valid Mappings: ${validation.valid.length}<br>
+      ${validation.invalid.length > 0 ? `${Icons.warning} Invalid Mappings: ${validation.invalid.length}<br>` : ''}
       <b>Total Gangs Checked:</b> ${validation.totalChecked}
     `;
     section.appendChild(summaryBox);

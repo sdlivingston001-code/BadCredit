@@ -1,100 +1,8 @@
 // lastingInjuriesUI.js
+// Depends on: injuryRenderer.js (InjuryRenderer)
 
 const LastingInjuriesUI = {
   injuriesData: null,
-
-  createWarningBox(type, message) {
-    const configs = {
-      convalescence: {
-        className: "warning-box",
-        icon: "⚠️",
-        label: "Convalescence"
-      },
-      recovery: {
-        className: "recovery-box",
-        icon: "🏥",
-        label: "Into Recovery"
-      }
-    };
-
-    const config = configs[type];
-    const div = document.createElement("div");
-    div.className = config.className;
-    div.innerHTML = `${config.icon} <b>${config.label}:</b> ${message}`;
-    return div;
-  },
-
-  createInjuryBox(injury, colour, rollInfo = null, randomRoll = null) {
-    const injDiv = document.createElement("div");
-    injDiv.className = `result-box result-box-${colour || 'grey'}`;
-    injDiv.innerHTML = [
-      `<div class="result-heading result-name"><b>${injury.name}</b></div>`,
-      injury.fixedeffect ? `<div class="result-effect">${injury.fixedeffect}</div>` : '',
-      injury.randomeffect && injury.randomeffect !== 'd3multipleinjuries' && randomRoll ? `<div class="result-effect mt-10">${this.formatRandomEffect(injury.randomeffect, randomRoll)}</div>` : '',
-    ].filter(Boolean).join('');
-    return injDiv;
-  },
-
-  formatRandomEffect(randomeffect, randomRoll) {
-    if (!randomRoll) return randomeffect;
-
-    if (randomeffect === 'd3xpgain') {
-      return `Gain ${randomRoll.value} XP!`;
-    } 
-    return randomeffect;
-  },
-
-  // Display additional injuries (DRY helper)
-  displayAdditionalInjuries(injuries, parentDiv, rollLabelFormat = 'Roll') {
-    if (!injuries || injuries.length === 0) return;
-
-    const additionalContainer = document.createElement("div");
-    additionalContainer.className = "additional-injuries-container";
-
-    const additionalTitle = document.createElement("h4");
-    additionalContainer.appendChild(additionalTitle);
-
-    // Track warnings to show once at the end
-    let hasConvalescence = false;
-    let hasRecovery = false;
-
-    injuries.forEach((injuryResult, index) => {
-      const injColour = injuryResult.injury.colour || "grey";
-
-      const rollLabel = rollLabelFormat === 'D66' 
-        ? `<b>D66 Roll:</b> ${injuryResult.roll}`
-        : `<b>${rollLabelFormat} ${index + 1}:</b> ${injuryResult.roll}`;
-
-      const injDiv = this.createInjuryBox(
-        injuryResult.injury,
-        injColour,
-        rollLabel,
-        injuryResult.randomRoll
-      );
-      if (index > 0) injDiv.classList.add('mt-10');
-      injDiv.style.animationDelay = `${(index + 1) * 180}ms`;
-      additionalContainer.appendChild(injDiv);
-
-      // Check flags
-      if (injuryResult.injury.convalescence === 1) hasConvalescence = true;
-      if (injuryResult.injury.intoRecovery === 1) hasRecovery = true;
-    });
-
-    // Add warnings at the end
-    if (hasConvalescence) {
-      additionalContainer.appendChild(
-        this.createWarningBox("convalescence", "This fighter cannot participate in the next battle (but can still take Post Battle actions).")
-      );
-    }
-
-    if (hasRecovery) {
-      additionalContainer.appendChild(
-        this.createWarningBox("recovery", "This fighter goes into recovery. They cannot make Post Battle actions AND they miss the next battle.")
-      );
-    }
-
-    parentDiv.appendChild(additionalContainer);
-  },
 
   async init(jsonPath) {
     try {
@@ -227,7 +135,7 @@ const LastingInjuriesUI = {
 
     resultsContainer.innerHTML = `
       <div class="death-box">
-        <h2 class="mt-0">💀 Fighter Dies 💀</h2>
+        <h2 class="mt-0">${Icons.skull} Fighter Dies ${Icons.skull}</h2>
         <p class="text-base mb-0">Without medical treatment, the fighter succumbs to their injuries and dies.<br><br>You recover their equipment.</p>
       </div>
     `;
@@ -250,7 +158,7 @@ const LastingInjuriesUI = {
       injuryContainer.className = "additional-injuries-container";
 
       const injColour = result.stabilisedInjury.injury.colour || "grey";
-      injuryContainer.appendChild(this.createInjuryBox(
+      injuryContainer.appendChild(InjuryRenderer.createInjuryBox(
         result.stabilisedInjury.injury,
         injColour,
         `<b>D66 Roll:</b> ${result.stabilisedInjury.roll}`,
@@ -258,7 +166,7 @@ const LastingInjuriesUI = {
       ));
       resultDiv.appendChild(injuryContainer);
 
-      this.displayAdditionalInjuries(
+      InjuryRenderer.displayAdditionalInjuries(
         result.stabilisedInjury.additionalInjuries,
         resultDiv,
         'D66'
@@ -282,14 +190,6 @@ const LastingInjuriesUI = {
     this.renderInjuryTable();
   },
 
-  formatRandomEffectLabel(randomeffect) {
-    if (!randomeffect) return null;
-    if (randomeffect === 'd3xpgain') return 'Gain D3 XP.';
-    if (randomeffect === 'd3multipleinjuries') return 'Suffer D3 injuries (ignoring Captured, Multiple Injuries, Memorable Death, Critical Injury, or Out Cold).';
-    if (randomeffect === 'stabilisedinjury') return 'Roll a lasting injury on the standard table.';
-    return randomeffect;
-  },
-
   renderInjuryTable() {
     const container = document.getElementById('injury-table-container');
     if (!container || !LastingInjuriesEngine.injuriesData) return;
@@ -298,22 +198,33 @@ const LastingInjuriesUI = {
     if (!modeData) return;
 
     const dieLabel = modeData.sides === 'd66' ? 'D66' : `D${modeData.sides}`;
+    const injuries = Object.values(modeData.results);
 
-    const rows = Object.values(modeData.results).map(injury => {
+    // Show status column only if any injury uses convalescence or intoRecovery
+    const showStatus = injuries.some(i => i.convalescence === 1 || i.intoRecovery === 1);
+
+    const rows = injuries.map(injury => {
       const colour = injury.colour || 'grey';
       const rollStr = injury.values.join(', ');
-      const effect = [injury.fixedeffect, this.formatRandomEffectLabel(injury.randomeffect)].filter(Boolean).join('<br>');
+      const effect = [injury.fixedeffect, InjuryRenderer.formatRandomEffectLabel(injury.randomeffect)].filter(Boolean).join('<br>');
+      const statusCell = showStatus ? `<td>${[
+        injury.convalescence === 1 ? `<span class="warning-box" style="display:inline-block;margin:2px 0;">${Icons.warning} Convalescence</span>` : '',
+        injury.intoRecovery === 1 ? `<span class="recovery-box" style="display:inline-block;margin:2px 0;">${Icons.hospital} Into Recovery</span>` : ''
+      ].filter(Boolean).join('<br>') || '&mdash;'}</td>` : '';
       return `<tr class="row-${colour}">
         <td>${rollStr}</td>
         <td><b>${injury.name}</b></td>
         <td>${effect || '&mdash;'}</td>
+        ${statusCell}
       </tr>`;
     }).join('');
+
+    const statusHeader = showStatus ? '<th>Status</th>' : '';
 
     container.innerHTML = `
       <h3>Injury Table (${dieLabel})</h3>
       <table>
-        <thead><tr><th>Roll</th><th>Result</th><th>Effect</th></tr></thead>
+        <thead><tr><th>Roll</th><th>Result</th><th>Effect</th>${statusHeader}</tr></thead>
         <tbody>${rows}</tbody>
       </table>
     `;
@@ -340,7 +251,7 @@ const LastingInjuriesUI = {
     const rows = Object.values(modeData.results).map(outcome => {
       const colour = outcome.colour || 'grey';
       const rollStr = outcome.values.join(', ');
-      const effect = [outcome.fixedeffect, this.formatRandomEffectLabel(outcome.randomeffect)].filter(Boolean).join('<br>');
+      const effect = [outcome.fixedeffect, InjuryRenderer.formatRandomEffectLabel(outcome.randomeffect)].filter(Boolean).join('<br>');
       return `<tr class="row-${colour}">
         <td>${rollStr}</td>
         <td class="text-capitalize"><b>${outcome.name}</b></td>
@@ -419,29 +330,18 @@ const LastingInjuriesUI = {
     if (!resultsContainer) return;
 
     const colour = result.injury.colour || "grey";
-    const nameText = colour === 'black' ? `💀 ${result.injury.name} 💀` : result.injury.name;
+    const nameText = colour === 'black' ? `${Icons.skull} ${result.injury.name} ${Icons.skull}` : result.injury.name;
 
     const resultDiv = document.createElement("div");
     resultDiv.className = `result-box result-box-${colour} result-box-primary mt-20`;
     resultDiv.innerHTML = [
       `<h3 class="result-heading mt-0 mb-0">${nameText}</h3>`,
       result.injury.fixedeffect ? `<div class="result-effect mt-10">${result.injury.fixedeffect}</div>` : '',
-      result.injury.randomeffect && result.injury.randomeffect !== 'd3multipleinjuries' ? `<div class="mt-15">${this.formatRandomEffect(result.injury.randomeffect, result.randomRoll)}</div>` : '',
+      result.injury.randomeffect && result.injury.randomeffect !== 'd3multipleinjuries' ? `<div class="mt-15">${InjuryRenderer.formatRandomEffect(result.injury.randomeffect, result.randomRoll)}</div>` : '',
     ].filter(Boolean).join('');
 
-    this.displayAdditionalInjuries(result.additionalInjuries, resultDiv, 'Roll');
-
-    if (result.injury.convalescence === 1) {
-      resultDiv.appendChild(
-        this.createWarningBox("convalescence", "This fighter make Post Battle actions (but recovers in time for the next battle).")
-      );
-    }
-
-    if (result.injury.intoRecovery === 1) {
-      resultDiv.appendChild(
-        this.createWarningBox("recovery", "This fighter goes into recovery. They cannot make Post Battle actions AND they miss the next battle.")
-      );
-    }
+    InjuryRenderer.displayAdditionalInjuries(result.additionalInjuries, resultDiv, 'Roll');
+    InjuryRenderer.appendStatusWarnings(result.injury, resultDiv);
 
     resultsContainer.innerHTML = "";
     resultsContainer.appendChild(resultDiv);

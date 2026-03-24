@@ -8,7 +8,8 @@ title: "Post Battle Sequence"
 <div class="selector-wrapper">
   <label class="selector-label" for="pb-injury-mode">Select Injury Mode:</label>
   <select id="pb-injury-mode" class="select-input">
-    <option value="standard_lasting_injuries" selected>Standard (D66)</option>
+    <option value="standard_lasting_injuries" selected>House Rules (D66)</option>
+    <option value="standard_lasting_injuries_core">Core Rules (D66)</option>
     <option value="ironman_lasting_injuries">Ironman (D6)</option>
   </select>
 </div>
@@ -78,7 +79,7 @@ title: "Post Battle Sequence"
 <div class="selector-wrapper">
   <label class="selector-label" for="pb-rogue-doc-mode">Select Treatment Mode:</label>
   <select id="pb-rogue-doc-mode" class="select-input">
-    <option value="trading_post_rogue_doc" selected>Trading Post (Post Battle Action)</option>
+    <option value="trading_post_rogue_doc" selected>Medical Escort to Trading Post Rogue Doc (Post Battle Action)</option>
     <option value="hanger_on_rogue_doc">Hanger-on (Patch-Up)</option>
   </select>
 </div>
@@ -129,6 +130,8 @@ title: "Post Battle Sequence"
 <p>As normal, in this order:</p>
 
 <script src="{{ '/assets/js/dice.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/icons.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/injuryRenderer.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/timer.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/lastingInjuriesEngine.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/postBattleEngine.js' | relative_url }}"></script>

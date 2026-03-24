@@ -1,4 +1,5 @@
 // postBattleUI.js
+// Depends on: injuryRenderer.js (InjuryRenderer)
 
 const PostBattleUI = {
 
@@ -242,27 +243,10 @@ const PostBattleUI = {
 
     container.innerHTML = `
       <div class="death-box">
-        <h2 class="mt-0">💀 Fighter Dies 💀</h2>
+        <h2 class="mt-0">${Icons.skull} Fighter Dies ${Icons.skull}</h2>
         <p class="text-base mb-0">Without medical treatment, the fighter succumbs to their injuries and dies.<br><br>You recover their equipment.</p>
       </div>
     `;
-  },
-
-  createCriticalInjuryBox(injury, colour, randomRoll) {
-    const injDiv = document.createElement('div');
-    injDiv.className = `result-box result-box-${colour || 'grey'}`;
-
-    let randomEffectHtml = '';
-    if (randomRoll && injury.randomeffect === 'd3xpgain') {
-      randomEffectHtml = `<div class="result-effect mt-10">Gain ${randomRoll.value} XP!</div>`;
-    }
-
-    injDiv.innerHTML = [
-      `<div class="result-heading result-name"><b>${injury.name}</b></div>`,
-      injury.fixedeffect ? `<div class="result-effect">${injury.fixedeffect}</div>` : '',
-      randomEffectHtml,
-    ].filter(Boolean).join('');
-    return injDiv;
   },
 
   displayCriticalRogueDocResult(result) {
@@ -282,24 +266,15 @@ const PostBattleUI = {
       injuryContainer.className = 'additional-injuries-container';
       const injColour = result.stabilisedInjury.injury.colour || 'grey';
       injuryContainer.appendChild(
-        this.createCriticalInjuryBox(result.stabilisedInjury.injury, injColour, result.stabilisedInjury.randomRoll)
+        InjuryRenderer.createInjuryBox(result.stabilisedInjury.injury, injColour, null, result.stabilisedInjury.randomRoll)
       );
       resultDiv.appendChild(injuryContainer);
 
-      if (result.stabilisedInjury.additionalInjuries && result.stabilisedInjury.additionalInjuries.length > 0) {
-        const addlContainer = document.createElement('div');
-        addlContainer.className = 'additional-injuries-container';
-        result.stabilisedInjury.additionalInjuries.forEach((injResult, index) => {
-          const box = this.createCriticalInjuryBox(
-            injResult.injury,
-            injResult.injury.colour || 'grey',
-            injResult.randomRoll
-          );
-          if (index > 0) box.classList.add('mt-10');
-          addlContainer.appendChild(box);
-        });
-        resultDiv.appendChild(addlContainer);
-      }
+      InjuryRenderer.displayAdditionalInjuries(
+        result.stabilisedInjury.additionalInjuries,
+        resultDiv,
+        'D66'
+      );
     }
 
     container.innerHTML = '';
@@ -342,57 +317,24 @@ const PostBattleUI = {
     }
 
     const colour = result.injury.colour || 'grey';
+    const nameText = colour === 'black'
+      ? `${Icons.skull} ${result.injury.name} ${Icons.skull}`
+      : result.injury.name;
 
     const box = document.createElement('div');
     box.className = `result-box result-box-${colour} result-box-primary mt-20`;
     box.style.animationDelay = '0ms';
     box.innerHTML = [
-      `<h3 class="result-heading mt-0 mb-0">${result.injury.name}</h3>`,
+      `<h3 class="result-heading mt-0 mb-0">${nameText}</h3>`,
       result.injury.fixedeffect ? `<div class="result-effect mt-10">${result.injury.fixedeffect}</div>` : '',
       result.randomRoll && result.injury.randomeffect === 'd3xpgain'
         ? `<div class="mt-15">Gain ${result.randomRoll.value} XP!</div>` : '',
     ].filter(Boolean).join('');
 
+    InjuryRenderer.displayAdditionalInjuries(result.additionalInjuries, box, 'Roll');
+    InjuryRenderer.appendStatusWarnings(result.injury, box);
+
     container.appendChild(box);
-
-    // Additional injuries from d3multipleinjuries
-    if (result.additionalInjuries && result.additionalInjuries.length > 0) {
-      const additionalContainer = document.createElement('div');
-      additionalContainer.className = 'additional-injuries-container';
-
-      let hasConvalescence = false;
-      let hasRecovery = false;
-
-      result.additionalInjuries.forEach((injResult, index) => {
-        const injColour = injResult.injury.colour || 'grey';
-        const injBox = document.createElement('div');
-        injBox.className = `result-box result-box-${injColour}${index > 0 ? ' mt-10' : ''}`;
-        injBox.style.animationDelay = `${(index + 1) * 180}ms`;
-        injBox.innerHTML = [
-          `<div class="result-heading result-name"><b>${injResult.injury.name}</b></div>`,
-          injResult.injury.fixedeffect ? `<div class="result-effect">${injResult.injury.fixedeffect}</div>` : '',
-        ].filter(Boolean).join('');
-        additionalContainer.appendChild(injBox);
-
-        if (injResult.injury.convalescence === 1) hasConvalescence = true;
-        if (injResult.injury.intoRecovery === 1) hasRecovery = true;
-      });
-
-      if (hasConvalescence) {
-        const warn = document.createElement('div');
-        warn.className = 'warning-box';
-        warn.innerHTML = '⚠️ <b>Convalescence:</b> This fighter cannot participate in the next battle (but can still take Post Battle actions).';
-        additionalContainer.appendChild(warn);
-      }
-      if (hasRecovery) {
-        const warn = document.createElement('div');
-        warn.className = 'recovery-box';
-        warn.innerHTML = '🏥 <b>Into Recovery:</b> This fighter goes into recovery. They cannot make Post Battle actions AND they miss the next battle.';
-        additionalContainer.appendChild(warn);
-      }
-
-      container.appendChild(additionalContainer);
-    }
   },
 
 };

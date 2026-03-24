@@ -52,7 +52,7 @@ const TimerUtil = {
     const lastRun = localStorage.getItem(storageKey);
     
     if (!lastRun) {
-      element.innerHTML = "⏱️ <b>Last Run:</b> Never";
+      element.innerHTML = `${Icons.timer} <b>Last Run:</b> Never`;
       element.classList.remove('timer-green');
       element.classList.add('timer-grey');
       return;
@@ -67,12 +67,12 @@ const TimerUtil = {
       // Show milliseconds for first 5 seconds
       const totalSeconds = Math.floor(elapsedMs / 1000);
       const milliseconds = elapsedMs % 1000;
-      timeHtml = `⏱️ <b>Last Run:</b> ${totalSeconds}.${String(milliseconds).padStart(3, '0')} seconds ago`;
+      timeHtml = `${Icons.timer} <b>Last Run:</b> ${totalSeconds}.${String(milliseconds).padStart(3, '0')} seconds ago`;
       element.classList.remove('timer-grey');
       element.classList.add('timer-green');
     } else {
       // After 5 seconds, just show generic message
-      timeHtml = "⏱️ <b>Last Run:</b> More than 5 seconds ago";
+      timeHtml = `${Icons.timer} <b>Last Run:</b> More than 5 seconds ago`;
       element.classList.remove('timer-green');
       element.classList.add('timer-grey');
     }
@@ -99,7 +99,7 @@ const TimerUtil = {
     } catch (e) {}
     if (currSet !== null || prevSets.length > 0) {
       let lines = '';
-      if (currSet !== null) lines += `<div class="timer-rolls">🎲 <b>${currSet}</b></div>`;
+      if (currSet !== null) lines += `<div class="timer-rolls">${Icons.dices} <b>${currSet}</b></div>`;
       if (prevSets.length > 0) lines += `<div class="timer-rolls timer-rolls-prev">History: ${prevSets.join(' | ')}</div>`;
       rollsHtml = lines;
     }

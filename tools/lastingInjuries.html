@@ -10,7 +10,8 @@ title: Lasting Injuries
 <div class="selector-wrapper">
   <label class="selector-label" for="injury-mode-selector">Select Injury Mode:</label>
   <select id="injury-mode-selector" class="select-input">
-    <option value="standard_lasting_injuries" selected>Standard (D66)</option>
+    <option value="standard_lasting_injuries" selected>House Rules (D66)</option>
+    <option value="standard_lasting_injuries_core">Core Rules (D66)</option>
     <option value="ironman_lasting_injuries">Ironman (D6)</option>
   </select>
 </div>
@@ -28,6 +29,8 @@ title: Lasting Injuries
 
 <!-- Adjust this path if your built JSON lives elsewhere -->
 <script src="{{ '/assets/js/dice.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/icons.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/injuryRenderer.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/timer.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/lastingInjuriesEngine.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/lastingInjuriesUI.js' | relative_url }}"></script>

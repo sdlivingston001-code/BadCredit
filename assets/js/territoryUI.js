@@ -236,7 +236,7 @@ const TerritoryUI = {
       // Validate gang selection
       const warningDiv = document.getElementById("gang-selection-warning") || this.createWarningDiv();
       if (!selectedGangKey) {
-        warningDiv.innerHTML = "<p class='error-box'>⚠️ Please select a gang from the dropdown before resolving territories.</p>";
+        warningDiv.innerHTML = `<p class='error-box'>${Icons.warning} Please select a gang from the dropdown before resolving territories.</p>`;
         warningDiv.classList.remove('hidden');
         return;
       }
@@ -250,7 +250,7 @@ const TerritoryUI = {
         const legacySelect = document.getElementById("legacy-gang-select");
         const legacyGangId = legacySelect ? legacySelect.value : null;
         if (!legacyGangId) {
-          warningDiv.innerHTML = "<p class='error-box'>⚠️ Please select a house affiliation from the dropdown before resolving territories.</p>";
+          warningDiv.innerHTML = `<p class='error-box'>${Icons.warning} Please select a house affiliation from the dropdown before resolving territories.</p>`;
           warningDiv.classList.remove('hidden');
           return;
         }
@@ -472,7 +472,7 @@ const TerritoryUI = {
 
     // Special Events section
     if (territoriesWithEvents && territoriesWithEvents.length > 0) {
-      const section = this.createResultSection("Special Events to Resolve", "⚠️", 
+      const section = this.createResultSection("Special Events to Resolve", Icons.warning, 
         territoriesWithEvents.map(e => ({ id: e.id, territory: { name: e.name }, event: { description: e.description } })),
         'event'
       );
@@ -480,7 +480,7 @@ const TerritoryUI = {
     }
 
     // Income section with total and special effects
-    const incomeSection = this.createResultSection("Income Rolls", "💰", results, 'income');
+    const incomeSection = this.createResultSection("Income Rolls", Icons.briefcase, results, 'income');
     
     let totalCredits = 0;
     const specialEffects = [];
@@ -515,13 +515,13 @@ const TerritoryUI = {
 
     // All other sections
     const sections = [
-      { title: "Random Recruit Rolls", icon: "👥", property: "recruit" },
-      { title: "Fixed Recruit Benefits", icon: "🎖️", property: "fixedRecruit" },
-      { title: "Reputation", icon: "⭐", property: "reputation" },
-      { title: "Scenario Selection Special Rules", icon: "🎲", property: "scenarioSelectionSpecialRules" },
-      { title: "Fixed Gear", icon: "⚔️", property: "fixedGear" },
-      { title: "Battle Special Rules", icon: "🛡️", property: "battleSpecialRules" },
-      { title: "Trading / Post Battle Action Special Rules", icon: "💼", property: "tradingSpecialRules" }
+      { title: "Random Recruit Rolls", icon: Icons.users, property: "recruit" },
+      { title: "Fixed Recruit Benefits", icon: Icons.medal, property: "fixedRecruit" },
+      { title: "Reputation", icon: Icons.star, property: "reputation" },
+      { title: "Scenario Selection Special Rules", icon: Icons.dices, property: "scenarioSelectionSpecialRules" },
+      { title: "Fixed Gear", icon: Icons.swords, property: "fixedGear" },
+      { title: "Battle Special Rules", icon: Icons.shield, property: "battleSpecialRules" },
+      { title: "Trading / Post Battle Action Special Rules", icon: Icons.briefcase, property: "tradingSpecialRules" }
     ];
 
     sections.forEach(({ title, icon, property }) => {
@@ -543,7 +543,7 @@ const TerritoryUI = {
     const withoutRulesItems = this.createWithoutRulesItems(withoutRulesCategories);
     if (withoutRulesItems.length > 0) {
       const section = document.createElement("div");
-      section.innerHTML = '<h3 class="mt-30">📋 Territories Without Rules</h3>';
+      section.innerHTML = `<h3 class="mt-30">${Icons.clipboardList} Territories Without Rules</h3>`;
       const list = document.createElement("ul");
       withoutRulesItems.forEach(item => list.appendChild(item));
       section.appendChild(list);

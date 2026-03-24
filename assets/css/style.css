@@ -237,7 +237,7 @@ ol li, ul li {
   font-size: 2rem;
   cursor: pointer;
   border: 2px solid #ddd;
-  border-radius: 4px;
+  border-radius: 8px;
   background: white;
   transition: all 0.2s;
 }
@@ -269,7 +269,7 @@ ol li, ul li {
   padding: 0.5rem 1.5rem;
   cursor: pointer;
   border: 1px solid #999;
-  border-radius: 4px;
+  border-radius: 8px;
   background: #f5f5f5;
   color: #333;
 }
@@ -378,7 +378,7 @@ ol li, ul li {
 
 .info-box {
   padding: 10px;
-  border-radius: 4px;
+  border-radius: 8px;
   border: 2px solid;
   margin-top: 10px;
 }
@@ -435,12 +435,12 @@ ol li, ul li {
 
 .cost-box {
   background-color: #fff3cd;
-  border-color: #ffc107;
+  border: 3px solid #ffc107;
+  border-radius: 8px;
   color: #856404;
   text-align: center;
   margin-top: 20px;
   padding: 20px;
-  border-width: 3px;
 }
 
 .cost-box h2 {
@@ -474,7 +474,7 @@ ol li, ul li {
 .select-input {
   padding: 8px 12px;
   font-size: 16px;
-  border-radius: 4px;
+  border-radius: 8px;
   border: 2px solid #333;
   background-color: white;
   cursor: pointer;
@@ -493,7 +493,7 @@ ol li, ul li {
   padding: 16px 48px;
   font-size: 18px;
   border: 2px solid black; /* added this line */
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: bold;
   transition: opacity 0.2s;
@@ -674,7 +674,16 @@ ol li, ul li {
 }
 
 /* ======================
-   TERRITORY ITEMS
+   INLINE SVG ICONS
+   ====================== */
+
+svg[xmlns] {
+  display: inline-block;
+  vertical-align: -0.15em;
+}
+
+/* ======================
+   TERRITORY CHECKBOXES
    ====================== */
 
 .territory-level-section {
