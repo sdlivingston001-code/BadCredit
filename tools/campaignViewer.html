@@ -14,13 +14,10 @@ title: Campaign Viewer
          class="select-input input-flex" 
          placeholder="e2785818-5736-4c50-bfb2-d243953541f8"
   />
-  <button id="set-campaign-id" class="btn ml-10">Set Campaign</button>
+  <button id="load-campaign" class="btn ml-10">Load Campaign</button>
 </div>
 
-<div class="flex-row-center">
-  <button id="refresh-campaign" class="btn">🔄 Refresh Data</button>
-  <div id="campaign-timer" class="monospace"></div>
-</div>
+<div id="campaign-timer" class="monospace"></div>
 
 <div id="campaign-data"></div>
 
@@ -29,6 +26,6 @@ title: Campaign Viewer
 <script src="{{ '/assets/js/campaignViewerUI.js' | relative_url }}"></script>
 <script>
   document.addEventListener("DOMContentLoaded", () => {
-    CampaignViewerUI.init("campaign-data", "refresh-campaign", "campaign-timer", "campaign-id-input", "set-campaign-id");
+    CampaignViewerUI.init("campaign-data", "load-campaign", "campaign-timer", "campaign-id-input");
   });
 </script>

@@ -82,16 +82,16 @@ const TimerUtil = {
     const prevSets = [];
     let currSet = null;
     try {
-      const prev3 = localStorage.getItem(`${storageKey}_prev3_rolls`);
-      if (prev3) { const arr = JSON.parse(prev3); if (arr && arr.length) prevSets.push(arr.join(', ')); }
+      const prev = localStorage.getItem(`${storageKey}_prev_rolls`);
+      if (prev) { const arr = JSON.parse(prev); if (arr && arr.length) prevSets.push(arr.join(', ')); }
     } catch (e) {}
     try {
       const prev2 = localStorage.getItem(`${storageKey}_prev2_rolls`);
       if (prev2) { const arr = JSON.parse(prev2); if (arr && arr.length) prevSets.push(arr.join(', ')); }
     } catch (e) {}
     try {
-      const prev = localStorage.getItem(`${storageKey}_prev_rolls`);
-      if (prev) { const arr = JSON.parse(prev); if (arr && arr.length) prevSets.push(arr.join(', ')); }
+      const prev3 = localStorage.getItem(`${storageKey}_prev3_rolls`);
+      if (prev3) { const arr = JSON.parse(prev3); if (arr && arr.length) prevSets.push(arr.join(', ')); }
     } catch (e) {}
     try {
       const curr = localStorage.getItem(`${storageKey}_rolls`);
@@ -100,7 +100,7 @@ const TimerUtil = {
     if (currSet !== null || prevSets.length > 0) {
       let lines = '';
       if (currSet !== null) lines += `<div class="timer-rolls">${Icons.dices} <b>${currSet}</b></div>`;
-      if (prevSets.length > 0) lines += `<div class="timer-rolls timer-rolls-prev">History: ${prevSets.join(' | ')}</div>`;
+      if (prevSets.length > 0) lines += `<div class="timer-rolls timer-rolls-prev">${Icons.clockCounterClockwise} ${prevSets.join(' | ')}</div>`;
       rollsHtml = lines;
     }
 

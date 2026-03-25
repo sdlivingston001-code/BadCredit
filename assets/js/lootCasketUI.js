@@ -18,8 +18,8 @@ const LootCasketUI = {
       this.renderReferenceTables();
 
       // Expose test functions to window for console testing
-      window.testLootCasket = (roll, autoResolve = false) => {
-        const result = LootCasketEngine.testRoll(roll, autoResolve);
+      window.testLootCasket = (roll) => {
+        const result = LootCasketEngine.testRoll(roll);
         if (result) {
           this.displayLootCasketResult(result);
           console.log('Test loot casket result for roll ' + roll + ':', result);
@@ -49,7 +49,7 @@ const LootCasketUI = {
       };
 
       console.log('%c🎁 Loot Casket Testing Enabled', 'color: #FFD700; font-weight: bold; font-size: 14px;');
-      console.log('Use: testlootCasket(roll, autoResolve) - e.g., testlootCasket(4) or testlootCasket(4, true)');
+      console.log('Use: testlootCasket(roll) - e.g., testlootCasket(4)');
       console.log('Use: testNestedTable(tableName, roll) - e.g., testNestedTable("d66drugs", 11) or testNestedTable("d3skull")');
     } catch (err) {
       console.error(err);
@@ -164,10 +164,7 @@ const LootCasketUI = {
       const buttonContainer = document.createElement("div");
       buttonContainer.className = "nested-content mt-15";
       buttonContainer.style.animation = 'result-pop-in 0.2s ease-out both';
-      buttonContainer.innerHTML = `
-        <div class="info-box mb-10">${Icons.zap} <b>Additional Roll Required... Click to proceed.</b></div>
-        <button class="btn">Roll the dice</button>
-      `;
+      buttonContainer.innerHTML = `<button class="btn">Roll the dice</button>`;
       buttonContainer.querySelector('button').addEventListener('click', () => {
         this.rollNestedTable(randomEffect.tableName, buttonContainer);
       });
@@ -178,7 +175,13 @@ const LootCasketUI = {
       const nestedContainer = document.createElement("div");
       nestedContainer.className = "nested-content";
       nestedContainer.style.animation = 'result-pop-in 0.2s ease-out both';
-      nestedContainer.innerHTML = `<div class="nested-title"><b>${Icons.arrowRight} Additional Result:</b></div>`;
+      if (randomEffect.rerollHistory && randomEffect.rerollHistory.length > 0) {
+        const rerollDiv = document.createElement("div");
+        rerollDiv.className = "info-box reroll-history-box";
+        rerollDiv.style.animation = 'result-pop-in 0.2s ease-out both';
+        rerollDiv.innerHTML = `${Icons.rotateCcw} <b>Rerolled:</b> ${randomEffect.rerollHistory.map(r => `${r.name} (${r.roll})`).join(", ")}`;
+        nestedContainer.appendChild(rerollDiv);
+      }
       nestedContainer.appendChild(this.createResultBox(randomEffect.result, randomEffect.roll, randomEffect.tableName));
       if (randomEffect.nestedEffect) {
         this.displayNestedEffect(randomEffect.nestedEffect, nestedContainer);
@@ -223,10 +226,6 @@ const LootCasketUI = {
       containerDiv.appendChild(rerollDiv);
     }
 
-    const titleDiv = document.createElement("div");
-    titleDiv.className = "nested-title";
-    titleDiv.innerHTML = `<b>${Icons.arrowRight} Additional Result:</b>`;
-    containerDiv.appendChild(titleDiv);
     containerDiv.appendChild(this.createResultBox(result.result, result.roll, result.tableName));
 
     if (result.randomEffect) {
@@ -238,7 +237,7 @@ const LootCasketUI = {
     const lootResult = LootCasketEngine.smashOpenLootCasket();
     if (typeof TimerUtil !== 'undefined') {
       const rolls = [];
-      if (lootResult.rawRoll !== undefined) rolls.push(`D66: ${lootResult.roll} (smashed from ${lootResult.rawRoll})`);
+      if (lootResult.rawRoll !== undefined) rolls.push(`D66: ${lootResult.roll} (reduced from ${lootResult.rawRoll})`);
       else if (lootResult.roll !== undefined) rolls.push(`D66: ${lootResult.roll}`);
       if (lootResult.incomeResult && lootResult.incomeResult.roll !== undefined) rolls.push(`Income: ${lootResult.incomeResult.roll}`);
       rolls.unshift('[Smash]');

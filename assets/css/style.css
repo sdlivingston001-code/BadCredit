@@ -67,6 +67,7 @@ body {
   padding: 0.75rem 1rem;
   min-height: 44px;
   font-weight: bold;
+  font-size: 1.5em;
 }
 
 .bottom-bar a:hover {
@@ -458,7 +459,14 @@ ol li, ul li {
    ====================== */
 
 .selector-wrapper {
+  display: flex;
+  align-items: center;
   margin-bottom: 20px;
+}
+
+.selector-wrapper .btn {
+  width: auto;
+  flex-shrink: 0;
 }
 
 .selector-wrapper.with-divider {

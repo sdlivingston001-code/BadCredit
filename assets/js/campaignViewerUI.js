@@ -9,27 +9,22 @@ const CampaignViewerUI = {
   localTerritories: null,
   localGangs: null,
   campaignIdInput: null,
-  setCampaignIdButton: null,
 
-  async init(containerId, refreshButtonId, timerContainerId, campaignIdInputId, setCampaignIdButtonId) {
+  async init(containerId, loadButtonId, timerContainerId, campaignIdInputId) {
     this.containerId = containerId;
-    this.refreshButton = document.getElementById(refreshButtonId);
+    this.refreshButton = document.getElementById(loadButtonId);
     this.timerContainer = document.getElementById(timerContainerId);
     this.campaignIdInput = document.getElementById(campaignIdInputId);
-    this.setCampaignIdButton = document.getElementById(setCampaignIdButtonId);
-    
+
     if (this.refreshButton) {
-      this.refreshButton.addEventListener('click', () => this.refresh());
+      this.refreshButton.addEventListener('click', () => this.setCampaignId());
     }
 
-    // Set up campaign ID controls
-    if (this.campaignIdInput && this.setCampaignIdButton) {
+    if (this.campaignIdInput) {
       // Load current campaign ID
       this.campaignIdInput.value = CampaignViewerEngine.getCampaignId();
-      
-      this.setCampaignIdButton.addEventListener('click', () => this.setCampaignId());
-      
-      // Allow Enter key to set campaign ID
+
+      // Allow Enter key to load
       this.campaignIdInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
           this.setCampaignId();
@@ -43,9 +38,6 @@ const CampaignViewerUI = {
 
     // Initialize timer display
     this.initTimer();
-
-    // Initial load
-    await this.loadAndDisplay();
   },
 
   setCampaignId() {
@@ -54,11 +46,8 @@ const CampaignViewerUI = {
       alert('Please enter a valid campaign ID');
       return;
     }
-    
-    if (CampaignViewerEngine.setCampaignId(newId)) {
-      alert('Campaign ID updated! Refreshing data...');
-      this.refresh();
-    }
+    CampaignViewerEngine.setCampaignId(newId);
+    this.refresh();
   },
 
   async loadLocalGangs() {

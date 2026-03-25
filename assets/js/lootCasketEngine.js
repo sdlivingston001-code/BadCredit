@@ -92,7 +92,7 @@ const LootCasketEngine = {
       return { type: 'reroll', message: 'Reroll this result' };
     }
 
-    // Handle nested table rolls - don't auto-roll, return pending state
+    // Handle nested table rolls - don't auto-roll, return pending state for user to click
     if (this.lootData[randomeffect]) {
       return {
         type: 'pending_roll',
@@ -203,7 +203,7 @@ const LootCasketEngine = {
   },
 
   // Test with a specific roll value
-  testRoll(rollValue, autoResolveNested = false) {
+  testRoll(rollValue) {
     const roll = parseInt(rollValue);
     if (isNaN(roll)) {
       console.error(`Invalid roll value: ${rollValue}`);
@@ -218,23 +218,8 @@ const LootCasketEngine = {
       };
     }
 
-    // Process income if present
     const incomeResult = result.income ? this.processIncome(result.income) : null;
-
-    // Process random effects if present
-    let randomEffect = this.processRandomEffect(result.randomeffect);
-
-    // Auto-resolve nested tables if requested
-    if (autoResolveNested && randomEffect && randomEffect.type === 'pending_roll') {
-      const nestedResult = this.rollNestedTable(randomEffect.tableName);
-      randomEffect = {
-        type: 'nested_table',
-        tableName: nestedResult.tableName,
-        roll: nestedResult.roll,
-        result: nestedResult.result,
-        nestedEffect: nestedResult.randomEffect
-      };
-    }
+    const randomEffect = this.processRandomEffect(result.randomeffect);
 
     return {
       roll,
