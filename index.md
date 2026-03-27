@@ -23,7 +23,7 @@ title: BadCredit
   document.getElementById('idx-income').innerHTML = Icons.moneyWavy + ' ';
   document.getElementById('idx-injuries').innerHTML = Icons.firstAid + ' ';
   document.getElementById('idx-loot').innerHTML = Icons.treasureChest + ' ';
-  document.getElementById('idx-xp').innerHTML = Icons.medal + ' ';
+  document.getElementById('idx-xp').innerHTML = Icons.militaryMedal + ' ';
   document.getElementById('idx-sotw').innerHTML = Icons.clipboardList + ' ';
 </script>
 
@@ -34,7 +34,7 @@ title: BadCredit
 
 Learn more about the rules, world, and design behind the system.
 
-[Advancements and Promotions]({{ site.baseurl }}/advancements/)<br><br>
+[Promotions]({{ site.baseurl }}/advancements/)<br><br>
 [Pre-Battle Sequence]({{ site.baseurl }}/pre-battle/)<br><br>
 [Post-Battle Sequence]({{ site.baseurl }}/tools/post-battle.html)<br><br>
 <!-- [Campaign Viewer]({{ site.baseurl }}/tools/campaignViewer.html)<br><br> -->

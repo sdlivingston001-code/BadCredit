@@ -34,6 +34,7 @@ const TerritoryUI = {
       this.renderCheckboxes();
       this.bindEvents();
       this.initTimer();
+      this.renderReferenceTable();
     } catch (err) {
       console.error(err);
       const container = document.getElementById('territory-container');
@@ -70,6 +71,9 @@ const TerritoryUI = {
     selectorWrapper.querySelector('#gang-select').addEventListener('change', (e) => {
       this.updateLegacySelector(e.target.value);
       this.renderCheckboxes();
+      const gangData = e.target.value && this.gangs && this.gangs[e.target.value];
+      const dominionGangId = gangData && gangData.dominionGangId !== 'legacy' ? gangData.dominionGangId : null;
+      this.renderReferenceTable(dominionGangId);
     });
   },
 
@@ -112,6 +116,10 @@ const TerritoryUI = {
         ${optionsHTML}
       </select>
     `;
+
+    legacyWrapper.querySelector('#legacy-gang-select').addEventListener('change', (e) => {
+      this.renderReferenceTable(e.target.value || null);
+    });
 
     const gangSelector = container.querySelector('.gang-selector-wrapper');
     if (gangSelector && gangSelector.nextSibling) {
@@ -246,6 +254,7 @@ const TerritoryUI = {
           : selectedGangKey;
 
       // If legacy gang, check for legacy gang selection
+      // Allows gangs, such as Venators, to access the special rules of their affiliated legacy gang (e.g. House Cawdor) when resolving territories
       if (selectedGang === 'legacy') {
         const legacySelect = document.getElementById("legacy-gang-select");
         const legacyGangId = legacySelect ? legacySelect.value : null;
@@ -441,7 +450,13 @@ const TerritoryUI = {
         list.appendChild(li);
       }
     });
-    
+
+    if (list.children.length === 0) {
+      const li = document.createElement("li");
+      li.innerHTML = `<em>None for selected territories.</em>`;
+      list.appendChild(li);
+    }
+
     section.appendChild(list);
     return section;
   },
@@ -473,14 +488,14 @@ const TerritoryUI = {
     // Special Events section
     if (territoriesWithEvents && territoriesWithEvents.length > 0) {
       const section = this.createResultSection("Special Events to Resolve", Icons.warning, 
-        territoriesWithEvents.map(e => ({ id: e.id, territory: { name: e.name }, event: { description: e.description } })),
+        territoriesWithEvents.map(e => ({ id: e.id, territory: { name: e.name }, event: { description: e.description.replace(/⚠️/g, Icons.warning) } })),
         'event'
       );
       resultsContainer.appendChild(section);
     }
 
     // Income section with total and special effects
-    const incomeSection = this.createResultSection("Income Rolls", Icons.briefcase, results, 'income');
+    const incomeSection = this.createResultSection("Income Rolls", Icons.moneyWavy, results, 'income');
     
     let totalCredits = 0;
     const specialEffects = [];
@@ -516,12 +531,12 @@ const TerritoryUI = {
     // All other sections
     const sections = [
       { title: "Random Recruit Rolls", icon: Icons.users, property: "recruit" },
-      { title: "Fixed Recruit Benefits", icon: Icons.medal, property: "fixedRecruit" },
+      { title: "Fixed Recruit Benefits", icon: Icons.userCirclePlus, property: "fixedRecruit" },
       { title: "Reputation", icon: Icons.star, property: "reputation" },
-      { title: "Scenario Selection Special Rules", icon: Icons.dices, property: "scenarioSelectionSpecialRules" },
-      { title: "Fixed Gear", icon: Icons.swords, property: "fixedGear" },
-      { title: "Battle Special Rules", icon: Icons.shield, property: "battleSpecialRules" },
-      { title: "Trading / Post Battle Action Special Rules", icon: Icons.briefcase, property: "tradingSpecialRules" }
+      { title: "Scenario Selection Special Rules", icon: Icons.clipboardList, property: "scenarioSelectionSpecialRules" },
+      { title: "Fixed Gear", icon: Icons.gear, property: "fixedGear" },
+      { title: "Battle Special Rules", icon: Icons.swords, property: "battleSpecialRules" },
+      { title: "Trading / Post Battle Action Special Rules", icon: Icons.magicWand, property: "tradingSpecialRules" }
     ];
 
     sections.forEach(({ title, icon, property }) => {
@@ -542,12 +557,187 @@ const TerritoryUI = {
 
     const withoutRulesItems = this.createWithoutRulesItems(withoutRulesCategories);
     if (withoutRulesItems.length > 0) {
-      const section = document.createElement("div");
-      section.innerHTML = `<h3 class="mt-30">${Icons.clipboardList} Territories Without Rules</h3>`;
+      const details = document.createElement("details");
+      details.className = "reference-tables-collapsible mt-30";
+      const summary = document.createElement("summary");
+      summary.textContent = "Territories Without Rules";
+      details.appendChild(summary);
       const list = document.createElement("ul");
       withoutRulesItems.forEach(item => list.appendChild(item));
-      section.appendChild(list);
-      resultsContainer.appendChild(section);
+      details.appendChild(list);
+      resultsContainer.appendChild(details);
     }
+  },
+
+  // Describe income config accurately from resolved fields
+  describeIncome(rawConfig) {
+    if (!rawConfig) return null;
+    const c = (typeof TerritorySchemas !== 'undefined' && TerritorySchemas.resolveProperty)
+      ? TerritorySchemas.resolveProperty(rawConfig, 'income')
+      : rawConfig;
+
+    const parts = [];
+
+    if (c.draw_from_deck) {
+      parts.push('Draw from deck');
+    } else if (c.count_min !== undefined && c.count_max !== undefined) {
+      if (c.count_message) parts.push(c.count_message.replace(/\n/g, '<br>'));
+      parts.push(`\u00d7 ${c.multiplier} credits per unit`);
+      if (c.count_multiplier && c.count_multiplier !== 1) parts.push(`Count multiplier: \u00d7${c.count_multiplier}`);
+    } else {
+      let formula = `${c.count}d${c.sides} \u00d7 ${c.multiplier} credits`;
+      if (c.addition) formula += ` + ${c.addition}`;
+      parts.push(formula);
+      if (c.required_territory) {
+        const condMult = c.conditional_multiplier || c.multiplier;
+        const condCount = c.conditional_count || c.count;
+        parts.push(`If ${c.required_territory} also held: ${condCount}d${c.sides} \u00d7 ${condMult} credits`);
+      }
+    }
+
+    if (c.event && c.event.text) parts.push(c.event.text.replace(/⚠️/g, Icons.warning));
+
+    return parts.join('<br>');
+  },
+
+  // Describe recruit config with full outcomes table
+  describeRecruit(rawConfig) {
+    if (!rawConfig) return null;
+    const c = (typeof TerritorySchemas !== 'undefined' && TerritorySchemas.resolveProperty)
+      ? TerritorySchemas.resolveProperty(rawConfig, 'recruit')
+      : rawConfig;
+    const parts = [`${c.count}d${c.sides}, success on ${c.target}+`];
+    if (c.outcomes) {
+      Object.entries(c.outcomes)
+        .sort(([a], [b]) => Number(a) - Number(b))
+        .forEach(([count, text]) => parts.push(`${count} success${Number(count) !== 1 ? 'es' : ''}: ${text}`));
+    }
+    return parts.join('<br>');
+  },
+
+  // Render the collapsible territory reference table
+  renderReferenceTable(selectedGang = null) {
+    const container = document.getElementById('territory-reference');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const campaignTerritories = this.territories.filter(t => t.campaign === 1);
+
+    // Group by level
+    const byLevel = {};
+    campaignTerritories.forEach(t => {
+      const level = t.level || 1;
+      if (!byLevel[level]) byLevel[level] = [];
+      byLevel[level].push(t);
+    });
+    Object.values(byLevel).forEach(arr => arr.sort((a, b) => a.name.localeCompare(b.name)));
+
+    const outerDetails = document.createElement('details');
+    outerDetails.className = 'reference-tables-collapsible';
+    const outerSummary = document.createElement('summary');
+    outerSummary.textContent = 'Territory Reference';
+    outerDetails.appendChild(outerSummary);
+
+    const ruleFields = [
+      {
+        label: 'Income',
+        getVal: (t) => {
+          const gangKey = `income_${selectedGang}`;
+          const isOverride = selectedGang && t[gangKey];
+          return { raw: isOverride ? t[gangKey] : t.income, override: !!isOverride, isIncome: true };
+        }
+      },
+      {
+        label: 'Random Recruit',
+        getVal: (t) => {
+          const gangKey = `random_recruit_${selectedGang}`;
+          const isOverride = selectedGang && t[gangKey];
+          return { raw: isOverride ? t[gangKey] : t.random_recruit, override: !!isOverride, isRecruit: true };
+        }
+      },
+      {
+        label: 'Fixed Recruit',
+        getVal: (t) => {
+          const gangKey = `fixed_recruit_${selectedGang}`;
+          const isOverride = selectedGang && t[gangKey];
+          return { raw: isOverride ? t[gangKey] : t.fixed_recruit, override: !!isOverride };
+        }
+      },
+      {
+        label: 'Reputation',
+        getVal: (t) => {
+          const gangKey = `reputation_${selectedGang}`;
+          const isOverride = selectedGang && t[gangKey];
+          return { raw: isOverride ? t[gangKey] : t.reputation, override: !!isOverride };
+        }
+      },
+      {
+        label: 'Fixed Gear',
+        getVal: (t) => {
+          const gangKey = `fixed_gear_${selectedGang}`;
+          const isOverride = selectedGang && t[gangKey];
+          return { raw: isOverride ? t[gangKey] : t.fixed_gear, override: !!isOverride };
+        }
+      },
+      {
+        label: 'Battle Special Rules',
+        getVal: (t) => {
+          const gangKey = `battle_special_rules_${selectedGang}`;
+          const isOverride = selectedGang && t[gangKey];
+          return { raw: isOverride ? t[gangKey] : t.battle_special_rules, override: !!isOverride };
+        }
+      },
+      {
+        label: 'Trading Special Rules',
+        getVal: (t) => {
+          const gangKey = `trading_special_rules_${selectedGang}`;
+          const isOverride = selectedGang && t[gangKey];
+          return { raw: isOverride ? t[gangKey] : t.trading_special_rules, override: !!isOverride };
+        }
+      },
+      {
+        label: 'Scenario Selection',
+        getVal: (t) => {
+          const gangKey = `scenario_selection_special_rules_${selectedGang}`;
+          const isOverride = selectedGang && t[gangKey];
+          return { raw: isOverride ? t[gangKey] : t.scenario_selection_special_rules, override: !!isOverride };
+        }
+      }
+    ];
+
+    const levels = Object.keys(byLevel).sort((a, b) => Number(a) - Number(b));
+    levels.forEach(level => {
+      const levelDetails = document.createElement('details');
+      levelDetails.className = 'reference-tables-collapsible';
+      const levelSummary = document.createElement('summary');
+      levelSummary.textContent = `Level ${level}`;
+      levelDetails.appendChild(levelSummary);
+
+      byLevel[level].forEach(territory => {
+        const nameEl = document.createElement('p');
+        nameEl.innerHTML = `<strong>${territory.name}</strong>`;
+        levelDetails.appendChild(nameEl);
+
+        const ul = document.createElement('ul');
+        ruleFields.forEach(({ label, getVal }) => {
+          const { raw, override, isIncome, isRecruit } = getVal(territory);
+          if (!raw) return;
+          const text = isIncome ? this.describeIncome(raw)
+            : isRecruit ? this.describeRecruit(raw)
+            : raw;
+          if (!text) return;
+          const li = document.createElement('li');
+          const overrideTag = override ? ` <em>(Gang Override)</em>` : '';
+          li.innerHTML = `<b>${label}${overrideTag}:</b> ${text}`;
+          ul.appendChild(li);
+        });
+
+        levelDetails.appendChild(ul);
+      });
+
+      outerDetails.appendChild(levelDetails);
+    });
+
+    container.appendChild(outerDetails);
   }
 };
