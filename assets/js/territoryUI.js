@@ -4,8 +4,9 @@ const TerritoryUI = {
   territories: [],
   territoryMap: {},
   gangs: null,
+  lastingInjuriesData: null,
 
-  async init(jsonPath, gangsPath) {
+  async init(jsonPath, gangsPath, lastingInjuriesPath) {
     try {
       const response = await fetch(`${jsonPath}?t=${Date.now()}`, { cache: 'no-store' });
       if (!response.ok) throw new Error(`Failed to load territories: ${response.status}`);
@@ -28,6 +29,14 @@ const TerritoryUI = {
 
       const gangsResponse = await fetch(`${gangsPath}?t=${Date.now()}`, { cache: 'no-store' });
       this.gangs = gangsResponse.ok ? await gangsResponse.json() : {};
+
+      if (lastingInjuriesPath && typeof LastingInjuriesEngine !== 'undefined') {
+        const liResponse = await fetch(`${lastingInjuriesPath}?t=${Date.now()}`, { cache: 'no-store' });
+        if (liResponse.ok) {
+          this.lastingInjuriesData = await liResponse.json();
+          LastingInjuriesEngine.loadInjuries(this.lastingInjuriesData);
+        }
+      }
 
       this.buildTerritoryMap();
       this.renderGangSelector();
@@ -300,15 +309,10 @@ const TerritoryUI = {
           // Replace template variables in message
           let message = incomeConfig.count_message || `How many dice to roll for income? ({count_min} to {count_max})`;
           message = message.replace('{count_min}', incomeConfig.count_min).replace('{count_max}', incomeConfig.count_max);
-          
-          const count = prompt(`${territory.name}: ${message}`);
-          if (count === null) {
-            // User cancelled
-            return;
-          }
-          const parsedCount = parseInt(count);
-          if (isNaN(parsedCount) || parsedCount < incomeConfig.count_min || parsedCount > incomeConfig.count_max) {
-            alert(`Invalid input. Please enter a number between ${incomeConfig.count_min} and ${incomeConfig.count_max}.`);
+          message = message.replace(/\n/g, '<br>');
+
+          const parsedCount = await this.showNumberInputDialog(territory.name, message, incomeConfig.count_min, incomeConfig.count_max);
+          if (parsedCount === null) {
             return;
           }
           // Apply count_multiplier if it exists
@@ -320,7 +324,25 @@ const TerritoryUI = {
 
       const allResults = TerritoryEngine.resolve_all(selectedTerritories, userInputCounts, selectedGang);
 
-
+      // For events that need a random fighter, prompt for gang size then pick one
+      for (const event of allResults.territoriesWithEvents) {
+        if (event.id === 'collapsed_dome' && typeof LastingInjuriesEngine !== 'undefined' && this.lastingInjuriesData) {
+          const input = await this.showCollapsedDomeInjuryDialog(event.name);
+          if (input) {
+            const { totalFighters, injuryMode } = input;
+            LastingInjuriesEngine.setMode(injuryMode);
+            const fighterNumber = Dice.d(totalFighters);
+            const injuryResult = LastingInjuriesEngine.resolveInjury();
+            event.injuryData = { fighterNumber, totalFighters, injuryMode, injuryResult };
+          }
+        } else if (event.id === 'refuse_drift') {
+          const totalFighters = await this.showFighterCountDialog(event.name, 'A waste-lurker attacks! Which fighter must miss the next battle?');
+          if (totalFighters !== null) {
+            const fighterNumber = Dice.d(totalFighters);
+            event.missNextBattle = { fighterNumber, totalFighters };
+          }
+        }
+      }
 
       this.displayResults(allResults.territories, allResults.territoriesWithoutIncome, allResults.territoriesWithoutRecruit, allResults.territoriesWithoutFixedRecruit, allResults.territoriesWithoutReputation, allResults.territoriesWithoutFixedGear, allResults.territoriesWithoutBattleSpecialRules, allResults.territoriesWithoutTradingSpecialRules, allResults.territoriesWithoutScenarioSelectionSpecialRules, allResults.territoriesWithEvents);
     });
@@ -434,6 +456,180 @@ const TerritoryUI = {
     });
   },
 
+  showFighterCountDialog(territoryName, contextMessage) {
+    return new Promise((resolve) => {
+      const overlay = document.createElement('div');
+      overlay.className = 'suit-dialog-overlay';
+
+      const dialog = document.createElement('div');
+      dialog.className = 'suit-dialog';
+
+      dialog.innerHTML = `
+        <h2>${territoryName}</h2>
+        <p class="number-input-message">${contextMessage}</p>
+        <div style="text-align:left; margin-bottom:1.5rem;">
+          <label style="display:block;margin-bottom:0.35rem;color:#333;font-weight:bold;">How many fighters are in your gang?</label>
+          <input type="number" class="number-input-field" min="1" max="50" value="1" style="display:inline-block;margin:0;">
+        </div>
+        <div class="number-input-buttons">
+          <button class="confirm-button">Roll</button>
+          <button class="cancel-button">Cancel</button>
+        </div>
+      `;
+
+      overlay.appendChild(dialog);
+      document.body.appendChild(overlay);
+
+      const input = dialog.querySelector('.number-input-field');
+      const confirmButton = dialog.querySelector('.confirm-button');
+      const cancelButton = dialog.querySelector('.cancel-button');
+
+      const confirm = () => {
+        const val = parseInt(input.value);
+        if (isNaN(val) || val < 1) {
+          input.classList.add('input-error');
+          return;
+        }
+        document.body.removeChild(overlay);
+        resolve(val);
+      };
+
+      confirmButton.addEventListener('click', confirm);
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') confirm();
+        if (e.key === 'Escape') { document.body.removeChild(overlay); resolve(null); }
+      });
+      cancelButton.addEventListener('click', () => {
+        document.body.removeChild(overlay);
+        resolve(null);
+      });
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) { document.body.removeChild(overlay); resolve(null); }
+      });
+
+      setTimeout(() => input.focus(), 50);
+    });
+  },
+
+  showCollapsedDomeInjuryDialog(territoryName) {
+    return new Promise((resolve) => {
+      const overlay = document.createElement('div');
+      overlay.className = 'suit-dialog-overlay';
+
+      const dialog = document.createElement('div');
+      dialog.className = 'suit-dialog';
+
+      const injuryModes = [
+        { value: 'standard_lasting_injuries', label: 'House Rules (D66)' },
+        { value: 'standard_lasting_injuries_core', label: 'Core Rules (D66)' },
+        { value: 'ironman_lasting_injuries', label: 'Ironman (D6)' },
+      ];
+      const modeOptions = injuryModes.map(m => `<option value="${m.value}">${m.label}</option>`).join('');
+
+      dialog.innerHTML = `
+        <h2>${territoryName}</h2>
+        <p class="number-input-message">A section of the dome has caved in!<br>A random fighter suffers a lasting injury.</p>
+        <div style="text-align:left; margin-bottom:1rem;">
+          <label style="display:block;margin-bottom:0.35rem;color:#333;font-weight:bold;">How many fighters are in your gang?</label>
+          <input type="number" class="number-input-field" min="1" max="50" value="1" style="display:inline-block;margin:0 0 0 0;">
+        </div>
+        <div style="text-align:left; margin-bottom:1.5rem;">
+          <label style="display:block;margin-bottom:0.35rem;color:#333;font-weight:bold;">Select injury table:</label>
+          <select class="select-input select-input-small collapse-injury-mode">${modeOptions}</select>
+        </div>
+        <div class="number-input-buttons">
+          <button class="confirm-button">Roll Injury</button>
+          <button class="cancel-button">Cancel</button>
+        </div>
+      `;
+
+      overlay.appendChild(dialog);
+      document.body.appendChild(overlay);
+
+      const input = dialog.querySelector('.number-input-field');
+      const modeSelect = dialog.querySelector('.collapse-injury-mode');
+      const confirmButton = dialog.querySelector('.confirm-button');
+      const cancelButton = dialog.querySelector('.cancel-button');
+
+      const confirm = () => {
+        const totalFighters = parseInt(input.value);
+        if (isNaN(totalFighters) || totalFighters < 1) {
+          input.classList.add('input-error');
+          return;
+        }
+        document.body.removeChild(overlay);
+        resolve({ totalFighters, injuryMode: modeSelect.value });
+      };
+
+      confirmButton.addEventListener('click', confirm);
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') confirm();
+        if (e.key === 'Escape') { document.body.removeChild(overlay); resolve(null); }
+      });
+      cancelButton.addEventListener('click', () => {
+        document.body.removeChild(overlay);
+        resolve(null);
+      });
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) { document.body.removeChild(overlay); resolve(null); }
+      });
+
+      setTimeout(() => input.focus(), 50);
+    });
+  },
+
+  showNumberInputDialog(territoryName, message, min, max) {
+    return new Promise((resolve) => {
+      const overlay = document.createElement('div');
+      overlay.className = 'suit-dialog-overlay';
+
+      const dialog = document.createElement('div');
+      dialog.className = 'suit-dialog';
+
+      dialog.innerHTML = `
+        <h2>${territoryName}</h2>
+        <p class="number-input-message">${message}</p>
+        <input type="number" class="number-input-field" min="${min}" max="${max}" value="${min}">
+        <div class="number-input-buttons">
+          <button class="confirm-button">OK</button>
+          <button class="cancel-button">Cancel</button>
+        </div>
+      `;
+
+      overlay.appendChild(dialog);
+      document.body.appendChild(overlay);
+
+      const input = dialog.querySelector('.number-input-field');
+      const confirmButton = dialog.querySelector('.confirm-button');
+      const cancelButton = dialog.querySelector('.cancel-button');
+
+      const confirm = () => {
+        const val = parseInt(input.value);
+        if (isNaN(val) || val < min || val > max) {
+          input.classList.add('input-error');
+          return;
+        }
+        document.body.removeChild(overlay);
+        resolve(val);
+      };
+
+      confirmButton.addEventListener('click', confirm);
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') confirm();
+        if (e.key === 'Escape') { document.body.removeChild(overlay); resolve(null); }
+      });
+      cancelButton.addEventListener('click', () => {
+        document.body.removeChild(overlay);
+        resolve(null);
+      });
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) { document.body.removeChild(overlay); resolve(null); }
+      });
+
+      setTimeout(() => input.focus(), 50);
+    });
+  },
+
   // Helper: Create a results section with title and list of items
   createResultSection(title, icon, results, propertyName, formatter = null) {
     const section = document.createElement("div");
@@ -487,11 +683,55 @@ const TerritoryUI = {
 
     // Special Events section
     if (territoriesWithEvents && territoriesWithEvents.length > 0) {
-      const section = this.createResultSection("Special Events to Resolve", Icons.warning, 
-        territoriesWithEvents.map(e => ({ id: e.id, territory: { name: e.name }, event: { description: e.description.replace(/⚠️/g, Icons.warning) } })),
-        'event'
-      );
-      resultsContainer.appendChild(section);
+      const eventsSection = document.createElement("div");
+      eventsSection.innerHTML = `<h3>${Icons.warning} Special Events to Resolve</h3>`;
+      const eventList = document.createElement("ul");
+
+      territoriesWithEvents.forEach(e => {
+        const li = document.createElement("li");
+        li.innerHTML = `<b>${e.name}:</b> ${e.description.replace(/⚠️/g, Icons.warning)}`;
+
+        if (e.injuryData) {
+          const { fighterNumber, totalFighters, injuryMode, injuryResult } = e.injuryData;
+          const dieLabel = injuryMode === 'ironman_lasting_injuries' ? 'D6' : 'D66';
+
+          const injuryContainer = document.createElement("div");
+          injuryContainer.className = "mt-10";
+
+          const fighterInfo = document.createElement("p");
+          fighterInfo.innerHTML = `<b>D${totalFighters} Roll: ${fighterNumber}</b> — Fighter #${fighterNumber} suffers a lasting injury.`;
+          injuryContainer.appendChild(fighterInfo);
+
+          if (typeof InjuryRenderer !== 'undefined') {
+            const colour = injuryResult.injury.colour || 'grey';
+            const injuryBox = InjuryRenderer.createInjuryBox(
+              injuryResult.injury, colour,
+              `<b>${dieLabel} Roll:</b> ${injuryResult.roll}`,
+              injuryResult.randomRoll
+            );
+            injuryContainer.appendChild(injuryBox);
+            InjuryRenderer.appendStatusWarnings(injuryResult.injury, injuryContainer);
+            InjuryRenderer.displayAdditionalInjuries(injuryResult.additionalInjuries, injuryContainer, 'Roll');
+          }
+
+          li.appendChild(injuryContainer);
+        }
+
+        if (e.missNextBattle) {
+          const { fighterNumber, totalFighters } = e.missNextBattle;
+          const missContainer = document.createElement("div");
+          missContainer.className = "mt-10";
+          const fighterInfo = document.createElement("p");
+          fighterInfo.innerHTML = `<b>D${totalFighters} Roll: ${fighterNumber}</b> — Fighter #${fighterNumber} must miss the next battle.`;
+          missContainer.appendChild(fighterInfo);
+          li.appendChild(missContainer);
+        }
+
+        eventList.appendChild(li);
+      });
+
+      eventsSection.appendChild(eventList);
+      resultsContainer.appendChild(eventsSection);
     }
 
     // Income section with total and special effects
@@ -635,7 +875,7 @@ const TerritoryUI = {
     const outerDetails = document.createElement('details');
     outerDetails.className = 'reference-tables-collapsible';
     const outerSummary = document.createElement('summary');
-    outerSummary.textContent = 'Territory Reference';
+    outerSummary.textContent = 'Territory Reference (Select a gang to see gang-specific overrides)';
     outerDetails.appendChild(outerSummary);
 
     const ruleFields = [

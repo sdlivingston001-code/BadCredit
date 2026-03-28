@@ -5,17 +5,15 @@ advancements_userchoice:
     ratingIncrease: 20
   random_secondary_skill:
     cost: 5
-    advancement: "Random SECONDARY skill.*"
+    advancement: "Random SECONDARY skill."
     ratingIncrease: 20
-    #sides: 6
   choose_secondary_skill:
     cost: 7
     advancement: "Select SECONDARY skill."
     ratingIncrease: 30
   random_any_skill:
     cost: 12
-    advancement: "Random Non-Gang specific Skill.*"
-    #sides: 6
+    advancement: "Random non-gang affiliated Skill."
     ratingIncrease: 30
 
 advancements_random:
@@ -24,23 +22,23 @@ advancements_random:
   results:
     become_specialist:
       values: [2]
-      advancement: "<b>Become a SPECIALIST!</b> Select a PRIMARY skill."
-      ratingIncrease: null
+      advancement: "Become a SPECIALIST! Select a PRIMARY skill."
+      ratingIncrease: 20
     random_secondary_skill:
       values: [3-5]
-      advancement: "<b>Randomly generate a SECONDARY skill</b>.<br><br>If you already have the randomly generated skill; select one from that skillset instead."
+      advancement: "Random SECONDARY skill."
       ratingIncrease: 20
     random_primary_skill:
       values: [6-7]
-      advancement: "<b>Randomly generate a PRIMARY skill</b>.<br><br>If you already have the randomly generated skill; select one from that skillset instead."
+      advancement: "Random PRIMARY skill."
       ratingIncrease: 20
     choose_primary_skill:
       values: [8-10]
-      advancement: "<b>Select a PRIMARY skill</b>."
+      advancement: "Select PRIMARY skill."
       ratingIncrease: 20
     choose_secondary_skill:
       values: [11-12]
-      advancement: "<b>Select a SECONDARY skill</b>."
+      advancement: "Select SECONDARY skill."
       ratingIncrease: 30
 
 skills:
@@ -49,9 +47,7 @@ skills:
     1:
       name: "Catfall"
       exotic_beast: true
-    2:
-      name: "Clamber"
-      exotic_beast: true
+    2: "Clamber"
     3:
       name: "Dodge"
       exotic_beast: true

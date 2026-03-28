@@ -164,7 +164,7 @@ const XPTablesEngine = {
       .filter(key => key.startsWith('skill_'))
       .map(key => ({
         id: key,
-        name: key.replace('skill_', '').replace('_', ' ')
+        name: key.replace('skill_', '').replace(/_/g, ' ')
           .split(' ')
           .map(word => word.charAt(0).toUpperCase() + word.slice(1))
           .join(' ')

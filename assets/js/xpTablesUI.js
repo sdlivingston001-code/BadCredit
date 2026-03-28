@@ -16,8 +16,10 @@ const XPTablesUI = {
       this.bindEvents();
       this.initTimer();
       this.displayUserChoiceAdvancements();
+      this.renderSkillRoller();
       this.displaySkillTables();
       this.displayRandomAdvancementsTable();
+      this.renderSkillsReferenceTable();
 
       // Expose test functions to window for console testing
       window.testAdvancement = (roll) => {
@@ -77,17 +79,140 @@ const XPTablesUI = {
     }).join('');
 
     container.innerHTML = `
-      <h3 class="mb-15">User Choice Advancements</h3>
-      <p class="mb-15"><em>Leaders, Champions, Brutes, Prospects, Juves, Specialists.</em></p>
+      <h2 class="mb-15">Leaders, Champions, Brutes, Prospects, Juves, Specialists (XP Spend)</h2>
       <table class="advancement-table">
         <thead><tr><th>Cost</th><th>Advancement</th><th>Rating Increase</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
-      <p class="table-footnote">* If you already have the random skill; select one from that skillset instead.</p>
     `;
     container.querySelectorAll('.btn-small').forEach(btn => {
       btn.addEventListener('click', () => this.showSkillTableSelector());
     });
+  },
+
+  renderSkillRoller() {
+    const container = document.getElementById('skill-roller');
+    if (!container || !this.xpData || !this.xpData.skills) return;
+
+    container.innerHTML = `
+      <hr class="hr-dark" style="margin: 40px 0;">
+      <h2 class="mb-15">Random Skill Generator</h2>
+      <button id="open-skill-roller" class="btn">Roll a Random Skill</button>
+      <div id="skill-roller-results"></div>
+    `;
+
+    document.getElementById('open-skill-roller').addEventListener('click', () => {
+      this.showSkillRollerDialog();
+    });
+  },
+
+  showSkillRollerDialog() {
+    const skills = this.xpData.skills;
+
+    const formatGangName = (gang) =>
+      gang.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+    const makeOptions = (entries, showGang = false) =>
+      entries.map(([key, data]) => {
+        const label = showGang ? `${key} (${formatGangName(data.gang)})` : key;
+        return `<option value="${key}">${label}</option>`;
+      }).join('');
+
+    const buildOptions = (exoticOnly) => {
+      const all = Object.entries(skills);
+      const filtered = exoticOnly
+        ? all.filter(([, d]) => this._hasExoticBeastSkills(d))
+        : all;
+      const unaffiliated = filtered.filter(([, d]) => d.gang === 'unaffiliated');
+      const affiliated   = filtered.filter(([, d]) => d.gang !== 'unaffiliated');
+      let html = unaffiliated.length
+        ? `<optgroup label="Unaffiliated Skills">${makeOptions(unaffiliated)}</optgroup>`
+        : '';
+      html += affiliated.length
+        ? `<optgroup label="Affiliated Skills">${makeOptions(affiliated, true)}</optgroup>`
+        : '';
+      return html;
+    };
+
+    const overlay = document.createElement('div');
+    overlay.className = 'suit-dialog-overlay';
+
+    const dialog = document.createElement('div');
+    dialog.className = 'suit-dialog';
+    dialog.innerHTML = `
+      <h2>Roll a Random Skill</h2>
+      <div style="text-align:left; margin-bottom:1rem;">
+        <label style="display:block;margin-bottom:0.35rem;color:#333;font-weight:bold;">Select Skill Table:</label>
+        <select class="select-input skill-dialog-select">
+          ${buildOptions(false)}
+        </select>
+      </div>
+      <div style="text-align:left; margin-bottom:1.5rem;">
+        <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
+          <input type="checkbox" class="exotic-beast-checkbox">
+          Exotic Beast
+        </label>
+      </div>
+      <div class="number-input-buttons">
+        <button class="confirm-button">Roll</button>
+        <button class="cancel-button">Cancel</button>
+      </div>
+    `;
+
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+
+    const select = dialog.querySelector('.skill-dialog-select');
+    const checkbox = dialog.querySelector('.exotic-beast-checkbox');
+    const confirmButton = dialog.querySelector('.confirm-button');
+    const cancelButton = dialog.querySelector('.cancel-button');
+
+    checkbox.addEventListener('change', () => {
+      select.innerHTML = buildOptions(checkbox.checked);
+    });
+
+    const confirm = () => {
+      document.body.removeChild(overlay);
+      this.rollSkillFromSelector(select.value, checkbox.checked);
+    };
+
+    confirmButton.addEventListener('click', confirm);
+    cancelButton.addEventListener('click', () => document.body.removeChild(overlay));
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) document.body.removeChild(overlay); });
+    select.addEventListener('keydown', (e) => { if (e.key === 'Enter') confirm(); });
+  },
+
+  rollSkillFromSelector(selectedKey, isExoticBeast = false) {
+    const tableData = this.xpData && this.xpData.skills && this.xpData.skills[selectedKey];
+    if (!tableData) return;
+
+    let roll, skillName;
+    if (isExoticBeast) {
+      let entry;
+      do {
+        roll = Dice.d(6);
+        entry = tableData[roll];
+      } while (!(entry && typeof entry === 'object' && entry.exotic_beast === true));
+      skillName = entry.name;
+    } else {
+      roll = Dice.d(6);
+      const entry = tableData[roll];
+      skillName = typeof entry === 'string' ? entry : (entry && entry.name) || 'Unknown';
+    }
+
+    const resultsContainer = document.getElementById('skill-roller-results');
+    if (!resultsContainer) return;
+
+    const div = document.createElement('div');
+    div.className = 'result-box result-box-green mt-20';
+    div.innerHTML = `<div class="result-heading result-name"><b>${selectedKey}</b>: ${roll}: ${skillName}</div><p class="table-footnote">If you have this skill already - Select one instead.</p>`;
+    resultsContainer.innerHTML = '';
+    resultsContainer.appendChild(div);
+    resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    if (typeof TimerUtil !== 'undefined') {
+      TimerUtil.markRun('xpTablesLastRun', [`D6: ${roll}`]);
+    }
   },
 
   displaySkillTables() {
@@ -97,36 +222,43 @@ const XPTablesUI = {
     const skillTables = XPTablesEngine.getSkillTables();
     if (skillTables.length === 0) return;
 
-    const buttons = skillTables.map(t => `<button class="btn-skill" data-table-id="${t.id}">${t.name}</button>`).join('');
-
     container.innerHTML = `
-      <h3 class="mb-15 mt-30">Skill Tables</h3>
+      <h2 class="mb-15 mt-30">Skill Tables</h2>
       <p class="mb-15">Roll on these tables when an advancement requires a specific skill selection:</p>
-      <div class="skill-buttons-grid">${buttons}</div>
+      <div class="skill-buttons-grid">${this._skillButtonsHTML(skillTables)}</div>
     `;
-    container.querySelectorAll('[data-table-id]').forEach(btn => {
-      btn.addEventListener('click', () => this.rollSkillTable(btn.dataset.tableId));
-    });
+    this._bindSkillTableButtons(container);
   },
 
   showSkillTableSelector() {
     const container = document.getElementById("xp-tables-results");
     if (!container) return;
 
-    const buttons = XPTablesEngine.getSkillTables()
-      .map(t => `<button class="btn-skill" data-table-id="${t.id}">${t.name}</button>`)
-      .join('');
-
     container.innerHTML = `
       <div class="mt-20">
-        <h3 class="mb-15">Select a Skill Table to Roll:</h3>
-        <div class="skill-buttons-grid">${buttons}</div>
+        <h2 class="mb-15">Select a Skill Table to Roll:</h2>
+        <div class="skill-buttons-grid">${this._skillButtonsHTML()}</div>
       </div>
     `;
+    this._bindSkillTableButtons(container);
+    container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  },
+
+  _hasExoticBeastSkills(tableData) {
+    return Object.entries(tableData)
+      .some(([k, v]) => !isNaN(k) && v && typeof v === 'object' && v.exotic_beast === true);
+  },
+
+  _skillButtonsHTML(skillTables = XPTablesEngine.getSkillTables()) {
+    return skillTables
+      .map(t => `<button class="btn-skill" data-table-id="${t.id}">${t.name}</button>`)
+      .join('');
+  },
+
+  _bindSkillTableButtons(container) {
     container.querySelectorAll('[data-table-id]').forEach(btn => {
       btn.addEventListener('click', () => this.rollSkillTable(btn.dataset.tableId));
     });
-    container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   },
 
   rollAdvancement() {
@@ -161,12 +293,6 @@ const XPTablesUI = {
     const mainContainer = document.createElement("div");
     mainContainer.classList.add('mt-20');
 
-    // Display title
-    const title = document.createElement("h3");
-    title.textContent = "Advancement Roll:";
-    title.classList.add('mb-15');
-    mainContainer.appendChild(title);
-
     // Display main result
     const resultBox = this.createAdvancementResultBox(advancementResult.result, advancementResult.rolls, advancementResult.total);
     mainContainer.appendChild(resultBox);
@@ -194,8 +320,8 @@ const XPTablesUI = {
     mainContainer.classList.add('mt-20');
 
     // Display title
-    const title = document.createElement("h3");
-    const skillName = skillResult.tableName.replace('skill_', '').replace('_', ' ')
+    const title = document.createElement("h2");
+    const skillName = skillResult.tableName.replace('skill_', '').replace(/_/g, ' ')
       .split(' ')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
@@ -218,10 +344,45 @@ const XPTablesUI = {
     resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   },
 
+  renderSkillsReferenceTable() {
+    const container = document.getElementById('skills-reference-table');
+    if (!container || !this.xpData || !this.xpData.skills) return;
+
+    const formatGangName = (gang) =>
+      gang === 'unaffiliated'
+        ? 'Unaffiliated'
+        : gang.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+    const sections = Object.entries(this.xpData.skills).map(([skillsetName, data]) => {
+      const gang = formatGangName(data.gang);
+      const hasExotic = this._hasExoticBeastSkills(data);
+      const rows = [1, 2, 3, 4, 5, 6].map(n => {
+        const entry = data[n];
+        const name = typeof entry === 'string' ? entry : (entry && entry.name) || '—';
+        const exoticCell = hasExotic
+          ? `<td class="text-center">${(entry && typeof entry === 'object' && entry.exotic_beast) ? '✓' : ''}</td>`
+          : '';
+        return `<tr><td>${n}</td><td>${name}</td>${exoticCell}</tr>`;
+      }).join('');
+
+      const exoticHeader = hasExotic ? '<th>Exotic Beast</th>' : '';
+
+      return `
+        <details class="reference-tables-collapsible">
+          <summary>${skillsetName} <span class="text-muted text-small">(${gang})</span></summary>
+          <table class="advancement-table mt-10">
+            <thead><tr><th>Roll</th><th>Skill</th>${exoticHeader}</tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </details>`;
+    }).join('');
+
+    container.innerHTML = sections;
+  },
+
   createAdvancementResultBox(result, rolls, total) {
-    const diceHtml = rolls ? `(${rolls.join(' + ')}) = ` : '';
     const ratingHtml = result.ratingIncrease != null
-      ? `<div class="result-effect"><br>Rating Increase: +${result.ratingIncrease}</div>`
+      ? `<div class="result-effect">Rating: +${result.ratingIncrease}</div>`
       : '';
     const div = document.createElement('div');
     div.className = 'result-box result-box-blue';
@@ -249,7 +410,6 @@ const XPTablesUI = {
     }).join('');
 
     container.innerHTML = `
-      <h3 class="mb-15 mt-30">Random Advancement Table</h3>
       <table class="advancement-table">
         <thead><tr><th>2D6 Roll</th><th>Advancement</th><th>Rating Increase</th></tr></thead>
         <tbody>${rows}</tbody>
@@ -258,7 +418,6 @@ const XPTablesUI = {
   },
 
   createSkillResultBox(result, rolls, total) {
-    const diceHtml = rolls ? `(${rolls.join(' + ')}) = ` : '';
     const div = document.createElement('div');
     div.className = 'result-box result-box-green';
     div.innerHTML = `

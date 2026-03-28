@@ -87,11 +87,13 @@ const LootCasketUI = {
       }).join('');
 
       return `
-        <h3>${title}</h3>
-        <table>
-          <thead><tr><th>Roll</th><th>Result</th><th>Effect</th></tr></thead>
-          <tbody>${rows}</tbody>
-        </table>`;
+        <details class="reference-tables-collapsible">
+          <summary>${title}</summary>
+          <table class="mt-10">
+            <thead><tr><th>Roll</th><th>Result</th><th>Effect</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </details>`;
     }).join('');
   },
 

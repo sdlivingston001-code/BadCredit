@@ -16,12 +16,14 @@ title: Territories
 <!-- Adjust this path if your built JSON lives elsewhere -->
 <script src="{{ '/assets/js/dice.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/icons.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/injuryRenderer.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/timer.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/lastingInjuriesEngine.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/territorySchemas.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/territoryEngine.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/territoryUI.js' | relative_url }}"></script>
 <script>
   document.addEventListener("DOMContentLoaded", () => {
-    TerritoryUI.init("{{ '/data/territories.json' | relative_url }}", "{{ '/data/gangs.json' | relative_url }}");
+    TerritoryUI.init("{{ '/data/territories.json' | relative_url }}", "{{ '/data/gangs.json' | relative_url }}", "{{ '/data/lastingInjuries.json' | relative_url }}");
   });
 </script>
