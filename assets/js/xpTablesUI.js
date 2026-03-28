@@ -97,30 +97,44 @@ const XPTablesUI = {
     container.innerHTML = `
       <hr class="hr-dark" style="margin: 40px 0;">
       <h2 class="mb-15">Random Skill Generator</h2>
-      <button id="open-skill-roller" class="btn">Roll a Random Skill</button>
+      <div style="display:flex;gap:0.5rem;">
+        <button id="open-skill-roller" class="btn" style="flex:7;">Anyone except an Exotic Beast</button>
+        <button id="open-skill-roller-exotic" class="btn" style="flex:3;">Exotic Beast</button>
+      </div>
       <div id="skill-roller-results"></div>
     `;
 
     document.getElementById('open-skill-roller').addEventListener('click', () => {
-      this.showSkillRollerDialog();
+      this.showSkillRollerDialog(false);
+    });
+    document.getElementById('open-skill-roller-exotic').addEventListener('click', () => {
+      this.showSkillRollerDialog(true);
     });
   },
 
-  showSkillRollerDialog() {
+  showSkillRollerDialog(exoticBeastMode = false) {
     const skills = this.xpData.skills;
 
     const formatGangName = (gang) =>
       gang.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
+    const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+
     const makeOptions = (entries, showGang = false) =>
       entries.map(([key, data]) => {
-        const label = showGang ? `${key} (${formatGangName(data.gang)})` : key;
+        let label = key;
+        if (showGang || data.class) {
+          const parts = [];
+          if (showGang) parts.push(formatGangName(data.gang));
+          if (data.class) parts.push(capitalize(data.class));
+          label = `${key} (${parts.join(', ')})`;
+        }
         return `<option value="${key}">${label}</option>`;
       }).join('');
 
-    const buildOptions = (exoticOnly) => {
+    const buildOptions = () => {
       const all = Object.entries(skills);
-      const filtered = exoticOnly
+      const filtered = exoticBeastMode
         ? all.filter(([, d]) => this._hasExoticBeastSkills(d))
         : all;
       const unaffiliated = filtered.filter(([, d]) => d.gang === 'unaffiliated');
@@ -140,18 +154,12 @@ const XPTablesUI = {
     const dialog = document.createElement('div');
     dialog.className = 'suit-dialog';
     dialog.innerHTML = `
-      <h2>Roll a Random Skill</h2>
-      <div style="text-align:left; margin-bottom:1rem;">
+      <h2>${exoticBeastMode ? 'Roll a Random Exotic Beast Skill' : 'Roll a Random Skill'}</h2>
+      <div style="text-align:left; margin-bottom:1.5rem;">
         <label style="display:block;margin-bottom:0.35rem;color:#333;font-weight:bold;">Select Skill Table:</label>
         <select class="select-input skill-dialog-select">
-          ${buildOptions(false)}
+          ${buildOptions()}
         </select>
-      </div>
-      <div style="text-align:left; margin-bottom:1.5rem;">
-        <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
-          <input type="checkbox" class="exotic-beast-checkbox">
-          Exotic Beast
-        </label>
       </div>
       <div class="number-input-buttons">
         <button class="confirm-button">Roll</button>
@@ -163,17 +171,12 @@ const XPTablesUI = {
     document.body.appendChild(overlay);
 
     const select = dialog.querySelector('.skill-dialog-select');
-    const checkbox = dialog.querySelector('.exotic-beast-checkbox');
     const confirmButton = dialog.querySelector('.confirm-button');
     const cancelButton = dialog.querySelector('.cancel-button');
 
-    checkbox.addEventListener('change', () => {
-      select.innerHTML = buildOptions(checkbox.checked);
-    });
-
     const confirm = () => {
       document.body.removeChild(overlay);
-      this.rollSkillFromSelector(select.value, checkbox.checked);
+      this.rollSkillFromSelector(select.value, exoticBeastMode);
     };
 
     confirmButton.addEventListener('click', confirm);
@@ -203,9 +206,13 @@ const XPTablesUI = {
     const resultsContainer = document.getElementById('skill-roller-results');
     if (!resultsContainer) return;
 
+    const conditionalSpecialHtml = tableData.conditional_special
+      ? `<p class="table-footnote">If all your Wyrd powers (including gang-specific Wyrd & Psychoteric Whispers) belong to this Discipline, also gain: <b>${tableData.conditional_special}</b>.</p>`
+      : '';
+
     const div = document.createElement('div');
     div.className = 'result-box result-box-green mt-20';
-    div.innerHTML = `<div class="result-heading result-name"><b>${selectedKey}</b>: ${roll}: ${skillName}</div><p class="table-footnote">If you have this skill already - Select one instead.</p>`;
+    div.innerHTML = `<div class="result-heading result-name"><b>${selectedKey}</b>: ${roll}: ${skillName}</div><p class="table-footnote">If you have this skill already - Select one instead.</p>${conditionalSpecialHtml}`;
     resultsContainer.innerHTML = '';
     resultsContainer.appendChild(div);
     resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -353,8 +360,13 @@ const XPTablesUI = {
         ? 'Unaffiliated'
         : gang.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
+    const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+
     const sections = Object.entries(this.xpData.skills).map(([skillsetName, data]) => {
-      const gang = formatGangName(data.gang);
+      const gangLabel = formatGangName(data.gang);
+      const parts = [gangLabel];
+      if (data.class) parts.push(capitalize(data.class));
+      const metaLabel = parts.join(', ');
       const hasExotic = this._hasExoticBeastSkills(data);
       const rows = [1, 2, 3, 4, 5, 6].map(n => {
         const entry = data[n];
@@ -366,14 +378,18 @@ const XPTablesUI = {
       }).join('');
 
       const exoticHeader = hasExotic ? '<th>Exotic Beast</th>' : '';
+      const conditionalSpecialHtml = data.conditional_special
+        ? `<p class="table-footnote mt-10">If all your Wyrd powers (including gang-specific Wyrd & Psychoteric Whispers) belong to this Discipline, also gain: <b>${data.conditional_special}</b>.</p>`
+        : '';
 
       return `
         <details class="reference-tables-collapsible">
-          <summary>${skillsetName} <span class="text-muted text-small">(${gang})</span></summary>
+          <summary>${skillsetName} <span class="text-muted text-small">(${metaLabel})</span></summary>
           <table class="advancement-table mt-10">
             <thead><tr><th>Roll</th><th>Skill</th>${exoticHeader}</tr></thead>
             <tbody>${rows}</tbody>
           </table>
+          ${conditionalSpecialHtml}
         </details>`;
     }).join('');
 

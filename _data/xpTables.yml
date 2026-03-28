@@ -224,4 +224,140 @@ skills:
     4: "Dependable Like Kin"
     5: "Stubborn to the Last"
     6: "There's Always Another Secret"
+  Wyrd (Core Rulebook):
+    gang: unaffiliated
+    class: Psychic
+    1: "Assail (Telekinesis)"
+    2: "Flame Blast (Pyromancy)"
+    3: "Freeze Time (Chronomancy)"
+    4: "Weapon Jinx (Telepathy)"
+    5: "Terrify (Telepathy)"
+    6: "Quickening (Biomancy)"
+  Wyrd (Biomancy):
+    gang: unaffiliated
+    class: Psychic
+    conditional_special: "Fast Healing"
+    1: "Arachnosis"
+    2: "Chameleon"
+    3: "Cause Pain"
+    4: "Stop Bleeding"
+    5: "Quickening"
+    6: "Iron Arm"
+  Wyrd (Chronomancy):
+    gang: unaffiliated
+    class: Psychic
+    conditional_special: "Flicker"
+    1: "Freeze Time"
+    2: "Suppress Power"
+    3: "Zen Shootist"
+    4: "Walk Through Walls"
+    5: "Mirror Image"
+    6: "Lucky Aura"
+  Wyrd (Divination):
+    gang: unaffiliated
+    class: Psychic
+    conditional_special: "Future Sight"
+    1: "Precognition"
+    2: "Foreboding"
+    3: "Misfortune"
+    4: "Forewarning"
+    5: "Warp Whispers"
+    6: "Visions"
+  Wyrd (Pyromancy):
+    gang: unaffiliated
+    class: Psychic
+    conditional_special: "Fire Shield"
+    1: "Body of Flame"
+    2: "Stoke Flames"
+    3: "Wall of Flame"
+    4: "Flame Blast"
+    5: "Molten Bolt"
+    6: "Scouring"
+  Wyrd (Technomancy):
+    gang: unaffiliated
+    class: Psychic
+    conditional_special: "Techno-affinity"
+    1: "Weapon Jinx"
+    2: "Overcharge"
+    3: "Hardening"
+    4: "Manipulate Door"
+    5: "Manipulate Lumens"
+    6: "Crack Lock"
+  Wyrd (Telekinesis):
+    gang: unaffiliated
+    class: Psychic
+    conditional_special: "Fists of Fury"
+    1: "Assail"
+    2: "Crush"
+    3: "Force Field"
+    4: "Hailstorm"
+    5: "Force Blast"
+    6: "Levitation"
+  Wyrd (Telepathy):
+    gang: unaffiliated
+    class: Psychic
+    conditional_special: "Fearful Aura"
+    1: "Mind Control"
+    2: "Terrify"
+    3: "Invisibility"
+    4: "Mental Assault"
+    5: "Hallucinations"
+    6: "Unbreakable Will"
+  Malstrain Wyrd:
+    gang: malstrain
+    class: Psychic    
+    1: "Catalyst"
+    2: "Hypnotic Gaze"
+    3: "The Horror"
+    4: "Leech Essence"
+    5: "Paroxysm"
+    6: "Aura of Despair"
+  Genestealer Cult Wyrd:
+    gang: genestealer_cult
+    class: Psychic    
+    1: "Hypnosis (Telepathy)"
+    2: "Unbreakable Will (Telepathy)"
+    3: "Zealot (Telepathy)"
+    4: "Mind Control (Telepathy)"
+    5: "Assail (Telekinesis)"
+    6: "Force Blast (Telekinesis)"
+  Chaos Cult Wyrd:
+    gang: helot_cultists
+    class: Psychic    
+    1: "Scouring (Pyromancy)"
+    2: "Levitation (Telekinesis)"
+    3: "Warp Strength (Biomancy)"
+    4: "Dark Shield (Telekinesis)"
+    5: "Maddening Visions (Telepathy)"
+    6: "Assail (Telekinesis)"
+  Psychoteric Whispers (Madness):
+    gang: delaque
+    class: Psychic
+    1: "Existential Barrage"
+    2: "Terrible Truths"
+    3: "Psychotic Lure"
+    4: "Cyclopean Gaze"
+    5: "Craven Howl"
+    6: "Unrememberable Utterance"
+  Psychoteric Whispers (Delusion):
+    gang: delaque
+    class: Psychic
+    1: "Spatial Psychosis"
+    2: "Seen Unseen"
+    3: "Ghost and Shadow"
+    4: "Deceitful Thoughts"
+    5: "Suicidal Embrace"
+    6: "Opprobrious Curse"
+  Psychoteric Whispers (Darkness):
+    gang: delaque
+    class: Psychic
+    1: "Cacophony of Silence"
+    2: "Penumbral Mirror"
+    3: "A Perfect Void"
+    4: "Eternal Slumber"
+    5: "Cloak of Whispers"
+    6: "Sight Blight"
 
+#legendary names (orlock, cost, randomiser)
+#outcast mutations (outcasts, randomiser)
+#spyrer power boosts (cost, randomiser)

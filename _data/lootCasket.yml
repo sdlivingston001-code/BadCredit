@@ -162,3 +162,5 @@ d6ammo:
       values: [6]
       name: Shock Ammo
       fixedeffect: "Weapon Traits: Shock + Unstable"
+
+#Standard loot caskets (rolls, rewards)
