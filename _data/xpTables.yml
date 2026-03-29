@@ -15,6 +15,18 @@ advancements_userchoice:
     cost: 12
     advancement: "Random non-gang affiliated Skill."
     ratingIncrease: 30
+  random_legendary_name:
+    cost: 2
+    advancement: "Random Legendary Name (Orlocks only)."
+    ratingIncrease: 5
+  choose_legendary_name:
+    cost: 4
+    advancement: "Select Legendary Name (Orlocks only)."
+    ratingIncrease: 5
+  random_spyrer_power_boost:
+    cost: "4 Kill Count"
+    advancement: "Random Spyrer Suit Evolution."
+    ratingIncrease: "Varies"
 
 advancements_random:
   sides: 6
@@ -357,7 +369,89 @@ skills:
     4: "Eternal Slumber"
     5: "Cloak of Whispers"
     6: "Sight Blight"
-
-#legendary names (orlock, cost, randomiser)
-#outcast mutations (outcasts, randomiser)
-#spyrer power boosts (cost, randomiser)
+  Legendary Names (Unbelievable Escapes):
+    gang: orlock
+    class: Legendary Name
+    1: "Iron Hard"
+    2: "Bullet Dodger"
+    3: "Badzone Legend"
+    4: "Promethium-proof Killer"
+    5: "Slippery Scummer"
+    6: "Blade Breaker"
+  Legendary Names (Impressive Leadership):
+    gang: orlock
+    class: Legendary Name
+    1: "Bigman"
+    2: "Lucky"
+    3: "Impressive Scars"
+    4: "Too Pretty for Primus"
+    5: "Iron Stare"
+    6: "Rock Steady"
+  Legendary Names (Improbably Beat-Downs):
+    gang: orlock
+    class: Legendary Name
+    1: "One Punch"
+    2: "Bullet Lord"
+    3: "Two-guns"
+    4: "Chancer"
+    5: "Headshot"
+    6: "One Shot"
+  Legendary Names (Incredible Drives):
+    gang: orlock
+    class: Legendary Name
+    1: "Roadkill"
+    2: "Big Rig Boss"
+    3: "Cinderak City Drift"
+    4: "Stunt Driver"
+    5: "Wheels of Pain"
+    6: "Duke of the Road"
+  Outcast Mutations:
+    gang: outcasts
+    sides: d66
+    results:
+      - name: "Void Soul"
+        values: [11-13]
+      - name: "Eye Stalks"
+        values: [14-16]
+      - name: "Extra Appendages"
+        values: [21-23]
+      - name: "Horrific Appearance"
+        values: [24-26]
+      - name: "Massive Claws"
+        values: [31-33]
+      - name: "Needle Spines"
+        values: [34-36]
+      - name: "Scaly Skin"
+        values: [41-43]
+      - name: "Tentacles"
+        values: [44-46]
+      - name: "Toxic Blood"
+        values: [51-53]
+      - name: "Two Heads"
+        values: [54-56]
+      - name: "Vast Bulk"
+        values: [61-63]
+      - name: "Wing Membrances"
+        values: [64-66]
+  Suit Evolution (Spyrer):
+    gang: spyrers
+    sides: d6
+    conditional_special: "If a roll on the Suit Evolution would increase a characteristic beyond its maximum, treat the result as Hunting Rig Augmentation (20 Credits). Note each weapon line is augemented separately (i.e. Orrus augment each ranged weapon separately)."
+    1:
+      name: "Combat Neuroware"
+      cost: 20
+    2:
+      name: "Heightened Reactions"
+      cost: 10
+    3:
+      name: "Improved Motive Power"
+      cost: 10
+    4:
+      name: "Thickened Armour"
+      cost: 15
+    5:
+      name: "Hunting Rig Augmentation"
+      cost: 20
+    6:
+      name: "Hunting Rig Augmentation"
+      cost: 20

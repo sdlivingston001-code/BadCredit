@@ -528,11 +528,19 @@ ol li, ul li {
   border: 2px solid #333;
   background-color: white;
   cursor: pointer;
+  max-width: 100%;
 }
 
 .select-input-small {
   padding: 5px;
   font-size: 16px; /* 16px minimum prevents iOS auto-zoom */
+}
+
+.suit-dialog .skill-dialog-select {
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
 }
 
 /* ======================

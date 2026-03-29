@@ -14,6 +14,7 @@ title: BadCredit
 <span id="idx-injuries"></span>[Lasting Injuries]({{ site.baseurl }}/tools/lastingInjuries.html)<br><br>
 <span id="idx-loot"></span>[Loot Caskets]({{ site.baseurl }}/tools/lootCasket.html)<br><br>
 <span id="idx-xp"></span>[Experience]({{ site.baseurl }}/tools/xpTables.html)<br><br>
+<!-- Pyschic Powers -->
 
 ---
 ## Scenario Tools

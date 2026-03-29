@@ -1,17 +1,32 @@
 // scenario_MeatForTheGrinderUI.js
 
 const scenario_MeatForTheGrinderUI = {
-  async init(jsonPath) {
+  async init(jsonPath, traitsJsonPath, skillsJsonPath) {
     try {
-      const response = await fetch(`${jsonPath}?t=${Date.now()}`, { cache: 'no-store' });
-      if (!response.ok) throw new Error(`Failed to load data: ${response.status}`);
+      const [scenarioRes, traitsRes, skillsRes] = await Promise.all([
+        fetch(`${jsonPath}?t=${Date.now()}`, { cache: 'no-store' }),
+        traitsJsonPath ? fetch(`${traitsJsonPath}?t=${Date.now()}`, { cache: 'no-store' }) : null,
+        skillsJsonPath ? fetch(`${skillsJsonPath}?t=${Date.now()}`, { cache: 'no-store' }) : null
+      ]);
 
-      const data = await response.json();
+      if (!scenarioRes.ok) throw new Error(`Failed to load data: ${scenarioRes.status}`);
+      const data = await scenarioRes.json();
+
       scenario_MeatForTheGrinderEngine.loadData(data);
       this.bindEvents();
       this.initTimer();
       this.renderWeaponTable(data);
       this.renderRollTable(data);
+
+      if (traitsRes && traitsRes.ok) {
+        const traitsData = await traitsRes.json();
+        this.renderWeaponTraits(traitsData);
+      }
+
+      if (skillsRes && skillsRes.ok) {
+        const skillsData = await skillsRes.json();
+        this.renderFighterSkills(skillsData);
+      }
     } catch (err) {
       console.error(err);
       const container = document.getElementById('scavenged-weapons-results');
@@ -75,6 +90,30 @@ const scenario_MeatForTheGrinderUI = {
         <thead><tr><th>Roll</th><th>Weapon</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>`;
+  },
+
+  renderWeaponTraits(traitsData) {
+    const container = document.getElementById('weapon-traits-container');
+    if (!container || !traitsData || !traitsData.weapon_traits) return;
+
+    container.innerHTML = Object.values(traitsData.weapon_traits).map(trait =>
+      `<details class="reference-tables-collapsible">
+        <summary>${trait.name}</summary>
+        ${trait.description}
+      </details>`
+    ).join('');
+  },
+
+  renderFighterSkills(skillsData) {
+    const container = document.getElementById('fighter-skills-container');
+    if (!container || !skillsData || !skillsData.fighter_skills) return;
+
+    container.innerHTML = Object.values(skillsData.fighter_skills).map(skill =>
+      `<details class="reference-tables-collapsible">
+        <summary>${skill.name}</summary>
+        ${skill.description}
+      </details>`
+    ).join('');
   },
 
   renderWeaponTable(data) {

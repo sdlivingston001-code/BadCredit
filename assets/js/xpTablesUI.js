@@ -189,7 +189,9 @@ const XPTablesUI = {
     const tableData = this.xpData && this.xpData.skills && this.xpData.skills[selectedKey];
     if (!tableData) return;
 
-    let roll, skillName;
+    const isD66 = tableData.sides === 'd66';
+    let roll, skillName, extraInfo = '', rollLabel = 'D6';
+
     if (isExoticBeast) {
       let entry;
       do {
@@ -197,28 +199,50 @@ const XPTablesUI = {
         entry = tableData[roll];
       } while (!(entry && typeof entry === 'object' && entry.exotic_beast === true));
       skillName = entry.name;
+    } else if (isD66) {
+      rollLabel = 'D66';
+      roll = Dice.d66();
+      const found = this._findEntryByValues(tableData.results || [], roll);
+      skillName = found ? found.name : 'Unknown';
     } else {
       roll = Dice.d(6);
       const entry = tableData[roll];
       skillName = typeof entry === 'string' ? entry : (entry && entry.name) || 'Unknown';
+      if (entry && typeof entry === 'object' && entry.cost !== undefined) {
+        extraInfo = ` — ${entry.cost} Credits`;
+      }
     }
 
     const resultsContainer = document.getElementById('skill-roller-results');
     if (!resultsContainer) return;
 
+    const isWyrd = tableData.class === 'Psychic';
+    const isLegendaryName = tableData.class === 'Legendary Name' || tableData.class === 'Crew Legendary Name';
     const conditionalSpecialHtml = tableData.conditional_special
-      ? `<p class="table-footnote">If all your Wyrd powers (including gang-specific Wyrd & Psychoteric Whispers) belong to this Discipline, also gain: <b>${tableData.conditional_special}</b>.</p>`
+      ? isWyrd
+        ? `<p class="table-footnote">If all your Wyrd powers (including gang-specific Wyrd & Psychoteric Whispers) belong to this Discipline, also gain: <b>${tableData.conditional_special}</b>.</p>`
+        : `<p class="table-footnote">${tableData.conditional_special}</p>`
       : '';
+
+    const footnote = (isD66 || extraInfo)
+      ? ''
+      : isLegendaryName
+        ? `<p class="table-footnote">If you have this legendary name already - Select one from this category instead.</p>`
+        : `<p class="table-footnote">If you have this skill already - Select one instead.</p>`;
+
+    const resultLabel = isLegendaryName
+      ? `<b>${selectedKey}</b>: ${rollLabel} ${roll}: ${skillName}`
+      : `<b>${selectedKey}</b>: ${rollLabel} ${roll}: ${skillName}${extraInfo}`;
 
     const div = document.createElement('div');
     div.className = 'result-box result-box-green mt-20';
-    div.innerHTML = `<div class="result-heading result-name"><b>${selectedKey}</b>: ${roll}: ${skillName}</div><p class="table-footnote">If you have this skill already - Select one instead.</p>${conditionalSpecialHtml}`;
+    div.innerHTML = `<div class="result-heading result-name">${resultLabel}</div>${footnote}${conditionalSpecialHtml}`;
     resultsContainer.innerHTML = '';
     resultsContainer.appendChild(div);
     resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
     if (typeof TimerUtil !== 'undefined') {
-      TimerUtil.markRun('xpTablesLastRun', [`D6: ${roll}`]);
+      TimerUtil.markRun('xpTablesLastRun', [`${rollLabel}: ${roll}`]);
     }
   },
 
@@ -254,6 +278,16 @@ const XPTablesUI = {
   _hasExoticBeastSkills(tableData) {
     return Object.entries(tableData)
       .some(([k, v]) => !isNaN(k) && v && typeof v === 'object' && v.exotic_beast === true);
+  },
+
+  // Finds the first entry in a results array whose values range includes the given roll.
+  _findEntryByValues(results, roll) {
+    for (const entry of results) {
+      let values = entry.values;
+      if (!Array.isArray(values)) values = [values];
+      if (XPTablesEngine.isInRange(roll, values)) return entry;
+    }
+    return null;
   },
 
   _skillButtonsHTML(skillTables = XPTablesEngine.getSkillTables()) {
@@ -342,7 +376,7 @@ const XPTablesUI = {
 
     const note = document.createElement("p");
     note.className = "table-footnote";
-    note.textContent = "* If you already have the random skill; select one from that skillset instead.";
+    note.textContent = "* If you already have the random skill, select one from that skillset instead.";
     mainContainer.appendChild(note);
 
     resultsContainer.appendChild(mainContainer);
@@ -367,26 +401,51 @@ const XPTablesUI = {
       const parts = [gangLabel];
       if (data.class) parts.push(capitalize(data.class));
       const metaLabel = parts.join(', ');
-      const hasExotic = this._hasExoticBeastSkills(data);
-      const rows = [1, 2, 3, 4, 5, 6].map(n => {
-        const entry = data[n];
-        const name = typeof entry === 'string' ? entry : (entry && entry.name) || '—';
-        const exoticCell = hasExotic
-          ? `<td class="text-center">${(entry && typeof entry === 'object' && entry.exotic_beast) ? '✓' : ''}</td>`
-          : '';
-        return `<tr><td>${n}</td><td>${name}</td>${exoticCell}</tr>`;
-      }).join('');
 
-      const exoticHeader = hasExotic ? '<th>Exotic Beast</th>' : '';
+      const isD66 = data.sides === 'd66';
+      let headers, rows;
+      if (isD66) {
+        const hasCost = (data.results || []).some(e => e.cost !== undefined);
+        const costHeader = hasCost ? '<th>Cost</th>' : '';
+        headers = `<th>D66</th><th>Result</th>${costHeader}`;
+        rows = (data.results || []).map(e => {
+          let values = e.values;
+          if (!Array.isArray(values)) values = [values];
+          const valStr = values.join(', ');
+          const costCell = hasCost ? `<td>${e.cost !== undefined ? `${e.cost} Credits` : '—'}</td>` : '';
+          return `<tr><td>${valStr}</td><td>${e.name}</td>${costCell}</tr>`;
+        }).join('');
+      } else {
+        const hasExotic = this._hasExoticBeastSkills(data);
+        const hasCost = [1,2,3,4,5,6].some(n => data[n] && typeof data[n] === 'object' && data[n].cost !== undefined);
+        const exoticHeader = hasExotic ? '<th>Exotic Beast</th>' : '';
+        const costHeader = hasCost ? '<th>Cost</th>' : '';
+        headers = `<th>Roll</th><th>Skill</th>${exoticHeader}${costHeader}`;
+        rows = [1, 2, 3, 4, 5, 6].map(n => {
+          const entry = data[n];
+          const name = typeof entry === 'string' ? entry : (entry && entry.name) || '—';
+          const exoticCell = hasExotic
+            ? `<td class="text-center">${(entry && typeof entry === 'object' && entry.exotic_beast) ? '✓' : ''}</td>`
+            : '';
+          const costCell = hasCost
+            ? `<td>${(entry && typeof entry === 'object' && entry.cost !== undefined) ? `${entry.cost} Credits` : '—'}</td>`
+            : '';
+          return `<tr><td>${n}</td><td>${name}</td>${exoticCell}${costCell}</tr>`;
+        }).join('');
+      }
+
+      const isWyrd = data.class === 'Psychic';
       const conditionalSpecialHtml = data.conditional_special
-        ? `<p class="table-footnote mt-10">If all your Wyrd powers (including gang-specific Wyrd & Psychoteric Whispers) belong to this Discipline, also gain: <b>${data.conditional_special}</b>.</p>`
+        ? isWyrd
+          ? `<p class="table-footnote mt-10">If all your Wyrd powers (including gang-specific Wyrd & Psychoteric Whispers) belong to this Discipline, also gain: <b>${data.conditional_special}</b>.</p>`
+          : `<p class="table-footnote mt-10">${data.conditional_special}</p>`
         : '';
 
       return `
         <details class="reference-tables-collapsible">
           <summary>${skillsetName} <span class="text-muted text-small">(${metaLabel})</span></summary>
           <table class="advancement-table mt-10">
-            <thead><tr><th>Roll</th><th>Skill</th>${exoticHeader}</tr></thead>
+            <thead><tr>${headers}</tr></thead>
             <tbody>${rows}</tbody>
           </table>
           ${conditionalSpecialHtml}

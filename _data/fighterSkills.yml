@@ -1,0 +1,19 @@
+fighter_skills:
+  True Grit:
+    name: True Grit
+    description: |
+      <p><b>True Grit:</b> When making an <b>Injury roll</b>, roll 1 less Injury dice. If the fighter was rolling only 1 Injury die, roll two and the controlling player chooses which to discard.</p>
+
+  Iron Jaw:
+    name: Iron Jaw
+    description: |
+      <p><b>Iron Jaw:</b> Increase this fighter's <b>Toughness</b> by 2 vs. close combat weapons with <b>AP -</b>.</p>
+
+  Unstoppable:
+    name: Unstoppable
+    description: |
+      <p><b>Unstoppable:</b> Before making a <b>Recovery test</b>, roll 1D6; <u>on a 4+</u> the skill triggers as follows:</p>
+      <ul>
+        <li>If the fighter has at least one <b>Flesh Wound</b> token, they may discard a single <b>Flesh Wound</b> token.</li>
+        <li>If the fighter had no <b>Flesh Wounds</b>, they instead gain an additional <b>Injury die</b> for the <b>Recovery test</b>, the controlling player chooses which die to discard.</li>
+      </ul>

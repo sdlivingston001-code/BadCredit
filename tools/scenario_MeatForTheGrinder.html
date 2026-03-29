@@ -14,104 +14,25 @@ title: Meat for the Grinder
 
 <hr class="hr-dark" style="margin: 40px 0;">
 
-<h2>In-battle Special rules</h2>
+<details class="reference-tables-collapsible">
+<summary>In-battle Special rules</summary>
 <ul>
   <li>All fighters start with the skills <b>True Grit</b>, <b>Iron Jaw</b>, and <b>Unstoppable</b>.</li>
   <li>Weapons are poor quality, <b>Ammo checks</b> are always failed.</li>
   <li>Fighters can open crates using a <b>Loot (basic)</b> action (no skill test required). Roll 2D6 against the table above, gain the indicated weapon, and then remove the crate.</li>
   <li>If a fighter with a <b>Scavenged weapon</b> is <b>Taken out of Action</b>, the weapon is dropped at the centre of their base. Other fighters can pick it up using a <b>Loot (basic)</b> action.</li>
 </ul>
-
+</details>
 
 
 <details class="reference-tables-collapsible">
 <summary>Fighter Skills</summary>
-<p><b>True Grit:</b> When making an <b>Injury roll</b>, roll 1 less Injury dice. If the fighter was rolling only 1 Injury die, roll two and the controlling player chooses which to discard.</p>
-<p><b>Iron Jaw:</b> Increase this fighter's <b>Toughness</b> by 2 vs. close combat weapons with <b>AP -</b>.</p>
-<p><b>Unstoppable:</b> Before making a <b>Recovery test</b>, roll 1D6; <u>on a 4+</u> the skill triggers as follows:</p>
-<ul>
-  <li>If the fighter has at least one <b>Flesh Wound</b> token, they may discard a single <b>Flesh Wound</b> token.</li>
-  <li>If the fighter had no <b>Flesh Wounds</b>, they instead gain an additional <b>Injury die</b> for the <b>Recovery test</b>, the controlling player chooses which die to discard.</li>
-</ul>
+<div id="fighter-skills-container"></div>
 </details>
 
 <details class="reference-tables-collapsible">
 <summary>Weapon Traits</summary>
-
-<details class="reference-tables-collapsible">
-  <summary>Blaze</summary>
-  <p><b>Blaze:</b> After an attack with the <b>Blaze</b> trait has been resolved, <u>roll 1D6; on a 4+, they become subject to the <b>Blaze condition</b></u>.</p>
-  <p><b>Blaze Condition:</b> When this fighter is activated resolve their activation as follows:</p>
-  <ul>
-    <li>Suffer an immediate <b>S3, AP-1, D1</b> hit.</li>
-    <li>If <b>Prone and Pinned</b> become <b>Standing and Active</b> and follow the <b>Standing and Active</b> step.</li>
-    <li>If <b>Standing and Active</b> move 2D6" in a random direction, then attempt to put the fire out.
-      <ul>
-        <li>Stop moving if you move within 1" of an enemy fighter, or into base contact with impassable terrain.</li>
-        <li>If you move beyond the edge of a level or platform you automatically fall.</li>
-        <li>If you move within 1/2" of an edge of a level or platform test for falling.</li>
-        <li>At the end of this move the fighter may choose to become <b>Prone and Pinned</b>.</li>
-      </ul>
-    </li>
-    <li>If <b>Standing and Engaged</b> or <b>Prone and Seriously Injured</b>, the fighter does not move, and attempts to put the fire out.</li>
-    <li><b>Attempt to put the fire out:</b> Roll 1D6, add 2 if <b>Prone and Pinned</b> or <b>Seriously Injured</b>, on a result of 6 or more the Blaze condition is removed.</li>
-  </ul>
-</details>
-
-<details class="reference-tables-collapsible">
-  <summary>Disarm</summary>
-  <p><b>Disarm:</b> If the <u>roll to hit = natural 6</u>, the target cannot use any weapons in their <b>Reaction attacks</b> for the remainder of that round (they make unarmed attacks instead).</p>
-</details>
-
-<details class="reference-tables-collapsible">
-  <summary>Knockback</summary>
-  <p><b>Knockback:</b> If <u>roll to hit >= targets' <b>Strength</b></u>, the target is pushed directly back 1".</p>
-  <ul>
-    <li>If the fighter cannot be moved back 1" without hitting impassable terrain or another model they are moved as far as possible and the attacks' Damage is increased by 1.</li>
-    <li>If any part of the knocked back fighter's base crosses the edge of a platform, make an <b>Initiative test</b>. If this is failed, they will fall. If this is passed, they stop moving at the edge of the platform.</li>
-  </ul>
-</details>
-
-<details class="reference-tables-collapsible">
-  <summary>Rapid Fire</summary>
-  <p><b>Rapid Fire:</b> Remember that:</p>
-  <ul>
-    <li>You can assign shots, after the first, onto models within 3" of the original target <u>provided they are no harder to hit than the original target</u>. Be nice &amp; narrative, explain the intention to do this before the dice are rolled.</li>
-    <li>If you miss, resolve a <b>Stray shot</b> for every bullet icon rolled on the <b>Firepower dice</b>.</li>
-    <li>If rolling multiple <b>Firepower die</b>, two or more <b>Ammo check</b> results causes a <b>Jam</b> and that weapon cannot be used for the rest of the battle.</li>
-  </ul>
-</details>
-
-<details class="reference-tables-collapsible">
-  <summary>Parry</summary>
-  <p><b>Parry:</b> After an enemy makes successful close combat attacks against this fighter, you can force the attacker to re-roll one successful hit. A fighter armed with two weapons with the Parry trait, can force the attacking player to re-roll two successful hits instead (noting you cannot force a reroll of a reroll).</p>
-</details>
-
-<details class="reference-tables-collapsible">
-  <summary>Power</summary>
-  <p><b>Power:</b> If the <u>roll to hit = natural 6</u>, no save roll can be made against the attack (except Field armour save rolls) and the Damage caused is increased by 1. Attacks made by a Power weapon cannot be Parried except by other weapons with the Power trait.</p>
-</details>
-
-<details class="reference-tables-collapsible">
-  <summary>Scattershot</summary>
-  <p><b>Scattershot:</b> Resolve D6 <b>Wound rolls</b> instead of 1.</p>
-</details>
-
-<details class="reference-tables-collapsible">
-  <summary>Toxin</summary>
-  <p><b>Toxin:</b> Instead of making a <b>Wound roll</b>, roll 1D6; If the result is <u>equal to or higher than the target's <b>Toughness</b>, or is a natural 6</u>, make an <b>Injury roll</b> for them (regardless of their <b>Wounds</b> characteristic).</p>
-</details>
-
-<details class="reference-tables-collapsible">
-  <summary>Unwieldy</summary>
-  <p><b>Unwieldy:</b> Weapons with this trait:</p>
-  <ul>
-    <li><b>Shoot (Basic)</b> is degraded to <b>Shoot (Double)</b>.</li>
-    <li>Unwieldy ranged weapons can <b>never</b> be used with shooting skills (such as <b>Fast Shot</b>, or <b>Hip-Shooting</b>) even if you have suspensors or other mitigants for the <b>Shoot (Double)</b> effect.</li>
-    <li>If the weapon has both the <b>Melee</b> and <b>Unwieldy</b> weapon traits, the fighter cannot use a second close combat weapon.</li>
-  </ul>
-</details>
-
+<div id="weapon-traits-container"></div>
 </details>
 
 
@@ -127,6 +48,10 @@ title: Meat for the Grinder
 <script src="{{ '/assets/js/scenario_MeatForTheGrinderUI.js' | relative_url }}"></script>
 <script>
   document.addEventListener("DOMContentLoaded", () => {
-    scenario_MeatForTheGrinderUI.init("{{ '/data/scenario_MeatForTheGrinder.json' | relative_url }}");
+    scenario_MeatForTheGrinderUI.init(
+      "{{ '/data/scenario_MeatForTheGrinder.json' | relative_url }}",
+      "{{ '/data/weaponTraits.json' | relative_url }}",
+      "{{ '/data/fighterSkills.json' | relative_url }}"
+    );
   });
 </script>
