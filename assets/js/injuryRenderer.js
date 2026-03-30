@@ -5,8 +5,8 @@
 const InjuryRenderer = {
 
   MESSAGES: {
-    convalescence: "This fighter cannot participate in the next battle (but can still take Post Battle actions).",
-    recovery: "This fighter goes into recovery. They cannot make Post Battle actions AND they miss the next battle."
+    convalescence: "This fighter cannot make <b>Post Battle Actions</b> (but are available for the next battle as normal).",
+    recovery: "This fighter goes <b>into recovery</b>. They cannot make Post Battle Actions AND they miss the next battle."
   },
 
   createWarningBox(type, message) {
