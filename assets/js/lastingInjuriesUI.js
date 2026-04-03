@@ -202,32 +202,85 @@ const LastingInjuriesUI = {
 
     // Show status column only if any injury uses convalescence or intoRecovery
     const showStatus = injuries.some(i => i.convalescence === 1 || i.intoRecovery === 1);
+    // Show glitch column only if any injury has glitch: 1
+    const showGlitch = injuries.some(i => i.glitch === 1);
 
     const rows = injuries.map(injury => {
       const colour = injury.colour || 'grey';
       const rollStr = injury.values.join(', ');
       const effect = [injury.fixedeffect, InjuryRenderer.formatRandomEffectLabel(injury.randomeffect)].filter(Boolean).join('<br>');
       const statusCell = showStatus ? `<td>${[
-        injury.convalescence === 1 ? `<span class="warning-box" style="display:inline-block;margin:2px 0;">${Icons.warning} Convalescence</span>` : '',
-        injury.intoRecovery === 1 ? `<span class="recovery-box" style="display:inline-block;margin:2px 0;">${Icons.hospital} Into Recovery</span>` : ''
+        injury.convalescence === 1 ? `<span class="warning-box" style="display:inline-block;margin:2px 0;white-space:nowrap;">${Icons.warning} Convalescence</span>` : '',
+        injury.intoRecovery === 1 ? `<span class="recovery-box" style="display:inline-block;margin:2px 0;white-space:nowrap;">${Icons.hospital} Into Recovery</span>` : ''
       ].filter(Boolean).join('<br>') || '&mdash;'}</td>` : '';
+      const glitchCell = showGlitch ? `<td>${injury.glitch === 1 ? `<span class="glitch-tag" style="display:inline-block;margin:2px 0;white-space:nowrap;">${Icons.zap} Glitch</span>` : '&mdash;'}</td>` : '';
       return `<tr class="row-${colour}">
         <td>${rollStr}</td>
         <td><b>${injury.name}</b></td>
         <td>${effect || '&mdash;'}</td>
-        ${statusCell}
+        ${statusCell}${glitchCell}
       </tr>`;
     }).join('');
 
     const statusHeader = showStatus ? '<th>Status</th>' : '';
+    const glitchHeader = showGlitch ? '<th>Glitch</th>' : '';
 
     container.innerHTML = `
       <h3>Injury Table (${dieLabel})</h3>
       <table>
-        <thead><tr><th>Roll</th><th>Result</th><th>Effect</th>${statusHeader}</tr></thead>
+        <thead><tr><th>Roll</th><th>Result</th><th>Effect</th>${statusHeader}${glitchHeader}</tr></thead>
         <tbody>${rows}</tbody>
       </table>
     `;
+
+    this.renderMutationTable(container);
+  },
+
+  renderMutationTable(container) {
+    const mode = LastingInjuriesEngine.currentMode;
+    if (mode === 'spyrer_hunting_rig_glitches' || mode === 'spyrer_hunting_rig_glitches_core' || mode === 'ironman_lasting_injuries') return;
+
+    const mutData = LastingInjuriesEngine.injuriesData?.mutation_exceptions;
+    if (!mutData || !mutData.mutations) return;
+
+    const injuries = Object.entries(mutData.mutations);
+    if (injuries.length === 0) return;
+
+    // Build a lookup of injury name from the current mode's results
+    const allResults = {};
+    Object.values(LastingInjuriesEngine.injuriesData).forEach(section => {
+      if (section && section.results) {
+        Object.entries(section.results).forEach(([id, data]) => {
+          allResults[id] = data.name;
+        });
+      }
+    });
+
+    const modifiers = (mutData.test?.modifiers || []).map(m => `+${m.value} ${m.label}`).join('<br>');
+
+    const rows = injuries.map(([injuryId, mutation]) => {
+      const injuryName = allResults[injuryId] || injuryId;
+      return `<tr class="row-purple">
+        <td><b>${injuryName}</b></td>
+        <td><b>${mutation.name}</b></td>
+        <td>${mutation.fixedeffect}</td>
+      </tr>`;
+    }).join('');
+
+    const modifiersHtml = modifiers ? `<p class="text-base mt-10 mb-10"><b>D6 Modifiers:</b><br>${modifiers}</p>` : '';
+
+    const section = document.createElement('div');
+    section.className = 'mt-20';
+    section.innerHTML = `
+      <h3>Chaos Mutations</h3>
+      <p class="text-base mt-0 mb-0">If the fighter belongs to a <b>Helot Chaos Cult</b>, <b>Corpse Grinder Cult</b> or <b>Chaos Corrupted</b> gang and suffers one of the injuries below, roll a D6. On a 6+ the injury becomes a mutation instead.</p>
+      ${modifiersHtml}
+      <table>
+        <thead><tr><th>Lasting Injury</th><th>Mutation</th><th>Effect</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    `;
+    container.appendChild(section);
   },
 
   renderTreatmentTable() {
@@ -337,13 +390,106 @@ const LastingInjuriesUI = {
     resultDiv.innerHTML = [
       `<h3 class="result-heading mt-0 mb-0">${nameText}</h3>`,
       result.injury.fixedeffect ? `<div class="result-effect mt-10">${result.injury.fixedeffect}</div>` : '',
-      result.injury.randomeffect && result.injury.randomeffect !== 'd3multipleinjuries' ? `<div class="mt-15">${InjuryRenderer.formatRandomEffect(result.injury.randomeffect, result.randomRoll)}</div>` : '',
+      result.injury.randomeffect && result.injury.randomeffect !== 'd3multipleinjuries' && result.injury.randomeffect !== 'd3multipleglitches' ? `<div class="mt-15">${InjuryRenderer.formatRandomEffect(result.injury.randomeffect, result.randomRoll)}</div>` : '',
     ].filter(Boolean).join('');
 
-    InjuryRenderer.displayAdditionalInjuries(result.additionalInjuries, resultDiv, 'Roll');
+    const isGlitchMode = ['spyrer_hunting_rig_glitches', 'spyrer_hunting_rig_glitches_core'].includes(LastingInjuriesEngine.currentMode);
+    const additionalLabel = isGlitchMode ? 'Glitch' : 'Roll';
+    InjuryRenderer.displayAdditionalInjuries(result.additionalInjuries, resultDiv, additionalLabel);
     InjuryRenderer.appendStatusWarnings(result.injury, resultDiv);
+
+    if (isGlitchMode) {
+      const allResults = [result.injury, ...(result.additionalInjuries || []).map(i => i.injury)];
+      const glitchCount = allResults.filter(i => i.glitch === 1).length;
+      if (glitchCount > 0) {
+        const countDiv = document.createElement('div');
+        countDiv.className = 'glitch-count-note mt-10';
+        countDiv.innerHTML = `${Icons.zap} <b>${glitchCount} glitch${glitchCount !== 1 ? 'es' : ''} generated</b>`;
+        resultDiv.appendChild(countDiv);
+      }
+    }
 
     resultsContainer.innerHTML = "";
     resultsContainer.appendChild(resultDiv);
+
+    if (!isGlitchMode) {
+      const eligibleInjuries = [
+        result.injury,
+        ...(result.additionalInjuries || []).map(a => a.injury)
+      ].filter(inj => inj.id && LastingInjuriesEngine.isMutationEligible(inj.id));
+      const showName = eligibleInjuries.length > 1;
+      eligibleInjuries.forEach(inj => {
+        resultsContainer.appendChild(this.createMutationCheckSection(inj, showName));
+      });
+    }
+  },
+
+  createMutationCheckSection(injury, showName = false) {
+    const section = document.createElement('div');
+    section.className = 'mutation-check-section mt-20';
+
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-chaos';
+    btn.textContent = showName ? `Chaos Gang: Check for Mutation — ${injury.name}` : 'Chaos Gang: Check for Mutation';
+    btn.addEventListener('click', () => {
+      section.innerHTML = '';
+      section.appendChild(this.buildMutationTestPanel(injury));
+    });
+
+    section.appendChild(btn);
+    return section;
+  },
+
+  buildMutationTestPanel(injury) {
+    const modifiers = LastingInjuriesEngine.getMutationModifiers();
+    const panel = document.createElement('div');
+    panel.className = 'mutation-test-panel';
+
+    const modifierItems = modifiers.map(mod => `
+      <div class="territory-item">
+        <label>
+          <input type="checkbox" value="${mod.id}">
+          +${mod.value} ${mod.label}
+        </label>
+      </div>`).join('');
+
+    panel.innerHTML = `
+      <h3 class="mt-0">Mutation Test</h3>
+      <p class="text-base">Roll a D6. On a <b>6+</b> the injury becomes a mutation instead.</p>
+      <div class="mutation-modifiers mb-15">${modifierItems}</div>
+      <button class="btn btn-chaos roll-mutation-btn">Roll D6</button>
+      <div class="mutation-roll-result-container"></div>
+    `;
+
+    panel.querySelector('.roll-mutation-btn').addEventListener('click', () => {
+      const checked = Array.from(panel.querySelectorAll('input[type=checkbox]:checked')).map(cb => cb.value);
+      const testResult = LastingInjuriesEngine.rollMutationTest(checked);
+      const mutation = LastingInjuriesEngine.getMutation(injury.id);
+      const resultContainer = panel.querySelector('.mutation-roll-result-container');
+
+      const bonusText = testResult.bonus > 0 ? ` +${testResult.bonus}` : '';
+      const totalText = testResult.bonus > 0 ? ` = ${testResult.total}` : '';
+
+      if (testResult.success) {
+        const mutBox = InjuryRenderer.createInjuryBox(mutation, 'purple');
+        resultContainer.innerHTML = `<div class="mutation-roll-result mutation-success">D6: ${testResult.roll}${bonusText}${totalText} &mdash; Mutation! Apply this instead:</div>`;
+        resultContainer.appendChild(mutBox);
+
+        const spawnNote = LastingInjuriesEngine.injuriesData?.mutation_exceptions?.chaos_spawn?.note;
+        if (spawnNote) {
+          const spawnDiv = document.createElement('div');
+          spawnDiv.className = 'chaos-spawn-note mt-10';
+          spawnDiv.innerHTML = `<b>Chaos Spawn:</b> ${spawnNote}`;
+          resultContainer.appendChild(spawnDiv);
+        }
+      } else {
+        resultContainer.innerHTML = `<div class="mutation-roll-result mutation-fail">D6: ${testResult.roll}${bonusText}${totalText} &mdash; No Mutation. Apply injury as normal.</div>`;
+      }
+
+      panel.querySelector('.roll-mutation-btn').disabled = true;
+      panel.querySelectorAll('input[type=checkbox]').forEach(cb => cb.disabled = true);
+    });
+
+    return panel;
   }
 };

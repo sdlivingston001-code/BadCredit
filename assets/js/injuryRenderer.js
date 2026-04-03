@@ -40,8 +40,9 @@ const InjuryRenderer = {
   formatRandomEffectLabel(randomeffect) {
     if (!randomeffect) return null;
     if (randomeffect === 'd3xpgain') return 'Gain D3 XP.';
-    if (randomeffect === 'd3multipleinjuries') return 'Suffer D3 injuries (ignoring Captured, Multiple Injuries, Memorable Death, Critical Injury, or Out Cold).';
-    if (randomeffect === 'stabilisedinjury') return 'Roll a lasting injury on the standard table.';
+    if (randomeffect === 'd3multipleinjuries') return 'Suffer D3 Lasting Injuries (ignoring Captured, Multiple Injuries, Memorable Death, Critical Injury, or Out Cold).';
+    if (randomeffect === 'd3multipleglitches') return 'Suffer D3 Hunting Rig glitches (ignoring Multiple Glitches).';
+    if (randomeffect === 'stabilisedinjury') return 'Roll a Lasting Injury on the selected table.';
     return randomeffect;
   },
 

@@ -79,7 +79,7 @@ const LastingInjuriesEngine = {
     // Excluded injury IDs for multiple injuries
     const excludedIds = ['captured', 'multiple_injuries', 'memorable_death', 'critical_injury', 'out_cold'];
     const injuries = [];
-    const maxAttempts = 100; // Prevent infinite loops
+    const maxAttempts = 100; // Prevent infinite loops to generate required number of eligible injuries 
     let attempts = 0;
 
     while (injuries.length < count && attempts < maxAttempts) {
@@ -101,6 +101,31 @@ const LastingInjuriesEngine = {
     return injuries;
   },
 
+  resolveMultipleGlitches(count) {
+    const excludedIds = ['multiple_glitches'];
+    const glitches = [];
+    const maxAttempts = 100;
+    let attempts = 0;
+
+    while (glitches.length < count && attempts < maxAttempts) {
+      attempts++;
+      const roll = this.rollDice();
+      const injury = this.findInjury(roll);
+
+      if (injury && !excludedIds.includes(injury.id)) {
+        const { randomRoll, additionalInjuries } = this.processRandomEffects(injury);
+        glitches.push({
+          roll,
+          injury,
+          randomRoll,
+          additionalInjuries
+        });
+      }
+    }
+
+    return glitches;
+  },
+
   // Process random effects on an injury (DRY helper)
   processRandomEffects(injury) {
     if (!injury || !injury.randomeffect) {
@@ -116,6 +141,10 @@ const LastingInjuriesEngine = {
       const count = Dice.d(3);
       randomRoll = { type: 'd3', value: count };
       additionalInjuries = this.resolveMultipleInjuries(count);
+    } else if (injury.randomeffect === 'd3multipleglitches') {
+      const count = Dice.d(3);
+      randomRoll = { type: 'd3', value: count };
+      additionalInjuries = this.resolveMultipleGlitches(count);
     }
 
     return { randomRoll, additionalInjuries };
@@ -277,5 +306,38 @@ const LastingInjuriesEngine = {
       }
     }
     return null;
+  },
+
+  isMutationEligible(injuryId) {
+    const mutData = this.injuriesData?.mutation_exceptions;
+    if (!mutData) return false;
+    return !!mutData.mutations[injuryId];
+  },
+
+  rollMutationTest(modifierIds) {
+    const mutData = this.injuriesData?.mutation_exceptions;
+    if (!mutData) return null;
+    const roll = Dice.d(6);
+    const bonus = modifierIds.reduce((sum, id) => {
+      const mod = mutData.test.modifiers.find(m => m.id === id);
+      return sum + (mod ? mod.value : 0);
+    }, 0);
+    const total = roll + bonus;
+    return {
+      roll,
+      bonus,
+      total,
+      success: total >= mutData.test.threshold
+    };
+  },
+
+  getMutation(injuryId) {
+    const mutData = this.injuriesData?.mutation_exceptions;
+    if (!mutData) return null;
+    return mutData.mutations[injuryId] || null;
+  },
+
+  getMutationModifiers() {
+    return this.injuriesData?.mutation_exceptions?.test?.modifiers || [];
   }
 };

@@ -169,6 +169,7 @@ tr.row-yellow td { background-color: #fff3cd; color: #856404; }
 tr.row-red td    { background-color: #f8d7da; color: #721c24; }
 tr.row-grey td   { background-color: #e2e3e5; color: #383d41; }
 tr.row-black td  { background-color: #000;    color: #fff; }
+tr.row-purple td { background-color: #ede9fe; color: #4c1d95; }
 
 /* Zebra striping for table rows */
 table tr:nth-child(even) {
@@ -458,6 +459,13 @@ ol li, ul li {
   margin-top: 15px;
 }
 
+.glitch-tag {
+  background-color: #ede9fe;
+  border-color: #6a0dad;
+  color: #4c1d95;
+  margin-top: 15px;
+}
+
 .error-box {
   background-color: #f8d7da;
   border-color: #dc3545;
@@ -593,6 +601,88 @@ ol li, ul li {
 
 .btn-amber:hover {
   background-color: #cf7000;
+}
+
+.btn-chaos {
+  background-color: #6a0dad;
+  color: white;
+  border-color: #4a0080;
+}
+
+.btn-chaos:hover {
+  background-color: #5a0b99;
+}
+
+.btn-chaos:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ======================
+   MUTATION CHECK
+   ====================== */
+
+.mutation-test-panel {
+  background-color: #1a0a2e;
+  border: 1px solid #6a0dad;
+  border-radius: 6px;
+  padding: 16px;
+  color: #e0d0ff;
+}
+
+.mutation-test-panel h3 {
+  color: #c084fc;
+}
+
+.mutation-test-panel p {
+  color: #c9b8e8;
+}
+
+.mutation-modifiers {
+  margin-bottom: 12px;
+}
+
+.mutation-modifiers .territory-item label {
+  color: #d8b4fe;
+  gap: 8px;
+}
+
+.mutation-roll-result {
+  margin-top: 12px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.mutation-success {
+  background-color: #3b1a6e;
+  color: #d8b4fe;
+  border-left: 4px solid #a855f7;
+}
+
+.mutation-fail {
+  background-color: #1f1f1f;
+  color: #9ca3af;
+  border-left: 4px solid #4b5563;
+}
+
+.chaos-spawn-note {
+  background-color: #2a0a2a;
+  border: 1px solid #dc2626;
+  border-radius: 4px;
+  padding: 8px 12px;
+  color: #f3e8ff;
+  font-size: 0.9em;
+}
+
+.glitch-count-note {
+  background-color: #1a2a3a;
+  border-left: 4px solid #6a0dad;
+  border-radius: 4px;
+  padding: 6px 12px;
+  color: #c084fc;
+  font-size: 0.9em;
+  margin-top: 8px;
 }
 
 /* ======================
