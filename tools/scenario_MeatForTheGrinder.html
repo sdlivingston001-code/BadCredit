@@ -2,7 +2,14 @@
 layout: default
 title: Meat for the Grinder
 ---
-
+<!-- 
+  scenario_MeatForTheGrinder.html — "Meat for the Harvest" scenario tool.
+  Rolls scavenged weapons, shows weapon-profile tables, fighter skills,
+  weapon traits, and reference roll tables.
+  Scripts: dice, icons, timer, scenario_MeatForTheGrinderEngine,
+           scenario_MeatForTheGrinderUI.
+  Data:    scenario_MeatForTheGrinder.json, weaponTraits.json, fighterSkills.json.
+-->
 
 <h1>Meat for the Harvest</h1>
 
@@ -41,17 +48,11 @@ title: Meat for the Grinder
 <div id="roll-table-container" class="mt-20"></div>
 </details>
 
-<script src="{{ '/assets/js/dice.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/icons.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/timer.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/scenario_MeatForTheGrinderEngine.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/scenario_MeatForTheGrinderUI.js' | relative_url }}"></script>
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    scenario_MeatForTheGrinderUI.init(
-      "{{ '/data/scenario_MeatForTheGrinder.json' | relative_url }}",
-      "{{ '/data/weaponTraits.json' | relative_url }}",
-      "{{ '/data/fighterSkills.json' | relative_url }}"
-    );
-  });
+<script type="module">
+  import { scenario_MeatForTheGrinderUI } from '{{ "/assets/js/scenario_MeatForTheGrinderUI.js" | relative_url }}';
+  scenario_MeatForTheGrinderUI.init(
+    "{{ '/data/scenario_MeatForTheGrinder.json' | relative_url }}",
+    "{{ '/data/weaponTraits.json' | relative_url }}",
+    "{{ '/data/fighterSkills.json' | relative_url }}"
+  );
 </script>

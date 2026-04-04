@@ -2,6 +2,11 @@
 layout: default
 title: Loot Casket
 ---
+<!-- 
+  lootCasket.html — Loot casket resolver (smash / bypass).
+  Scripts: dice, icons, timer, lootCasketEngine, lootCasketUI.
+  Data:    lootCasket.json.
+-->
 
 <h1>Loot Casket!</h1>
 
@@ -28,13 +33,7 @@ title: Loot Casket
 </details>
 
 <!-- Adjust this path if your built JSON lives elsewhere -->
-<script src="{{ '/assets/js/dice.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/icons.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/timer.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/lootCasketEngine.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/lootCasketUI.js' | relative_url }}"></script>
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    LootCasketUI.init("{{ '/data/lootCasket.json' | relative_url }}");
-  });
+<script type="module">
+  import { LootCasketUI } from '{{ "/assets/js/lootCasketUI.js" | relative_url }}';
+  LootCasketUI.init("{{ '/data/lootCasket.json' | relative_url }}");
 </script>

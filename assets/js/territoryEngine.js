@@ -1,20 +1,42 @@
-// territoryEngine.js
+/**
+ * territoryEngine.js — Business logic for territory income, recruitment & rules.
+ *
+ * Orchestrates the full territory-resolution pipeline:
+ *   1. Apply schema defaults + gang overrides  (via TerritorySchemas)
+ *   2. Roll dice / draw cards for income
+ *   3. Roll for random recruits
+ *   4. Collect fixed recruits, gear, reputation, and special rules
+ *   5. Detect & report triggered events (duplicate rolls, joker draws, etc.)
+ *
+ * All DOM-free — rendering lives in territoryUI.js.
+ *
+ * Depends on: dice.js (Dice), territorySchemas.js (TerritorySchemas)
+ */
 
-// TerritoryEngine handles all territory-related rules and calculations
+import { Dice } from './dice.js';
+import { TerritorySchemas } from './territorySchemas.js';
 
-const TerritoryEngine = {
-  // Resolve territory with schema before processing
-  // This applies schema defaults and gang-specific modifiers
+export const TerritoryEngine = {
+  /**
+   * Resolve a territory through the schema layer.
+   * Applies schema defaults and gang-specific modifiers.
+   * Falls back to the raw territory if TerritorySchemas isn't loaded.
+   * @param {Object} territory
+   * @param {string|null} selectedGang
+   * @returns {Object}
+   */
   resolveWithSchema(territory, selectedGang) {
-    if (typeof TerritorySchemas !== 'undefined') {
-      return TerritorySchemas.resolveTerritory(territory, selectedGang);
-    }
-    // Fallback to original territory if schemas not loaded
-    return territory;
+    return TerritorySchemas.resolveTerritory(territory, selectedGang);
   },
 
-  // Helper: Get gang-specific property or fall back to base property
-  // NOTE: This is now primarily handled by schema resolution, but kept for backward compatibility
+  /**
+   * Get a gang-specific property override, falling back to the base property.
+   * NOTE: Primarily handled by schema resolution now; kept for backward compat.
+   * @param {Object} territory
+   * @param {string} propertyName
+   * @param {string|null} selectedGang
+   * @returns {*}
+   */
   getPropertyWithGangOverride(territory, propertyName, selectedGang) {
     if (selectedGang) {
       const gangKey = `${propertyName}_${selectedGang}`;
@@ -61,7 +83,14 @@ const TerritoryEngine = {
     // containsValue: (rolls, value) => rolls.includes(value),
   },
 
-  // Main function that processes all territories and applies all rules
+  /**
+   * Master resolver — processes all territories and all rule types in one call.
+   *
+   * @param {Object[]} territories     - Raw territory objects from data.
+   * @param {Object}   [userInputCounts={}] - Per-territory user inputs (dice count or suit guess).
+   * @param {string|null} [selectedGang=null] - Selected gang ID for overrides.
+   * @returns {{ territories: Object[], territoriesWithEvents: Object[], territoriesWithout*: string[] }}
+   */
   resolve_all(territories, userInputCounts = {}, selectedGang = null) {
     if (!Array.isArray(territories)) return [];
 
@@ -123,7 +152,23 @@ const TerritoryEngine = {
     };
   },
 
-  // Income rules - determines credits earned from a territory
+  /**
+   * Resolve income for a single territory.
+   *
+   * Handles three income variants:
+   * - Dice-based (standard):  roll XdY, multiply, add.
+   * - Deck-based (Gambling Den):  draw a card, compare guessed suit.
+   * - User-defined count:  player chooses how many dice to roll.
+   *
+   * Also checks for conditional parameters (bonus when another territory is held)
+   * and event triggers (duplicate rolls, joker draws).
+   *
+   * @param {Object}   territory       - Resolved territory object.
+   * @param {string|null} selectedGang
+   * @param {number|string|null} userInput - Dice count (number) or guessed suit (string).
+   * @param {Object[]} [allTerritories=[]] - All selected territories (for conditional checks).
+   * @returns {Object} Income result with rolls, credits, description, event info.
+   */
   resolve_income(territory, selectedGang, userInput, allTerritories = []) {
     const income = territory.income;  // Schema layer already applied gang overrides
     
@@ -202,7 +247,13 @@ const TerritoryEngine = {
     };
   },
 
-  // Helper: Format calculation display
+  /**
+   * Build a human-readable calculation string like "(4 × 10) + 5".
+   * @param {number} multiplier
+   * @param {number} total - Sum of dice.
+   * @param {number} addition
+   * @returns {string}
+   */
   formatCalculation(multiplier, total, addition) {
     if (multiplier !== 1 && addition !== 0) {
       return `(${total} × ${multiplier}) + ${addition}`;
@@ -214,7 +265,14 @@ const TerritoryEngine = {
     return `${total}`;
   },
 
-  // Deck-based income (gambling den)
+  /**
+   * Resolve deck-based income (Gambling Den).
+   * Draws a card, compares suit / colour to the player's guess,
+   * and calculates credits as card-value × multiplier.
+   * @param {Object} income      - Resolved income config.
+   * @param {string} guessedSuit - One of ♠ ♥ ♦ ♣.
+   * @returns {Object} Card draw result with credits and description.
+   */
   resolve_deckIncome(income, guessedSuit) {
     const card = Dice.drawCards(1)[0];
     const suitColors = {
@@ -267,7 +325,14 @@ const TerritoryEngine = {
     };
   },
 
-  // Randomised recruitment rules
+  /**
+   * Resolve random recruitment for a territory.
+   * Rolls XdY, counts how many match the target value, and looks up
+   * the corresponding outcome text.
+   * @param {Object} territory
+   * @param {string|null} selectedGang
+   * @returns {Object} Recruitment result with rolls, match count, outcome.
+   */
   resolve_randomrecruit(territory, selectedGang) {
     const recruit = territory.random_recruit;  // Schema layer already applied gang overrides
     

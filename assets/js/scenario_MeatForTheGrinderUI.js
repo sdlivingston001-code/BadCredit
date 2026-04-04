@@ -1,16 +1,29 @@
-// scenario_MeatForTheGrinderUI.js
+/**
+ * scenario_MeatForTheGrinderUI.js — Front-end for the Meat for the Grinder
+ * scenario tool.
+ *
+ * Renders:
+ *   - Scavenged weapon roller (2D6 with animated result box)
+ *   - Full weapon profiles table with stat blocks
+ *   - 2D6 roll reference table
+ *   - Collapsible weapon-trait and fighter-skill reference sections
+ *
+ * Depends on: dice.js, icons.js, timer.js,
+ *             scenario_MeatForTheGrinderEngine.js
+ */
 
-const scenario_MeatForTheGrinderUI = {
+import { TimerUtil } from './timer.js';
+import { scenario_MeatForTheGrinderEngine } from './scenario_MeatForTheGrinderEngine.js';
+import { fetchJSON } from './dataLoader.js';
+
+export const scenario_MeatForTheGrinderUI = {
   async init(jsonPath, traitsJsonPath, skillsJsonPath) {
     try {
-      const [scenarioRes, traitsRes, skillsRes] = await Promise.all([
-        fetch(`${jsonPath}?t=${Date.now()}`, { cache: 'no-store' }),
-        traitsJsonPath ? fetch(`${traitsJsonPath}?t=${Date.now()}`, { cache: 'no-store' }) : null,
-        skillsJsonPath ? fetch(`${skillsJsonPath}?t=${Date.now()}`, { cache: 'no-store' }) : null
+      const [data, traitsData, skillsData] = await Promise.all([
+        fetchJSON(jsonPath),
+        traitsJsonPath ? fetchJSON(traitsJsonPath).catch(() => null) : null,
+        skillsJsonPath ? fetchJSON(skillsJsonPath).catch(() => null) : null
       ]);
-
-      if (!scenarioRes.ok) throw new Error(`Failed to load data: ${scenarioRes.status}`);
-      const data = await scenarioRes.json();
 
       scenario_MeatForTheGrinderEngine.loadData(data);
       this.bindEvents();
@@ -18,13 +31,11 @@ const scenario_MeatForTheGrinderUI = {
       this.renderWeaponTable(data);
       this.renderRollTable(data);
 
-      if (traitsRes && traitsRes.ok) {
-        const traitsData = await traitsRes.json();
+      if (traitsData) {
         this.renderWeaponTraits(traitsData);
       }
 
-      if (skillsRes && skillsRes.ok) {
-        const skillsData = await skillsRes.json();
+      if (skillsData) {
         this.renderFighterSkills(skillsData);
       }
     } catch (err) {
@@ -40,10 +51,8 @@ const scenario_MeatForTheGrinderUI = {
   },
 
   initTimer() {
-    if (typeof TimerUtil !== 'undefined') {
-      TimerUtil.init('page-roll-info', 'scenario_MeatForTheGrinderLastRun');
-      TimerUtil.setupPageCleanup();
-    }
+    TimerUtil.init('page-roll-info', 'scenario_MeatForTheGrinderLastRun');
+    TimerUtil.setupPageCleanup();
   },
 
   getProfileStats(profile) {
@@ -56,6 +65,10 @@ const scenario_MeatForTheGrinderUI = {
     return profile;
   },
 
+  /**
+   * Render the 2D6 scavenged-weapon roll reference table.
+   * @param {Object} data - Scenario data with scavenged_weapon_roll.
+   */
   renderRollTable(data) {
     const container = document.getElementById('roll-table-container');
     if (!container || !data.scavenged_weapon_roll) return;
@@ -74,24 +87,7 @@ const scenario_MeatForTheGrinderUI = {
       </table>`;
   },
 
-  renderRollTable(data) {
-    const container = document.getElementById('roll-table-container');
-    if (!container || !data.scavenged_weapon_roll) return;
-
-    const { results } = data.scavenged_weapon_roll;
-    const rows = Object.values(results).map(entry => {
-      const rollStr = Array.isArray(entry.values) ? entry.values.join(', ') : entry.values;
-      return `<tr><td>${rollStr}</td><td><b>${entry.name}</b></td></tr>`;
-    }).join('');
-
-    container.innerHTML = `
-      <h3>Scavenged Weapon (2D6)</h3>
-      <table>
-        <thead><tr><th>Roll</th><th>Weapon</th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table>`;
-  },
-
+  /** Render collapsible weapon-trait descriptions. */
   renderWeaponTraits(traitsData) {
     const container = document.getElementById('weapon-traits-container');
     if (!container || !traitsData || !traitsData.weapon_traits) return;

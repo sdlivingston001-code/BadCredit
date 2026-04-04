@@ -1,6 +1,34 @@
-// territoryUI.js
+/**
+ * territoryUI.js — Territory tool front-end.
+ *
+ * Renders the territory selection UI (checkboxes, gang selector, legacy
+ * house-affiliation selector) and handles the full resolution workflow:
+ *
+ *   1. Player selects territories + gang
+ *   2. For territories that need user input (dice count, suit guess,
+ *      collapsed-dome injury, waste-lurker fighter pick) a modal dialog
+ *      is shown
+ *   3. TerritoryEngine.resolve_all() is called
+ *   4. Results are rendered into result sections with income totals,
+ *      recruit outcomes, special rules, and event panels
+ *
+ * Also renders a collapsible territory reference table that updates
+ * when the gang selection changes to show gang-specific overrides.
+ *
+ * Depends on: dice.js, icons.js, timer.js, territorySchemas.js,
+ *             territoryEngine.js, lastingInjuriesEngine.js (optional),
+ *             injuryRenderer.js (optional)
+ */
 
-const TerritoryUI = {
+import { Icons } from './icons.js';
+import { TimerUtil } from './timer.js';
+import { TerritorySchemas } from './territorySchemas.js';
+import { TerritoryEngine } from './territoryEngine.js';
+import { LastingInjuriesEngine } from './lastingInjuriesEngine.js';
+import { InjuryRenderer } from './injuryRenderer.js';
+import { fetchJSON } from './dataLoader.js';
+
+export const TerritoryUI = {
   territories: [],
   territoryMap: {},
   gangs: null,
@@ -8,34 +36,27 @@ const TerritoryUI = {
 
   async init(jsonPath, gangsPath, lastingInjuriesPath) {
     try {
-      const response = await fetch(`${jsonPath}?t=${Date.now()}`, { cache: 'no-store' });
-      if (!response.ok) throw new Error(`Failed to load territories: ${response.status}`);
-
-      this.territories = await response.json();
+      this.territories = await fetchJSON(jsonPath);
 
       if (!Array.isArray(this.territories)) {
         this.territories = Object.entries(this.territories).map(([id, data]) => ({ id, ...data }));
       }
 
-      if (typeof TerritorySchemas !== 'undefined' && TerritorySchemas.validateAll) {
-        const validation = TerritorySchemas.validateAll(this.territories);
-        if (!validation.valid) {
-          console.warn('Territory validation errors:', validation.errors);
-          if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-            alert(`Territory data validation errors:\n${validation.errors.join('\n')}`);
-          }
+      const validation = TerritorySchemas.validateAll(this.territories);
+      if (!validation.valid) {
+        console.warn('Territory validation errors:', validation.errors);
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+          alert(`Territory data validation errors:\n${validation.errors.join('\n')}`);
         }
       }
 
-      const gangsResponse = await fetch(`${gangsPath}?t=${Date.now()}`, { cache: 'no-store' });
-      this.gangs = gangsResponse.ok ? await gangsResponse.json() : {};
+      try { this.gangs = await fetchJSON(gangsPath); } catch (e) { this.gangs = {}; }
 
-      if (lastingInjuriesPath && typeof LastingInjuriesEngine !== 'undefined') {
-        const liResponse = await fetch(`${lastingInjuriesPath}?t=${Date.now()}`, { cache: 'no-store' });
-        if (liResponse.ok) {
-          this.lastingInjuriesData = await liResponse.json();
+      if (lastingInjuriesPath) {
+        try {
+          this.lastingInjuriesData = await fetchJSON(lastingInjuriesPath);
           LastingInjuriesEngine.loadInjuries(this.lastingInjuriesData);
-        }
+        } catch (e) { /* optional dependency */ }
       }
 
       this.buildTerritoryMap();

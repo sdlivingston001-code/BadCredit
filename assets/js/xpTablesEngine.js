@@ -1,13 +1,35 @@
-// xpTablesEngine.js
+/**
+ * xpTablesEngine.js — Business logic for fighter advancement and skill tables.
+ *
+ * Handles two types of rolls:
+ *   1. Random Advancement — 2D6 roll to determine the type of stat increase.
+ *   2. Skill Table Roll   — D6 (or D66) roll on a specific skill table to
+ *      pick a random skill (with optional exotic-beast filtering).
+ *
+ * All table data is loaded from xpTables.json (compiled from _data/xpTables.yml).
+ * Uses Dice.isInRange for value-matching against table rows.
+ *
+ * Depends on: dice.js (Dice)
+ */
 
-const XPTablesEngine = {
+import { Dice } from './dice.js';
+
+export const XPTablesEngine = {
   xpData: null,
 
+  /**
+   * Store the full XP tables data structure.
+   * @param {Object} data - Parsed xpTables.json.
+   */
   loadXPData(data) {
-    // Store the full XP tables data structure with all tables
     this.xpData = data;
   },
 
+  /**
+   * Retrieve a named table (e.g. 'advancements_random', 'skill_agility').
+   * @param {string} tableName
+   * @returns {Object|null}
+   */
   getTable(tableName) {
     if (!this.xpData || !this.xpData[tableName]) {
       console.error(`Table not found: ${tableName}`);
@@ -16,60 +38,34 @@ const XPTablesEngine = {
     return this.xpData[tableName];
   },
 
+  /**
+   * Roll dice appropriate for a given table (D6, 2D6, D66, etc.)
+   * based on the table's `count` and `sides` properties.
+   * @param {string} tableName
+   * @returns {{ rolls: number[]|null, total: number }|null}
+   */
   rollDiceForTable(tableName) {
     const table = this.getTable(tableName);
     if (!table) return null;
-
-    const count = table.count || 1;
-    const sides = table.sides;
-
-    if (sides === "d66") {
-      const total = Dice.d66();
-      return { rolls: null, total };
-    } else {
-      const n = typeof sides === 'number' ? sides : parseInt(sides);
-      const rolls = Dice.rollMany(count, null, n);
-      const total = Dice.sum(rolls);
-      return { rolls, total };
-    }
+    return Dice.rollFromSpec(table.sides, table.count || 1);
   },
 
+  /**
+   * Find the result row whose `values` array contains `roll`.
+   * @param {string} tableName
+   * @param {number} roll
+   * @returns {Object|null}
+   */
   findResult(tableName, roll) {
     const table = this.getTable(tableName);
     if (!table || !table.results) return null;
-
-    // Convert results object to array
-    const results = Object.entries(table.results).map(([id, data]) => ({
-      id,
-      ...data
-    }));
-
-    for (const result of results) {
-      if (this.isInRange(roll, result.values)) {
-        return result;
-      }
-    }
-    return null;
+    return Dice.findInTable(table.results, roll);
   },
 
-  isInRange(roll, values) {
-    // values can be an array like [1] or ["2-3"] or [11, 12, 13]
-    for (const value of values) {
-      if (typeof value === 'number') {
-        if (roll === value) return true;
-      } else if (typeof value === 'string' && value.includes('-')) {
-        // Handle range like "2-3" or "11-13"
-        const [min, max] = value.split('-').map(Number);
-        if (roll >= min && roll <= max) return true;
-      } else {
-        // Try converting string to number
-        const num = Number(value);
-        if (!isNaN(num) && roll === num) return true;
-      }
-    }
-    return false;
-  },
-
+  /**
+   * Roll on the random advancement table (2D6) and return the result.
+   * @returns {{ rolls: number[], total: number, result: Object } | { error: string }}
+   */
   rollAdvancement() {
     const diceResult = this.rollDiceForTable('advancements_random');
     if (diceResult === null) {
@@ -85,6 +81,11 @@ const XPTablesEngine = {
     return { rolls, total, result };
   },
 
+  /**
+   * Roll on a named skill table and return the result.
+   * @param {string} skillTableName - e.g. 'skill_agility'
+   * @returns {{ tableName: string, rolls: number[], total: number, result: Object } | { error: string }}
+   */
   rollSkillTable(skillTableName) {
     const diceResult = this.rollDiceForTable(skillTableName);
     if (diceResult === null) {
@@ -156,7 +157,10 @@ const XPTablesEngine = {
     return this.rollSkillTable(skillTableName);
   },
 
-  // Get all available skill tables
+  /**
+   * Get all skill table names and formatted display names.
+   * @returns {{ id: string, name: string }[]}
+   */
   getSkillTables() {
     if (!this.xpData) return [];
     

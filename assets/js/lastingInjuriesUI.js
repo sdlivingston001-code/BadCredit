@@ -1,17 +1,29 @@
-// lastingInjuriesUI.js
-// Depends on: injuryRenderer.js (InjuryRenderer)
+/**
+ * lastingInjuriesUI.js — Front-end for the Lasting Injuries tool.
+ *
+ * Renders:
+ *   - Mode selector (standard / core / ironman / spyrer glitch variants)
+ *   - "Roll Injury" button with animated result boxes
+ *   - Collapsible injury reference table + mutation reference table
+ *
+ * Exposes `testInjury(roll)` to the console for developer testing.
+ *
+ * Depends on: dice.js, icons.js, timer.js, lastingInjuriesEngine.js,
+ *             injuryRenderer.js
+ */
 
-const LastingInjuriesUI = {
+import { Icons } from './icons.js';
+import { TimerUtil } from './timer.js';
+import { LastingInjuriesEngine } from './lastingInjuriesEngine.js';
+import { InjuryRenderer } from './injuryRenderer.js';
+import { fetchJSON } from './dataLoader.js';
+
+export const LastingInjuriesUI = {
   injuriesData: null,
 
   async init(jsonPath) {
     try {
-      const response = await fetch(`${jsonPath}?t=${Date.now()}`, { cache: 'no-store' });
-      if (!response.ok) {
-        throw new Error(`Failed to load lasting injuries: ${response.status}`);
-      }
-
-      this.injuriesData = await response.json();
+      this.injuriesData = await fetchJSON(jsonPath);
       LastingInjuriesEngine.loadInjuries(this.injuriesData);
 
       this.bindEvents();
@@ -69,114 +81,6 @@ const LastingInjuriesUI = {
     // Setup page cleanup to reset timers on navigation
     if (typeof TimerUtil !== 'undefined') {
       TimerUtil.setupPageCleanup();
-    }
-  },
-
-  resolveRogueDoc() {
-    // Mark the run time and show this timer
-    if (typeof TimerUtil !== 'undefined') {
-      TimerUtil.markRun('rogueDocLastRun');
-      TimerUtil.showTimer('rogue-doc-timer');
-    }
-    
-    const modeSelector = document.getElementById("rogue-doc-mode-selector");
-    const mode = modeSelector ? modeSelector.value : "trading_post_rogue_doc";
-    
-    // Clear lasting injuries results
-    const injuryResults = document.getElementById("lasting-injuries-results");
-    if (injuryResults) injuryResults.innerHTML = "";
-    
-    // For trading post, show cost first
-    if (mode === "trading_post_rogue_doc") {
-      this.showTradingPostCost(mode);
-    } else {
-      // For hanger-on, proceed directly
-      const result = LastingInjuriesEngine.resolveRogueDoc(mode);
-      this.displayRogueDocResult(result);
-    }
-  },
-
-  showTradingPostCost(mode) {
-    const cost = LastingInjuriesEngine.calculateRogueDocCost(mode);
-    const resultsContainer = document.getElementById("rogue-doc-results");
-    if (!resultsContainer) return;
-
-    resultsContainer.innerHTML = "";
-
-    if (cost === null) {
-      resultsContainer.innerHTML = '<div class="error-box">Error: Injury data not loaded. Please refresh the page.</div>';
-      return;
-    }
-
-    resultsContainer.innerHTML = `
-      <div class="cost-box">
-        <h2>Treatment Cost</h2>
-        <h1>${cost} credits</h1>
-        <p class="text-base mb-20">Do you want to proceed with treatment?</p>
-        <div class="flex-center">
-          <button id="proceed-treatment" class="btn btn-success">Proceed with Treatment</button>
-          <button id="refuse-treatment" class="btn btn-danger">Refuse Treatment</button>
-        </div>
-      </div>
-    `;
-
-    resultsContainer.querySelector('#proceed-treatment').addEventListener('click', () => {
-      const result = LastingInjuriesEngine.resolveRogueDoc(mode, cost);
-      this.displayRogueDocResult(result);
-    });
-    resultsContainer.querySelector('#refuse-treatment').addEventListener('click', () => {
-      this.displayFighterDeath();
-    });
-  },
-
-  displayFighterDeath() {
-    const resultsContainer = document.getElementById("rogue-doc-results");
-    if (!resultsContainer) return;
-
-    resultsContainer.innerHTML = `
-      <div class="death-box">
-        <h2 class="mt-0">${Icons.skull} Fighter Dies ${Icons.skull}</h2>
-        <p class="text-base mb-0">Without medical treatment, the fighter succumbs to their injuries and dies.<br><br>You recover their equipment.</p>
-      </div>
-    `;
-  },
-
-  displayRogueDocResult(result) {
-    const resultsContainer = document.getElementById("rogue-doc-results");
-    if (!resultsContainer) return;
-
-    const colour = result.outcome.colour || "grey";
-    const resultDiv = document.createElement("div");
-    resultDiv.className = `result-box result-box-${colour} result-box-primary mt-20`;
-    resultDiv.innerHTML = [
-      `<h2 class="result-heading text-capitalize mt-0">${result.outcome.name}</h2>`,
-      result.outcome.fixedeffect ? `<div class="result-effect mt-10">${result.outcome.fixedeffect}</div>` : ''
-    ].filter(Boolean).join('');
-
-    if (result.outcome.randomeffect === 'stabilisedinjury' && result.stabilisedInjury) {
-      const injuryContainer = document.createElement("div");
-      injuryContainer.className = "additional-injuries-container";
-
-      const injColour = result.stabilisedInjury.injury.colour || "grey";
-      injuryContainer.appendChild(InjuryRenderer.createInjuryBox(
-        result.stabilisedInjury.injury,
-        injColour,
-        `<b>D66 Roll:</b> ${result.stabilisedInjury.roll}`,
-        result.stabilisedInjury.randomRoll
-      ));
-      resultDiv.appendChild(injuryContainer);
-
-      InjuryRenderer.displayAdditionalInjuries(
-        result.stabilisedInjury.additionalInjuries,
-        resultDiv,
-        'D66'
-      );
-    }
-
-    resultsContainer.innerHTML = "";
-    resultsContainer.appendChild(resultDiv);
-    if (typeof TimerUtil !== 'undefined') {
-      TimerUtil.recordRolls('rogueDocLastRun', this.collectRogueDocRolls(result));
     }
   },
 
@@ -283,45 +187,6 @@ const LastingInjuriesUI = {
     container.appendChild(section);
   },
 
-  renderTreatmentTable() {
-    const container = document.getElementById('treatment-table-container');
-    if (!container || !LastingInjuriesEngine.injuriesData) return;
-
-    const modeSelector = document.getElementById('rogue-doc-mode-selector');
-    const mode = modeSelector ? modeSelector.value : 'trading_post_rogue_doc';
-    const modeData = LastingInjuriesEngine.injuriesData[mode];
-    if (!modeData) return;
-
-    const dieLabel = `D${modeData.sides}`;
-    const modeName = mode === 'trading_post_rogue_doc' ? 'Trading Post' : 'Hanger-on';
-
-    let costHtml = '';
-    if (modeData.cost) {
-      const c = modeData.cost;
-      costHtml = `<p><b>Cost:</b> ${c.count}D${c.sides}&times;${c.multiplier} credits</p>`;
-    }
-
-    const rows = Object.values(modeData.results).map(outcome => {
-      const colour = outcome.colour || 'grey';
-      const rollStr = outcome.values.join(', ');
-      const effect = [outcome.fixedeffect, InjuryRenderer.formatRandomEffectLabel(outcome.randomeffect)].filter(Boolean).join('<br>');
-      return `<tr class="row-${colour}">
-        <td>${rollStr}</td>
-        <td class="text-capitalize"><b>${outcome.name}</b></td>
-        <td>${effect || '&mdash;'}</td>
-      </tr>`;
-    }).join('');
-
-    container.innerHTML = `
-      <h3>Treatment Table &mdash; ${modeName} (${dieLabel})</h3>
-      ${costHtml}
-      <table>
-        <thead><tr><th>Roll</th><th>Result</th><th>Effect</th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
-    `;
-  },
-
   collectInjuryRolls(result) {
     if (!result || result.roll === 'Error') return [];
     const modeData = LastingInjuriesEngine.getCurrentModeData();
@@ -341,39 +206,12 @@ const LastingInjuriesUI = {
     return rolls;
   },
 
-  collectRogueDocRolls(result) {
-    const rolls = [];
-    if (result.cost !== null && result.cost !== undefined) {
-      rolls.push(`Cost: ${result.cost} credits`);
-    }
-    rolls.push(`D6: ${result.roll}`);
-    if (result.stabilisedInjury) {
-      rolls.push(`Stabilised D66: ${result.stabilisedInjury.roll}`);
-      if (result.stabilisedInjury.randomRoll) {
-        rolls.push(`${result.stabilisedInjury.randomRoll.type.toUpperCase()}: ${result.stabilisedInjury.randomRoll.value}`);
-      }
-      if (result.stabilisedInjury.additionalInjuries) {
-        result.stabilisedInjury.additionalInjuries.forEach((inj, i) => {
-          rolls.push(`Stabilised Additional ${i + 1}: ${inj.roll}`);
-          if (inj.randomRoll) {
-            rolls.push(`Stabilised Additional ${i + 1} ${inj.randomRoll.type.toUpperCase()}: ${inj.randomRoll.value}`);
-          }
-        });
-      }
-    }
-    return rolls;
-  },
-
   resolveInjury() {
     const result = LastingInjuriesEngine.resolveInjury();
     if (typeof TimerUtil !== 'undefined') {
       TimerUtil.markRun('lastingInjuriesLastRun', this.collectInjuryRolls(result));
       TimerUtil.showTimer('page-roll-info');
     }
-
-    // Clear rogue doc results
-    const rogueDocResults = document.getElementById("rogue-doc-results");
-    if (rogueDocResults) rogueDocResults.innerHTML = "";
 
     this.displayResult(result);
   },
@@ -417,79 +255,10 @@ const LastingInjuriesUI = {
         result.injury,
         ...(result.additionalInjuries || []).map(a => a.injury)
       ].filter(inj => inj.id && LastingInjuriesEngine.isMutationEligible(inj.id));
-      const showName = eligibleInjuries.length > 1;
       eligibleInjuries.forEach(inj => {
-        resultsContainer.appendChild(this.createMutationCheckSection(inj, showName));
+        resultsContainer.appendChild(InjuryRenderer.createMutationCheckSection(inj));
       });
     }
   },
 
-  createMutationCheckSection(injury, showName = false) {
-    const section = document.createElement('div');
-    section.className = 'mutation-check-section mt-20';
-
-    const btn = document.createElement('button');
-    btn.className = 'btn btn-chaos';
-    btn.textContent = showName ? `Chaos Gang: Check for Mutation — ${injury.name}` : 'Chaos Gang: Check for Mutation';
-    btn.addEventListener('click', () => {
-      section.innerHTML = '';
-      section.appendChild(this.buildMutationTestPanel(injury));
-    });
-
-    section.appendChild(btn);
-    return section;
-  },
-
-  buildMutationTestPanel(injury) {
-    const modifiers = LastingInjuriesEngine.getMutationModifiers();
-    const panel = document.createElement('div');
-    panel.className = 'mutation-test-panel';
-
-    const modifierItems = modifiers.map(mod => `
-      <div class="territory-item">
-        <label>
-          <input type="checkbox" value="${mod.id}">
-          +${mod.value} ${mod.label}
-        </label>
-      </div>`).join('');
-
-    panel.innerHTML = `
-      <h3 class="mt-0">Mutation Test</h3>
-      <p class="text-base">Roll a D6. On a <b>6+</b> the injury becomes a mutation instead.</p>
-      <div class="mutation-modifiers mb-15">${modifierItems}</div>
-      <button class="btn btn-chaos roll-mutation-btn">Roll D6</button>
-      <div class="mutation-roll-result-container"></div>
-    `;
-
-    panel.querySelector('.roll-mutation-btn').addEventListener('click', () => {
-      const checked = Array.from(panel.querySelectorAll('input[type=checkbox]:checked')).map(cb => cb.value);
-      const testResult = LastingInjuriesEngine.rollMutationTest(checked);
-      const mutation = LastingInjuriesEngine.getMutation(injury.id);
-      const resultContainer = panel.querySelector('.mutation-roll-result-container');
-
-      const bonusText = testResult.bonus > 0 ? ` +${testResult.bonus}` : '';
-      const totalText = testResult.bonus > 0 ? ` = ${testResult.total}` : '';
-
-      if (testResult.success) {
-        const mutBox = InjuryRenderer.createInjuryBox(mutation, 'purple');
-        resultContainer.innerHTML = `<div class="mutation-roll-result mutation-success">D6: ${testResult.roll}${bonusText}${totalText} &mdash; Mutation! Apply this instead:</div>`;
-        resultContainer.appendChild(mutBox);
-
-        const spawnNote = LastingInjuriesEngine.injuriesData?.mutation_exceptions?.chaos_spawn?.note;
-        if (spawnNote) {
-          const spawnDiv = document.createElement('div');
-          spawnDiv.className = 'chaos-spawn-note mt-10';
-          spawnDiv.innerHTML = `<b>Chaos Spawn:</b> ${spawnNote}`;
-          resultContainer.appendChild(spawnDiv);
-        }
-      } else {
-        resultContainer.innerHTML = `<div class="mutation-roll-result mutation-fail">D6: ${testResult.roll}${bonusText}${totalText} &mdash; No Mutation. Apply injury as normal.</div>`;
-      }
-
-      panel.querySelector('.roll-mutation-btn').disabled = true;
-      panel.querySelectorAll('input[type=checkbox]').forEach(cb => cb.disabled = true);
-    });
-
-    return panel;
-  }
 };

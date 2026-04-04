@@ -1,3 +1,37 @@
+/* ======================
+   style.css
+   ========================
+   Master stylesheet for BadCredit – Necromunda Campaign Companion.
+   
+   Section index:
+     1.  BODY / RESET
+     2.  BOTTOM-BAR (sticky nav + roll-info strip)
+     3.  MAIN CONTENT
+     4.  TABLE STYLES (generic, weapon-profiles, row colours, zebra)
+     5.  LIST STYLES
+     6.  SUIT SELECTION DIALOG (card-suit picker + number input)
+     7.  RESULT BOX COMPONENTS (7-colour coded outcome boxes)
+     8.  INFO BOXES (income, reroll, warning, recovery, error, death, cost)
+     9.  FORM CONTROLS (selectors, inputs, dropdowns)
+    10.  BUTTONS (default + colour variants)
+    11.  MUTATION CHECK (Chaos-themed panel)
+    12.  LAYOUT UTILITIES (flex helpers, text helpers, spacing)
+    13.  NESTED CONTENT
+    14.  SECTION DIVIDERS
+    15.  TIMER DISPLAY
+    16.  INLINE SVG ICONS
+    17.  TERRITORY CHECKBOXES
+    18.  UTILITY CLASSES
+    19.  TIMER COLOURS
+    20.  HR
+    21.  COLLAPSIBLE REFERENCE TABLES
+    22.  RESPONSIVE / MOBILE
+   ====================== */
+
+/* ======================
+   1. BODY / RESET
+   ====================== */
+
 body {
   margin: 0;
   font-family: Arial, sans-serif;
@@ -8,7 +42,9 @@ body {
   min-height: 100vh;
 }
 
-/* BOTTOM-BAR */
+/* ======================
+   2. BOTTOM-BAR
+   ====================== */
 .page-bottom-sticky {
   position: sticky;
   bottom: 0;
@@ -87,14 +123,19 @@ body {
   }
 }
 
-/* MAIN CONTENT */
+/* ======================
+   3. MAIN CONTENT
+   ====================== */
+
 .main {
   padding: 2rem;
   max-width: 900px;
   margin: 0;
 }
 
-/* TABLE STYLES */
+/* ======================
+   4. TABLE STYLES
+   ====================== */
 
 /* Full table properties for better readability */
 table {
@@ -181,7 +222,10 @@ table tr:hover {
   background-color: #c9c9c9;
 }
 
-/* LIST STYLES */
+/* ======================
+   5. LIST STYLES
+   ====================== */
+
 ol, ul {
   margin: 1rem 0;
   padding-left: 2rem;
@@ -193,7 +237,10 @@ ol li, ul li {
   padding-left: 0.5rem;
 }
 
-/* SUIT SELECTION DIALOG */
+/* ======================
+   6. SUIT SELECTION DIALOG
+   ====================== */
+
 .suit-dialog-overlay {
   position: fixed;
   top: 0;
@@ -323,7 +370,7 @@ ol li, ul li {
 }
 
 /* ======================
-   RESULT BOX COMPONENTS
+   7. RESULT BOX COMPONENTS
    ====================== */
 
 @keyframes result-pop-in {
@@ -417,7 +464,7 @@ ol li, ul li {
 }
 
 /* ======================
-   INFO BOXES
+   8. INFO BOXES
    ====================== */
 
 .info-box {
@@ -505,7 +552,7 @@ ol li, ul li {
 }
 
 /* ======================
-   FORM CONTROLS
+   9. FORM CONTROLS
    ====================== */
 
 .selector-wrapper {
@@ -552,7 +599,7 @@ ol li, ul li {
 }
 
 /* ======================
-   BUTTONS
+   10. BUTTONS
    ====================== */
 
 .btn {
@@ -619,7 +666,7 @@ ol li, ul li {
 }
 
 /* ======================
-   MUTATION CHECK
+   11. MUTATION CHECK
    ====================== */
 
 .mutation-test-panel {
@@ -686,7 +733,7 @@ ol li, ul li {
 }
 
 /* ======================
-   LAYOUT UTILITIES
+   12. LAYOUT UTILITIES
    ====================== */
 
 .flex-center {
@@ -760,7 +807,7 @@ ol li, ul li {
 .mb-0 { margin-bottom: 0; }
 
 /* ======================
-   NESTED CONTENT
+   13. NESTED CONTENT
    ====================== */
 
 .nested-content {
@@ -784,7 +831,7 @@ ol li, ul li {
 }
 
 /* ======================
-   SECTION DIVIDERS
+   14. SECTION DIVIDERS
    ====================== */
 
 .section-divider {
@@ -794,7 +841,7 @@ ol li, ul li {
 }
 
 /* ======================
-   TIMER DISPLAY
+   15. TIMER DISPLAY
    ====================== */
 
 .timer-display {
@@ -832,7 +879,7 @@ ol li, ul li {
 }
 
 /* ======================
-   INLINE SVG ICONS
+   16. INLINE SVG ICONS
    ====================== */
 
 svg[xmlns] {
@@ -841,7 +888,7 @@ svg[xmlns] {
 }
 
 /* ======================
-   TERRITORY CHECKBOXES
+   17. TERRITORY CHECKBOXES
    ====================== */
 
 .territory-level-section {
@@ -891,7 +938,7 @@ svg[xmlns] {
 }
 
 /* ======================
-   UTILITY CLASSES
+   18. UTILITY CLASSES
    ====================== */
 
 .hidden {
@@ -918,22 +965,16 @@ svg[xmlns] {
 }
 
 /* ======================
-   TIMER COLOURS
-   ====================== */
-
-.timer-muted { color: #666; }
-.timer-cooldown { color: #dc3545; }
-.timer-ready { color: #28a745; }
-
-/* ======================
-   HR
+   19. HR
    ====================== */
 
 .hr-dark {
   border-color: #444;
 }
 
-/* COLLAPSIBLE REFERENCE TABLES */
+/* ======================
+   21. COLLAPSIBLE REFERENCE TABLES
+   ====================== */
 .reference-tables-collapsible > summary {
   font-size: 1.5em;
   font-weight: bold;
@@ -968,7 +1009,7 @@ svg[xmlns] {
 }
 
 /* ======================
-   RESPONSIVE / MOBILE
+   22. RESPONSIVE / MOBILE
    ====================== */
 
 @media (max-width: 768px) {

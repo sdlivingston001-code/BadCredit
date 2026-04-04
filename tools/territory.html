@@ -2,6 +2,12 @@
 layout: default
 title: Territories
 ---
+<!-- 
+  territory.html — Territory income resolver.
+  Scripts: dice, icons, injuryRenderer, timer, lastingInjuriesEngine,
+           territorySchemas, territoryEngine, territoryUI.
+  Data:    territories.json, gangs.json, lastingInjuries.json.
+-->
 
 <h1>Territories</h1>
 <p>The following section allows for the campaigns House Rules.</p>
@@ -14,16 +20,7 @@ title: Territories
 <div id="territory-reference" class="mt-30"></div>
 
 <!-- Adjust this path if your built JSON lives elsewhere -->
-<script src="{{ '/assets/js/dice.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/icons.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/injuryRenderer.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/timer.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/lastingInjuriesEngine.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/territorySchemas.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/territoryEngine.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/territoryUI.js' | relative_url }}"></script>
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    TerritoryUI.init("{{ '/data/territories.json' | relative_url }}", "{{ '/data/gangs.json' | relative_url }}", "{{ '/data/lastingInjuries.json' | relative_url }}");
-  });
+<script type="module">
+  import { TerritoryUI } from '{{ "/assets/js/territoryUI.js" | relative_url }}';
+  TerritoryUI.init("{{ '/data/territories.json' | relative_url }}", "{{ '/data/gangs.json' | relative_url }}", "{{ '/data/lastingInjuries.json' | relative_url }}");
 </script>

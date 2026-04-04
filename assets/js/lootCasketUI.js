@@ -1,16 +1,30 @@
-// lootCasketUI.js
+/**
+ * lootCasketUI.js — Front-end for the Loot Casket tool.
+ *
+ * Renders:
+ *   - Smash / Bypass buttons
+ *   - Animated result boxes with nested-table drill-down buttons
+ *   - Reroll history badges
+ *   - Income calculation display
+ *   - Collapsible reference tables for all loot sub-tables
+ *
+ * Exposes `testLootCasket(roll)` and `testNestedTable(name, roll)` to
+ * the console for developer testing.
+ *
+ * Depends on: dice.js, icons.js, timer.js, lootCasketEngine.js
+ */
 
-const LootCasketUI = {
+import { Icons } from './icons.js';
+import { TimerUtil } from './timer.js';
+import { LootCasketEngine } from './lootCasketEngine.js';
+import { fetchJSON } from './dataLoader.js';
+
+export const LootCasketUI = {
   lootData: null,
 
   async init(jsonPath) {
     try {
-      const response = await fetch(`${jsonPath}?t=${Date.now()}`, { cache: 'no-store' });
-      if (!response.ok) {
-        throw new Error(`Failed to load loot casket data: ${response.status}`);
-      }
-
-      this.lootData = await response.json();
+      this.lootData = await fetchJSON(jsonPath);
       LootCasketEngine.loadLootData(this.lootData);
 
       this.bindEvents();

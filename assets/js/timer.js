@@ -1,9 +1,28 @@
-// timer.js - Shared timer utility
+/**
+ * timer.js — Shared timer utility for tracking time since last roll.
+ *
+ * Shows a live-updating "Last Run" display with millisecond precision
+ * (for the first 5 seconds) then switches to a generic message.
+ *
+ * Roll history:  Maintains a sliding window of the last 4 roll sets
+ * stored as a single JSON key per tool in localStorage:
+ *   {
+ *     timestamp: <epoch-ms>,
+ *     rollHistory: [ [current], [prev1], [prev2], [prev3] ]
+ *   }
+ *
+ * All keys are cleared on page unload (beforeunload) so stale data
+ * doesn't persist across sessions.
+ *
+ * Depends on: icons.js (Icons.timer, Icons.dices, Icons.clockCounterClockwise)
+ */
 
-const TimerUtil = {
+import { Icons } from './icons.js';
+
+export const TimerUtil = {
   intervals: {},
-  storageKeys: [], // Track all storage keys for cleanup
-  storageToContainer: {}, // Map storageKey → containerId for roll display updates
+  storageKeys: [],
+  storageToContainer: {},
 
   /**
    * Initialize and display a timer that shows time since last run (with millisecond precision)
@@ -49,54 +68,43 @@ const TimerUtil = {
    * @param {HTMLElement} element - Element to update
    */
   updateDisplay(storageKey, element) {
-    const lastRun = localStorage.getItem(storageKey);
-    
-    if (!lastRun) {
+    let stored;
+    try {
+      const raw = localStorage.getItem(storageKey);
+      stored = raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      stored = null;
+    }
+
+    if (!stored || !stored.timestamp) {
       element.innerHTML = `${Icons.timer} <b>Last Run:</b> Never`;
       element.classList.remove('timer-green');
       element.classList.add('timer-grey');
       return;
     }
 
-    const lastRunTime = parseInt(lastRun);
     const now = Date.now();
-    const elapsedMs = now - lastRunTime;
+    const elapsedMs = now - stored.timestamp;
 
     let timeHtml;
     if (elapsedMs < 5000) {
-      // Show milliseconds for first 5 seconds
       const totalSeconds = Math.floor(elapsedMs / 1000);
       const milliseconds = elapsedMs % 1000;
       timeHtml = `${Icons.timer} <b>Last Run:</b> ${totalSeconds}.${String(milliseconds).padStart(3, '0')} seconds ago`;
       element.classList.remove('timer-grey');
       element.classList.add('timer-green');
     } else {
-      // After 5 seconds, just show generic message
       timeHtml = `${Icons.timer} <b>Last Run:</b> More than 5 seconds ago`;
       element.classList.remove('timer-green');
       element.classList.add('timer-grey');
     }
 
-    // Append stored rolls — current prominent, previous as a compact history log
+    // Append stored rolls — current prominent, previous as compact history
     let rollsHtml = '';
-    const prevSets = [];
-    let currSet = null;
-    try {
-      const prev = localStorage.getItem(`${storageKey}_prev_rolls`);
-      if (prev) { const arr = JSON.parse(prev); if (arr && arr.length) prevSets.push(arr.join(', ')); }
-    } catch (e) {}
-    try {
-      const prev2 = localStorage.getItem(`${storageKey}_prev2_rolls`);
-      if (prev2) { const arr = JSON.parse(prev2); if (arr && arr.length) prevSets.push(arr.join(', ')); }
-    } catch (e) {}
-    try {
-      const prev3 = localStorage.getItem(`${storageKey}_prev3_rolls`);
-      if (prev3) { const arr = JSON.parse(prev3); if (arr && arr.length) prevSets.push(arr.join(', ')); }
-    } catch (e) {}
-    try {
-      const curr = localStorage.getItem(`${storageKey}_rolls`);
-      if (curr) { const arr = JSON.parse(curr); if (arr && arr.length) currSet = arr.join(', '); }
-    } catch (e) {}
+    const history = stored.rollHistory || [];
+    const currSet = history[0] && history[0].length ? history[0].join(', ') : null;
+    const prevSets = history.slice(1).filter(s => s && s.length).map(s => s.join(', '));
+
     if (currSet !== null || prevSets.length > 0) {
       let lines = '';
       if (currSet !== null) lines += `<div class="timer-rolls">${Icons.dices} <b>${currSet}</b></div>`;
@@ -113,31 +121,22 @@ const TimerUtil = {
    * @param {string[]} rolls - Optional roll strings to display in the timer
    */
   markRun(storageKey, rolls = []) {
-    // Shift history chain: prev3 ← prev2 ← prev ← current
-    const prevRolls    = localStorage.getItem(`${storageKey}_rolls`);
-    const prev2Rolls   = localStorage.getItem(`${storageKey}_prev_rolls`);
-    const prev3Rolls   = localStorage.getItem(`${storageKey}_prev2_rolls`);
-    if (prev3Rolls) {
-      localStorage.setItem(`${storageKey}_prev3_rolls`, prev3Rolls);
-    } else {
-      localStorage.removeItem(`${storageKey}_prev3_rolls`);
+    let stored;
+    try {
+      const raw = localStorage.getItem(storageKey);
+      stored = raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      stored = null;
     }
-    if (prev2Rolls) {
-      localStorage.setItem(`${storageKey}_prev2_rolls`, prev2Rolls);
-    } else {
-      localStorage.removeItem(`${storageKey}_prev2_rolls`);
-    }
-    if (prevRolls) {
-      localStorage.setItem(`${storageKey}_prev_rolls`, prevRolls);
-    } else {
-      localStorage.removeItem(`${storageKey}_prev_rolls`);
-    }
-    localStorage.setItem(storageKey, Date.now().toString());
-    if (rolls && rolls.length > 0) {
-      localStorage.setItem(`${storageKey}_rolls`, JSON.stringify(rolls));
-    } else {
-      localStorage.removeItem(`${storageKey}_rolls`);
-    }
+
+    const oldHistory = (stored && stored.rollHistory) || [];
+    // Shift: prepend new rolls, keep at most 4 entries
+    const newHistory = [rolls, ...oldHistory].slice(0, 4);
+
+    localStorage.setItem(storageKey, JSON.stringify({
+      timestamp: Date.now(),
+      rollHistory: newHistory
+    }));
   },
 
   /**
@@ -148,7 +147,20 @@ const TimerUtil = {
    */
   recordRolls(storageKey, rolls) {
     if (!rolls || rolls.length === 0) return;
-    localStorage.setItem(`${storageKey}_rolls`, JSON.stringify(rolls));
+
+    let stored;
+    try {
+      const raw = localStorage.getItem(storageKey);
+      stored = raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      stored = null;
+    }
+
+    if (!stored) return;
+    stored.rollHistory = stored.rollHistory || [];
+    stored.rollHistory[0] = rolls;
+    localStorage.setItem(storageKey, JSON.stringify(stored));
+
     const containerId = this.storageToContainer[storageKey];
     if (containerId) {
       const el = document.getElementById(`${containerId}-display`);
@@ -199,10 +211,6 @@ const TimerUtil = {
   clearAllStorage() {
     this.storageKeys.forEach(key => {
       localStorage.removeItem(key);
-      localStorage.removeItem(`${key}_rolls`);
-      localStorage.removeItem(`${key}_prev_rolls`);
-      localStorage.removeItem(`${key}_prev2_rolls`);
-      localStorage.removeItem(`${key}_prev3_rolls`);
     });
   },
 

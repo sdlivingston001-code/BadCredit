@@ -2,14 +2,20 @@
 layout: default
 title: Icon Dictionary
 ---
+<!-- 
+  icons.html — Developer reference page.
+  Renders every icon from the Icons.* object in a clickable grid.
+  Click an icon to copy its JS reference (e.g. Icons.timer) to clipboard.
+  Scripts: icons.
+-->
 
 <h1>Icon Dictionary</h1>
 <p>All available icons from <code>Icons.*</code> in <code>icons.js</code>.</p>
 
 <div id="icon-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:16px;margin-top:24px;"></div>
 
-<script src="{{ '/assets/js/icons.js' | relative_url }}"></script>
-<script>
+<script type="module">
+  import { Icons } from '{{ "/assets/js/icons.js" | relative_url }}';
   const grid = document.getElementById('icon-grid');
   for (const [key, svg] of Object.entries(Icons)) {
     const card = document.createElement('div');

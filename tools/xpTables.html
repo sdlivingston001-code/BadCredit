@@ -2,6 +2,11 @@
 layout: default
 title: XP Advancement Tables
 ---
+<!-- 
+  xpTables.html — XP advancement roller (user-choice + 2D6 random).
+  Scripts: dice, icons, timer, xpTablesEngine, xpTablesUI.
+  Data:    xpTables.json.
+-->
 
 <h1>XP Advancement Tables</h1>
 <p>These tables are from Goonhammers' Lost Zone rules</p>
@@ -38,13 +43,7 @@ title: XP Advancement Tables
 </details>
 
 <!-- Load Scripts -->
-<script src="{{ '/assets/js/dice.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/icons.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/timer.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/xpTablesEngine.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/xpTablesUI.js' | relative_url }}"></script>
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    XPTablesUI.init("{{ '/data/xpTables.json' | relative_url }}");
-  });
+<script type="module">
+  import { XPTablesUI } from '{{ "/assets/js/xpTablesUI.js" | relative_url }}';
+  XPTablesUI.init("{{ '/data/xpTables.json' | relative_url }}");
 </script>

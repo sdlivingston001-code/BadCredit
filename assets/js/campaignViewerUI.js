@@ -1,6 +1,25 @@
-// campaignViewerUI.js - Display Munda Manager campaign data
+/**
+ * campaignViewerUI.js — Front-end for the Campaign Viewer tool.
+ *
+ * Displays Munda Manager campaign data fetched by CampaignViewerEngine:
+ *   - Campaign overview (name, type, status)
+ *   - Campaign statistics (gangs, members, wealth, territories)
+ *   - Gang leaderboard sorted by rating with medal icons
+ *   - Territory control map (owned + available)
+ *   - Validation sections comparing API gang-types and territory names
+ *     against local data files to catch mismatches
+ *
+ * Also manages a cache-age timer (updates every second) and enforces
+ * the 15-minute cooldown before allowing another API call.
+ *
+ * Depends on: icons.js, campaignViewerEngine.js
+ */
 
-const CampaignViewerUI = {
+import { Icons } from './icons.js';
+import { CampaignViewerEngine } from './campaignViewerEngine.js';
+import { fetchJSON } from './dataLoader.js';
+
+export const CampaignViewerUI = {
   containerId: null,
   refreshButton: null,
   timerContainer: null,
@@ -46,51 +65,44 @@ const CampaignViewerUI = {
       alert('Please enter a valid campaign ID');
       return;
     }
-    CampaignViewerEngine.setCampaignId(newId);
+    if (!CampaignViewerEngine.setCampaignId(newId)) {
+      alert('Invalid campaign ID format. Please enter a valid UUID (e.g. e2785818-5736-4c50-bfb2-d243953541f8)');
+      return;
+    }
     this.refresh();
   },
 
   async loadLocalGangs() {
     try {
       const baseUrl = window.location.pathname.includes('/BadCredit/') ? '/BadCredit' : '';
-      const response = await fetch(`${baseUrl}/data/gangs.json?t=${Date.now()}`, { cache: 'no-store' });
-      if (response.ok) {
-        this.localGangs = await response.json();
-        // Convert to array if needed
-        if (!Array.isArray(this.localGangs)) {
-          this.localGangs = Object.entries(this.localGangs).map(([id, data]) => ({
-            id,
-            ...data
-          }));
-        }
-        console.log('CampaignViewerUI: Loaded local gangs:', this.localGangs.length);
-      } else {
-        console.warn('CampaignViewerUI: Failed to load gangs.json');
+      this.localGangs = await fetchJSON(`${baseUrl}/data/gangs.json`);
+      // Convert to array if needed
+      if (!Array.isArray(this.localGangs)) {
+        this.localGangs = Object.entries(this.localGangs).map(([id, data]) => ({
+          id,
+          ...data
+        }));
       }
+      console.log('CampaignViewerUI: Loaded local gangs:', this.localGangs.length);
     } catch (error) {
-      console.error('CampaignViewerUI: Error loading local gangs:', error);
+      console.warn('CampaignViewerUI: Failed to load gangs.json');
     }
   },
 
   async loadLocalTerritories() {
     try {
       const baseUrl = window.location.pathname.includes('/BadCredit/') ? '/BadCredit' : '';
-      const response = await fetch(`${baseUrl}/data/territories.json?t=${Date.now()}`, { cache: 'no-store' });
-      if (response.ok) {
-        this.localTerritories = await response.json();
-        // Convert to array if needed
-        if (!Array.isArray(this.localTerritories)) {
-          this.localTerritories = Object.entries(this.localTerritories).map(([id, data]) => ({
-            id,
-            ...data
-          }));
-        }
-        console.log('CampaignViewerUI: Loaded local territories:', this.localTerritories.length);
-      } else {
-        console.warn('CampaignViewerUI: Failed to load territories.json');
+      this.localTerritories = await fetchJSON(`${baseUrl}/data/territories.json`);
+      // Convert to array if needed
+      if (!Array.isArray(this.localTerritories)) {
+        this.localTerritories = Object.entries(this.localTerritories).map(([id, data]) => ({
+          id,
+          ...data
+        }));
       }
+      console.log('CampaignViewerUI: Loaded local territories:', this.localTerritories.length);
     } catch (error) {
-      console.error('CampaignViewerUI: Error loading local territories:', error);
+      console.warn('CampaignViewerUI: Failed to load territories.json');
     }
   },
 
@@ -109,7 +121,7 @@ const CampaignViewerUI = {
 
     const cacheTime = localStorage.getItem(CampaignViewerEngine.cacheTimeKey);
     if (!cacheTime) {
-      this.timerContainer.innerHTML = '<span class="timer-muted">⏱️ Never fetched</span>';
+      this.timerContainer.innerHTML = '<span class="timer-grey">⏱️ Never fetched</span>';
       return;
     }
 
@@ -120,7 +132,7 @@ const CampaignViewerUI = {
       // Still in cooldown
       const minutes = Math.floor(timeRemaining / 60000);
       const seconds = Math.floor((timeRemaining % 60000) / 1000);
-      this.timerContainer.innerHTML = `<span class="timer-cooldown">⏱️ Next refresh available in ${minutes}:${seconds.toString().padStart(2, '0')}</span>`;
+      this.timerContainer.innerHTML = `<span class="text-danger">⏱️ Next refresh available in ${minutes}:${seconds.toString().padStart(2, '0')}</span>`;
       
       if (this.refreshButton) {
         this.refreshButton.disabled = true;
@@ -130,7 +142,7 @@ const CampaignViewerUI = {
       // Can refresh
       const minutes = Math.floor(age / 60000);
       const seconds = Math.floor((age % 60000) / 1000);
-      this.timerContainer.innerHTML = `<span class="timer-ready">⏱️ Last fetched ${minutes}:${seconds.toString().padStart(2, '0')} ago</span>`;
+      this.timerContainer.innerHTML = `<span class="timer-green">⏱️ Last fetched ${minutes}:${seconds.toString().padStart(2, '0')} ago</span>`;
       
       if (this.refreshButton) {
         this.refreshButton.disabled = false;

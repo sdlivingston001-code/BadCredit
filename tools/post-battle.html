@@ -2,6 +2,13 @@
 layout: default
 title: "Post Battle Sequence"
 ---
+<!-- 
+  post-battle.html — Full post-battle workflow: succumb, escape, ransom,
+  critical-injury treatment (two rogue-doc modes), and a step checklist.
+  Scripts: dice, icons, injuryRenderer, timer, lastingInjuriesEngine,
+           postBattleEngine, postBattleUI.
+  Data:    lastingInjuries.json.
+-->
 
 <h1>The Post Battle Sequence</h1>
 <p>House rules remove <b>Into Recovery</b> and <b>Convalescence</b> to simplify admin.</p>
@@ -86,6 +93,10 @@ title: "Post Battle Sequence"
   </select>
 </div>
 
+<div class="selector-wrapper">
+  <label class="checkbox-label"><input type="checkbox" id="pb-rogue-doc-gang"> Genestealer Cult / Genestealer Corrupted</label>
+</div>
+
 <button id="pb-resolve-critical-injury">Get Treatment</button>
 
 <div id="pb-critical-injury-results" class="mt-15"></div>
@@ -131,17 +142,9 @@ title: "Post Battle Sequence"
 <h2>Update Roster</h2>
 <p>As normal, in this order:</p>
 
-<script src="{{ '/assets/js/dice.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/icons.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/injuryRenderer.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/timer.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/lastingInjuriesEngine.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/postBattleEngine.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/postBattleUI.js' | relative_url }}"></script>
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    PostBattleUI.init("{{ '/data/lastingInjuries.json' | relative_url }}");
-  });
+<script type="module">
+  import { PostBattleUI } from '{{ "/assets/js/postBattleUI.js" | relative_url }}';
+  PostBattleUI.init("{{ '/data/lastingInjuries.json' | relative_url }}");
 </script>
 
 <!-- Convalescence rolls if playing with Post Battle Actions, old battle wounds / cracked power cells -->

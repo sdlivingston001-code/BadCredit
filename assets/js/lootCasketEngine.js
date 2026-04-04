@@ -1,10 +1,32 @@
-// lootCasketEngine.js
+/**
+ * lootCasketEngine.js — Business logic for the Loot Casket tool.
+ *
+ * Opens loot caskets via two methods:
+ *   - Smash Open:  rolls D6 then subtracts 1 (minimum 1), so the effective
+ *     range is shifted down, making better results harder to get.
+ *   - Bypass Lock:  rolls D6 with no penalty.
+ *
+ * Results can include:
+ *   - Direct income (roll Xd6 × multiplier credits)
+ *   - A nested table roll (drugs, ammo, fancy loot, servo skulls)
+ *   - A reroll instruction (the engine auto-loops until a non-reroll result)
+ *
+ * The nested-table system is recursive: a nested result can itself point to
+ * another nested table (e.g. fancy loot → servo skull → specific skull type).
+ *
+ * Depends on: dice.js (Dice)
+ */
 
-const LootCasketEngine = {
+import { Dice } from './dice.js';
+
+export const LootCasketEngine = {
   lootData: null,
 
+  /**
+   * Store the full loot casket data (all tables).
+   * @param {Object} data - Parsed lootCasket.json.
+   */
   loadLootData(data) {
-    // Store the full loot box data structure with all tables
     this.lootData = data;
   },
 
@@ -16,56 +38,29 @@ const LootCasketEngine = {
     return this.lootData[tableName];
   },
 
+  /**
+   * Roll the appropriate die for a table (D6, D3, D66, etc.).
+   * @param {string} tableName
+   * @returns {number|null}
+   */
   rollDiceForTable(tableName) {
     const table = this.getTable(tableName);
     if (!table) return null;
-
-    // Roll based on the sides property
-    const sides = table.sides;
-    if (sides === "d66") {
-      return Dice.d66(); // Special case: d66 is not a 66-sided die
-    } else {
-      const n = typeof sides === 'number' ? sides : parseInt(sides);
-      return Dice.d(n);
-    }
+    return Dice.rollFromSpec(table.sides).total;
   },
 
   findResult(tableName, roll) {
     const table = this.getTable(tableName);
     if (!table || !table.results) return null;
-
-    // Convert results object to array
-    const results = Object.entries(table.results).map(([id, data]) => ({
-      id,
-      ...data
-    }));
-
-    for (const result of results) {
-      if (this.isInRange(roll, result.values)) {
-        return result;
-      }
-    }
-    return null;
+    return Dice.findInTable(table.results, roll);
   },
 
-  isInRange(roll, values) {
-    // values can be an array like [1] or ["2-3"] or [11, 12, 13]
-    for (const value of values) {
-      if (typeof value === 'number') {
-        if (roll === value) return true;
-      } else if (typeof value === 'string' && value.includes('-')) {
-        // Handle range like "2-3" or "11-13"
-        const [min, max] = value.split('-').map(Number);
-        if (roll >= min && roll <= max) return true;
-      } else {
-        // Try converting string to number
-        const num = Number(value);
-        if (!isNaN(num) && roll === num) return true;
-      }
-    }
-    return false;
-  },
-
+  /**
+   * Process an income sub-rule attached to a loot result.
+   * Rolls Xd(sides) × multiplier to determine credit amount.
+   * @param {Object} incomeRule - { schema, sides, multiplier }
+   * @returns {{ roll: number, amount: number, ... }|null}
+   */
   processIncome(incomeRule) {
     if (!incomeRule) return null;
 
@@ -84,6 +79,12 @@ const LootCasketEngine = {
     };
   },
 
+  /**
+   * Interpret a random-effect value from a loot result.
+   * Returns 'reroll', 'pending_roll' (awaiting user click), or 'unknown'.
+   * @param {string|null} randomeffect
+   * @returns {{ type: string, ... }|null}
+   */
   processRandomEffect(randomeffect) {
     if (!randomeffect) return null;
 
@@ -104,7 +105,12 @@ const LootCasketEngine = {
     return { type: 'unknown', value: randomeffect };
   },
 
-  // Roll a specific nested table
+  /**
+   * Roll a nested table, automatically re-rolling on 'reroll' results
+   * until a concrete result is found (with a 100-iteration safety limit).
+   * @param {string} tableName - e.g. 'd66drugs', 'd6fancy'
+   * @returns {Object} { tableName, roll, result, randomEffect, rerollHistory }
+   */
   rollNestedTable(tableName) {
     const maxRerolls = 100; // Safety limit
     let attempts = 0;
@@ -157,6 +163,11 @@ const LootCasketEngine = {
     };
   },
 
+  /**
+   * Smash open a loot casket (D6 − 1, minimum 1).
+   * The reduction makes higher-value results less likely.
+   * @returns {Object} Loot result with rawRoll, adjusted roll, and contents.
+   */
   smashOpenLootCasket() {
     const rawRoll = this.rollDiceForTable('loot_casket_roll');
     if (rawRoll === null) {
@@ -172,6 +183,10 @@ const LootCasketEngine = {
     return { rawRoll, roll, result, incomeResult, randomEffect };
   },
 
+  /**
+   * Open a loot casket by bypassing the lock (D6, no penalty).
+   * @returns {Object} Loot result with roll and contents.
+   */
   openLootCasketBypass() {
     const roll = this.rollDiceForTable('loot_casket_roll');
     if (roll === null) {

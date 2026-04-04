@@ -1,16 +1,46 @@
-// lastingInjuriesEngine.js
+/**
+ * lastingInjuriesEngine.js — Business logic for lasting injuries, rogue-doc
+ * treatment, and chaos-gang mutation testing.
+ *
+ * Supports five injury modes loaded from lastingInjuries.yml:
+ *   - standard_lasting_injuries       — D66 house-rules table
+ *   - standard_lasting_injuries_core  — D66 core-rules table
+ *   - ironman_lasting_injuries        — D6 simplified table
+ *   - spyrer_hunting_rig_glitches     — D66 Spyrer equipment table
+ *   - spyrer_hunting_rig_glitches_core
+ *
+ * Key behaviours:
+ *   - "Multiple Injuries" results recursively roll D3 additional injuries
+ *     (with safe-guards against infinite loops and excluded result IDs).
+ *   - Rogue Doc treatment comes in two variants: Trading Post (with a
+ *     randomly-rolled credit cost) and Hanger-on (free but less reliable).
+ *   - "Stabilised" treatment outcomes roll a lasting injury from the
+ *     standard table, excluding certain results.
+ *   - Chaos gangs can convert eligible injuries into mutations via a D6
+ *     test with optional modifiers.
+ *
+ * Depends on: dice.js (Dice)
+ */
 
-const LastingInjuriesEngine = {
+import { Dice } from './dice.js';
+
+export const LastingInjuriesEngine = {
   injuriesData: null,
   currentMode: 'standard_lasting_injuries',
 
+  /**
+   * Store the full injury data structure (all modes + rogue doc + mutations).
+   * @param {Object} injuriesData - Parsed lastingInjuries.json.
+   */
   loadInjuries(injuriesData) {
-    // Store the full data structure with both modes
     this.injuriesData = injuriesData;
   },
 
+  /**
+   * Switch to a named injury mode.
+   * @param {string} mode - Key matching a top-level entry in the data.
+   */
   setMode(mode) {
-    // mode should be 'standard_lasting_injuries' or 'ironman_lasting_injuries'
     if (this.injuriesData && this.injuriesData[mode]) {
       this.currentMode = mode;
     } else {
@@ -25,58 +55,29 @@ const LastingInjuriesEngine = {
     return this.injuriesData[this.currentMode];
   },
 
+  /**
+   * Roll dice and return the total for the current mode.
+   * @returns {number|null}
+   */
   rollDice() {
     const modeData = this.getCurrentModeData();
     if (!modeData) return null;
-
-    // Roll based on the sides property
-    const sides = modeData.sides;
-    if (sides === "d66") {
-      return Dice.d66(); // Special case: d66 is not a 66-sided die
-    } else {
-      const n = typeof sides === 'number' ? sides : parseInt(sides);
-      return Dice.d(n);
-    }
+    return Dice.rollFromSpec(modeData.sides).total;
   },
 
   findInjury(roll) {
     const modeData = this.getCurrentModeData();
     if (!modeData || !modeData.results) return null;
-
-    // Convert results object to array
-    const injuries = Object.entries(modeData.results).map(([id, data]) => ({
-      id,
-      ...data
-    }));
-
-    for (const injury of injuries) {
-      if (this.isInRange(roll, injury.values)) {
-        return injury;
-      }
-    }
-    return null;
+    return Dice.findInTable(modeData.results, roll);
   },
 
-  isInRange(roll, values) {
-    // values can be an array like [11] or ["14-66"] or [12, 13, 14]
-    for (const value of values) {
-      if (typeof value === 'number') {
-        if (roll === value) return true;
-      } else if (typeof value === 'string' && value.includes('-')) {
-        // Handle range like "14-66"
-        const [min, max] = value.split('-').map(Number);
-        if (roll >= min && roll <= max) return true;
-      } else {
-        // Try converting string to number
-        const num = Number(value);
-        if (!isNaN(num) && roll === num) return true;
-      }
-    }
-    return false;
-  },
-
+  /**
+   * Resolve D3 additional injuries, excluding results that would
+   * cause infinite recursion (captured, multiple_injuries, etc.).
+   * @param {number} count - How many valid injuries to generate.
+   * @returns {Object[]} Array of { roll, injury, randomRoll, additionalInjuries }.
+   */
   resolveMultipleInjuries(count) {
-    // Excluded injury IDs for multiple injuries
     const excludedIds = ['captured', 'multiple_injuries', 'memorable_death', 'critical_injury', 'out_cold'];
     const injuries = [];
     const maxAttempts = 100; // Prevent infinite loops to generate required number of eligible injuries 
@@ -126,7 +127,12 @@ const LastingInjuriesEngine = {
     return glitches;
   },
 
-  // Process random effects on an injury (DRY helper)
+  /**
+   * Process random sub-effects attached to an injury (e.g. D3 XP gain,
+   * D3 multiple injuries, D3 multiple glitches).
+   * @param {Object} injury
+   * @returns {{ randomRoll: Object|null, additionalInjuries: Object[]|null }}
+   */
   processRandomEffects(injury) {
     if (!injury || !injury.randomeffect) {
       return { randomRoll: null, additionalInjuries: null };
@@ -150,6 +156,10 @@ const LastingInjuriesEngine = {
     return { randomRoll, additionalInjuries };
   },
 
+  /**
+   * Roll a D6 and resolve a lasting injury from the current mode.
+   * @returns {Object} { roll, injury, randomRoll, additionalInjuries }
+   */
   resolveInjury() {
     const roll = this.rollDice();
     return this.processInjury(roll);
@@ -195,6 +205,13 @@ const LastingInjuriesEngine = {
     };
   },
 
+  /**
+   * Roll for a stabilised injury (Trading Post Rogue Doc outcome).
+   * Uses the standard_lasting_injuries table, excluding captured /
+   * critical_injury / memorable_death so the result is always a
+   * survivable lasting injury.
+   * @returns {{ roll: number, injury: Object }|null}
+   */
   resolveStabilisedInjury() {
     // Roll a single injury from standard table
     const excludedIds = ['captured', 'critical_injury', 'memorable_death'];
@@ -225,6 +242,13 @@ const LastingInjuriesEngine = {
     return null;
   },
 
+  /**
+   * Resolve a Rogue Doc treatment attempt.
+   * @param {'trading_post_rogue_doc'|'hanger_on_rogue_doc'} mode
+   * @param {number|null} [precalculatedCost] - Pass a pre-rolled cost to avoid
+   *   re-rolling (UI shows cost first, then resolves if player proceeds).
+   * @returns {{ cost: number|null, roll: number, outcome: Object, stabilisedInjury: Object|null }}
+   */
   resolveRogueDoc(mode, precalculatedCost = null) {
     const modeData = this.injuriesData[mode];
     if (!modeData) {
@@ -243,7 +267,7 @@ const LastingInjuriesEngine = {
     // Use precalculated cost if provided, otherwise calculate
     let cost = precalculatedCost;
     if (cost === null && mode === 'trading_post_rogue_doc' && modeData.cost) {
-      cost = this.calculateRogueDocCost(mode);
+      cost = this.calculateRogueDocCost(mode).total;
     }
 
     // Roll for treatment result
@@ -274,7 +298,13 @@ const LastingInjuriesEngine = {
     };
   },
 
-  calculateRogueDocCost(mode) {
+  /**
+   * Calculate the credit cost for Trading Post Rogue Doc treatment.
+   * Cost formula: roll `count` dice of `sides` sides, multiply total, add flat amount.
+   * @param {string} mode
+   * @returns {number|null}
+   */
+  calculateRogueDocCost(mode, gangId = null) {
     if (!this.injuriesData) {
       console.error('Injuries data not loaded');
       return null;
@@ -285,35 +315,36 @@ const LastingInjuriesEngine = {
       return null;
     }
 
-    const costConfig = modeData.cost;
-    let total = 0;
+    const costConfig = (gangId && modeData.gangCostOverrides?.[gangId]) || modeData.cost;
+    const rolls = [];
     for (let i = 0; i < costConfig.count; i++) {
-      total += Dice.d(costConfig.sides);
+      rolls.push(Dice.d(costConfig.sides));
     }
-    return (total * costConfig.multiplier) + costConfig.addition;
+    const total = (rolls.reduce((a, b) => a + b, 0) * costConfig.multiplier) + costConfig.addition;
+    return { total, rolls, costConfig };
   },
 
   findOutcome(roll, results) {
-    // Reuse findInjury logic by temporarily setting mode data
-    const outcomes = Object.entries(results).map(([id, data]) => ({
-      id,
-      ...data
-    }));
-
-    for (const outcome of outcomes) {
-      if (this.isInRange(roll, outcome.values)) {
-        return outcome;
-      }
-    }
-    return null;
+    return Dice.findInTable(results, roll);
   },
 
+  /**
+   * Check if an injury ID can be converted to a chaos mutation.
+   * @param {string} injuryId
+   * @returns {boolean}
+   */
   isMutationEligible(injuryId) {
     const mutData = this.injuriesData?.mutation_exceptions;
     if (!mutData) return false;
     return !!mutData.mutations[injuryId];
   },
 
+  /**
+   * Roll a D6 mutation test with optional modifier checkboxes.
+   * Succeeds on total >= threshold (default 6+).
+   * @param {string[]} modifierIds - IDs of checked modifier checkboxes.
+   * @returns {{ roll: number, bonus: number, total: number, success: boolean }|null}
+   */
   rollMutationTest(modifierIds) {
     const mutData = this.injuriesData?.mutation_exceptions;
     if (!mutData) return null;

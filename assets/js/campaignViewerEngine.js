@@ -1,6 +1,23 @@
-// campaignViewerEngine.js - Fetch and process Munda Manager campaign data
+/**
+ * campaignViewerEngine.js — Fetches and processes Munda Manager campaign data.
+ *
+ * Integrates with the Munda Manager public API to display campaign info,
+ * gang leaderboards, territory distribution, and validation against local
+ * data.  Uses a CORS proxy (allorigins.win) because the API doesn't set
+ * Access-Control-Allow-Origin for browser requests.
+ *
+ * Caching strategy:
+ *   - 15-minute hard cooldown between API calls (cacheDuration) to respect
+ *     Munda Manager's rate limits.
+ *   - 2-hour staleness threshold (staleDuration) — after 2 hours the UI
+ *     will suggest a refresh but won't auto-fetch.
+ *   - 30-second request timeout with AbortController.
+ *   - Cached data is stored as JSON in localStorage.
+ *
+ * Depends on: (none — pure data logic; Icons used only by the UI layer)
+ */
 
-const CampaignViewerEngine = {
+export const CampaignViewerEngine = {
   campaignData: null,
   defaultCampaignId: 'e2785818-5736-4c50-bfb2-d243953541f8',
   campaignIdKey: 'mundamanager_campaign_id',
@@ -25,14 +42,18 @@ const CampaignViewerEngine = {
    * @param {string} campaignId
    */
   setCampaignId(campaignId) {
-    if (campaignId && campaignId.trim()) {
-      localStorage.setItem(this.campaignIdKey, campaignId.trim());
-      // Clear cache when campaign ID changes
-      localStorage.removeItem(this.cacheKey);
-      localStorage.removeItem(this.cacheTimeKey);
-      return true;
+    if (!campaignId || !campaignId.trim()) return false;
+
+    const id = campaignId.trim();
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+      return false;
     }
-    return false;
+
+    localStorage.setItem(this.campaignIdKey, id);
+    // Clear cache when campaign ID changes
+    localStorage.removeItem(this.cacheKey);
+    localStorage.removeItem(this.cacheTimeKey);
+    return true;
   },
 
   /**

@@ -1,8 +1,38 @@
-// territorySchemas.js
-// Schema definitions for territory rules and gang-specific modifiers
+/**
+ * territorySchemas.js — Schema system for territory income & recruitment rules.
+ *
+ * Territories in territories.yml declare their income/recruit behaviour by
+ * referencing a named schema (e.g. `schema: withDuplicateEvent`).  At
+ * resolve-time this module performs a **three-way property merge**:
+ *
+ *     baseDefaults  →  schema defaults  →  territory-level overrides
+ *
+ * This means a territory only needs to specify what differs from its schema
+ * (and schemas only specify what differs from the base).
+ *
+ * Gang-specific overrides
+ * -----------------------
+ * Any territory property can be overridden per-gang by appending `_<gangId>`
+ * to the YAML key.  For example `income_cawdor` overrides `income` when
+ * Cawdor is the selected gang.  The `resolveTerritory` method handles this
+ * suffix pattern automatically.
+ *
+ * Available income schemas:
+ *   standard           – plain XdY × multiplier + addition
+ *   withDuplicateEvent – rolls ≥ 2 dice; triggers an event on duplicate values
+ *   userDefinedNumber  – player chooses how many dice to roll
+ *   deckBased          – draws a card instead of rolling dice (Gambling Den)
+ *   conditional        – parameters change if another territory is also held
+ *
+ * Available recruit schemas:
+ *   standard – roll Xd6, count successes on target value
+ *
+ * Depends on: (none — pure data logic)
+ */
 
-const TerritorySchemas = {
-  // Base defaults - these are the foundation
+export const TerritorySchemas = {
+  // ──── Base defaults ────
+  // These are the fallback values when no schema or property override exists.
   baseDefaults: {
     income: {
       count: 1,
@@ -22,7 +52,8 @@ const TerritorySchemas = {
     }
   },
 
-  // Income schema types - only define what's different from base
+  // ──── Income schema types ────
+  // Each schema only defines what differs from baseDefaults.income.
   incomeSchemas: {
     
     // Standard income: Uses all base defaults (1d6 x10 + )
@@ -68,7 +99,17 @@ const TerritorySchemas = {
     return this.recruitSchemas[schemaName] || {};
   },
 
-  // Main resolver: Apply schema to territory property
+  /**
+   * Main resolver: merge baseDefaults → schema → territory property.
+   *
+   * If the property object contains a `schema` key, the named schema's
+   * defaults are merged between the base and the property.  Event objects
+   * are deep-merged so schema-level and property-level event fields combine.
+   *
+   * @param {Object}  property    - The territory's income or recruit block.
+   * @param {'income'|'recruit'} [schemaType='income']
+   * @returns {Object|null} Fully-resolved property with all defaults filled in.
+   */
   resolveProperty(property, schemaType = 'income') {
     if (!property) return null;
     
@@ -99,7 +140,17 @@ const TerritorySchemas = {
     return { ...baseDefaults, ...property };
   },
 
-  // Resolve a complete territory with gang context
+  /**
+   * Resolve a complete territory object with gang-specific overrides.
+   *
+   * For each overridable property (income, random_recruit, reputation, etc.),
+   * checks for a `property_<gangId>` key on the territory and substitutes it.
+   * Income and recruit overrides also get full schema resolution.
+   *
+   * @param {Object}      territory - Raw territory from data YAML.
+   * @param {string|null} [gangId=null] - Selected gang identifier.
+   * @returns {Object} Shallow copy of territory with resolved properties.
+   */
   resolveTerritory(territory, gangId = null) {
     let resolved = { ...territory };
     
@@ -139,7 +190,11 @@ const TerritorySchemas = {
     return resolved;
   },
 
-  // Validate territory against schema
+  /**
+   * Validate a single territory's schema references.
+   * @param {Object} territory
+   * @returns {{ valid: boolean, errors: string[] }}
+   */
   validateTerritory(territory) {
     const errors = [];
     
@@ -172,7 +227,11 @@ const TerritorySchemas = {
     };
   },
 
-  // Validate all territories
+  /**
+   * Validate all territories and return aggregated errors.
+   * @param {Object[]} territories
+   * @returns {{ valid: boolean, errors: string[] }}
+   */
   validateAll(territories) {
     const allErrors = [];
     

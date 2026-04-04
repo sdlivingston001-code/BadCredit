@@ -2,6 +2,12 @@
 layout: default
 title: Campaign Viewer
 ---
+<!-- 
+  campaignViewer.html — Live viewer for Munda Manager campaign data.
+  Fetches campaign JSON via CORS proxy, caches in localStorage with a
+  15-min cooldown / 2-hr stale threshold, renders gang rosters and stats.
+  Scripts: icons, campaignViewerEngine, campaignViewerUI.
+-->
 
 <h1>Munda Manager Campaign Viewer</h1>
 
@@ -21,11 +27,7 @@ title: Campaign Viewer
 
 <div id="campaign-data"></div>
 
-<script src="{{ '/assets/js/icons.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/campaignViewerEngine.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/campaignViewerUI.js' | relative_url }}"></script>
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    CampaignViewerUI.init("campaign-data", "load-campaign", "campaign-timer", "campaign-id-input");
-  });
+<script type="module">
+  import { CampaignViewerUI } from '{{ "/assets/js/campaignViewerUI.js" | relative_url }}';
+  CampaignViewerUI.init("campaign-data", "load-campaign", "campaign-timer", "campaign-id-input");
 </script>

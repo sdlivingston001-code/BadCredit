@@ -1,16 +1,30 @@
-// xpTablesUI.js
+/**
+ * xpTablesUI.js — Front-end for the XP / Advancement tool.
+ *
+ * Renders:
+ *   - User-choice advancement table (static cost/benefit reference)
+ *   - 2D6 random advancement roller with result display
+ *   - Random skill generator dialog (with exotic-beast mode)
+ *   - Collapsible skill reference tables for every skill set
+ *
+ * Exposes `testAdvancement(roll)` and `testSkillTable(name, roll)` to the
+ * console for developer testing.
+ *
+ * Depends on: dice.js, icons.js, timer.js, xpTablesEngine.js
+ */
 
-const XPTablesUI = {
+import { Dice } from './dice.js';
+import { Icons } from './icons.js';
+import { TimerUtil } from './timer.js';
+import { XPTablesEngine } from './xpTablesEngine.js';
+import { fetchJSON } from './dataLoader.js';
+
+export const XPTablesUI = {
   xpData: null,
 
   async init(jsonPath) {
     try {
-      const response = await fetch(`${jsonPath}?t=${Date.now()}`, { cache: 'no-store' });
-      if (!response.ok) {
-        throw new Error(`Failed to load XP tables data: ${response.status}`);
-      }
-
-      this.xpData = await response.json();
+      this.xpData = await fetchJSON(jsonPath);
       XPTablesEngine.loadXPData(this.xpData);
 
       this.bindEvents();
@@ -285,7 +299,7 @@ const XPTablesUI = {
     for (const entry of results) {
       let values = entry.values;
       if (!Array.isArray(values)) values = [values];
-      if (XPTablesEngine.isInRange(roll, values)) return entry;
+      if (Dice.isInRange(roll, values)) return entry;
     }
     return null;
   },

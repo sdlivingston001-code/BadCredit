@@ -113,6 +113,12 @@ trading_post_rogue_doc:
     count: 2
     multiplier: 10
     addition: 0
+  gangCostOverrides:
+    genestealer_cult:
+      sides: 6
+      count: 3
+      multiplier: 10
+      addition: 0
   results:
     complications:
       values: [1]
@@ -124,9 +130,10 @@ trading_post_rogue_doc:
       name: stabilised
       randomeffect: stabilisedinjury
       colour: grey
-    out_cold:
+    full_recovery:
       values: [6]
-      name: Out Cold
+      name: Full Recovery
+      fixedeffect: "This fighter is Out Cold."      
       colour: green
 
 hanger_on_rogue_doc:

@@ -1,12 +1,31 @@
-// scenario_MeatForTheGrinderEngine.js
+/**
+ * scenario_MeatForTheGrinderEngine.js — Business logic for the
+ * "Meat for the Grinder" scenario tool.
+ *
+ * Rolls 2D6 on the scavenged-weapon table to determine what weapon
+ * a conscript fighter receives.  Table data is loaded from
+ * scenario_MeatForTheGrinder.json.
+ *
+ * Depends on: dice.js (Dice)
+ */
 
-const scenario_MeatForTheGrinderEngine = {
+import { Dice } from './dice.js';
+
+export const scenario_MeatForTheGrinderEngine = {
   data: null,
 
+  /**
+   * Store the scenario data (weapon roll table + weapon profiles).
+   * @param {Object} data - Parsed scenario_MeatForTheGrinder.json.
+   */
   loadData(data) {
     this.data = data;
   },
 
+  /**
+   * Roll 2D6 on the scavenged-weapon table.
+   * @returns {{ rolls: number[], total: number, result: Object } | { error: string }}
+   */
   roll() {
     const table = this.data && this.data.scavenged_weapon_roll;
     if (!table) return { error: 'Data not loaded.' };
@@ -20,29 +39,14 @@ const scenario_MeatForTheGrinderEngine = {
     return { rolls, total, result };
   },
 
+  /**
+   * Find the weapon-table entry matching a given roll total.
+   * @param {number} roll
+   * @returns {Object|null}
+   */
   findResult(roll) {
     const table = this.data && this.data.scavenged_weapon_roll;
     if (!table || !table.results) return null;
-
-    for (const [id, entry] of Object.entries(table.results)) {
-      if (this.isInRange(roll, entry.values)) {
-        return { id, ...entry };
-      }
-    }
-    return null;
-  },
-
-  isInRange(roll, values) {
-    for (const value of values) {
-      if (typeof value === 'number') {
-        if (roll === value) return true;
-      } else if (typeof value === 'string' && value.includes('-')) {
-        const [min, max] = value.split('-').map(Number);
-        if (roll >= min && roll <= max) return true;
-      } else {
-        if (roll === Number(value)) return true;
-      }
-    }
-    return false;
+    return Dice.findInTable(table.results, roll);
   }
 };

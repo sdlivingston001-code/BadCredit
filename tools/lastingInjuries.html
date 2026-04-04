@@ -2,6 +2,11 @@
 layout: default
 title: Lasting Injuries
 ---
+<!-- 
+  lastingInjuries.html — Lasting injury roller (5 modes + rogue-doc + mutations).
+  Scripts: dice, icons, injuryRenderer, timer, lastingInjuriesEngine, lastingInjuriesUI.
+  Data:    lastingInjuries.json.
+-->
 
 <h1>Welcome to the Emergency Room!</h1>
 <p>House rules remove <b>Into Recovery</b> and <b>Convalescence</b> to simplify admin.</p>
@@ -30,14 +35,7 @@ title: Lasting Injuries
 </details>
 
 <!-- Adjust this path if your built JSON lives elsewhere -->
-<script src="{{ '/assets/js/dice.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/icons.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/injuryRenderer.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/timer.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/lastingInjuriesEngine.js' | relative_url }}"></script>
-<script src="{{ '/assets/js/lastingInjuriesUI.js' | relative_url }}"></script>
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    LastingInjuriesUI.init("{{ '/data/lastingInjuries.json' | relative_url }}");
-  });
+<script type="module">
+  import { LastingInjuriesUI } from '{{ "/assets/js/lastingInjuriesUI.js" | relative_url }}';
+  LastingInjuriesUI.init("{{ '/data/lastingInjuries.json' | relative_url }}");
 </script>
