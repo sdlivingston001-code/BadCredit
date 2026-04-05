@@ -212,15 +212,14 @@ export const LastingInjuriesEngine = {
    * survivable lasting injury.
    * @returns {{ roll: number, injury: Object }|null}
    */
-  resolveStabilisedInjury() {
-    // Roll a single injury from standard table
+  resolveStabilisedInjury(stabilisedTable = 'standard_lasting_injuries') {
     const excludedIds = ['captured', 'critical_injury', 'memorable_death'];
     const maxAttempts = 100;
     let attempts = 0;
 
-    // Temporarily switch to standard mode
+    // Temporarily switch to the requested table
     const originalMode = this.currentMode;
-    this.currentMode = 'standard_lasting_injuries';
+    this.currentMode = stabilisedTable;
 
     while (attempts < maxAttempts) {
       attempts++;
@@ -266,7 +265,7 @@ export const LastingInjuriesEngine = {
 
     // Use precalculated cost if provided, otherwise calculate
     let cost = precalculatedCost;
-    if (cost === null && mode === 'trading_post_rogue_doc' && modeData.cost) {
+    if (cost === null && modeData.cost) {
       cost = this.calculateRogueDocCost(mode).total;
     }
 
@@ -274,10 +273,11 @@ export const LastingInjuriesEngine = {
     const roll = Dice.d(modeData.sides);
     const outcome = this.findOutcome(roll, modeData.results);
 
-    // If stabilised, roll an injury and process any random effects
+    // If stabilised, roll an injury from the table declared in the rogue doc mode data
+    const stabilisedTable = modeData.stabilised_injury_table || 'standard_lasting_injuries';
     let stabilisedInjury = null;
     if (outcome && outcome.randomeffect === 'stabilisedinjury') {
-      stabilisedInjury = this.resolveStabilisedInjury();
+      stabilisedInjury = this.resolveStabilisedInjury(stabilisedTable);
       
       if (stabilisedInjury) {
         const { randomRoll, additionalInjuries } = this.processRandomEffects(stabilisedInjury.injury);

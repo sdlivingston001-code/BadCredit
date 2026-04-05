@@ -221,6 +221,7 @@ export const LastingInjuriesUI = {
     if (!resultsContainer) return;
 
     const colour = result.injury.colour || "grey";
+    const isGlitchMode = ['spyrer_hunting_rig_glitches', 'spyrer_hunting_rig_glitches_core'].includes(LastingInjuriesEngine.currentMode);
     const nameText = colour === 'black' ? `${Icons.skull} ${result.injury.name} ${Icons.skull}` : result.injury.name;
 
     const resultDiv = document.createElement("div");
@@ -228,37 +229,13 @@ export const LastingInjuriesUI = {
     resultDiv.innerHTML = [
       `<h3 class="result-heading mt-0 mb-0">${nameText}</h3>`,
       result.injury.fixedeffect ? `<div class="result-effect mt-10">${result.injury.fixedeffect}</div>` : '',
-      result.injury.randomeffect && result.injury.randomeffect !== 'd3multipleinjuries' && result.injury.randomeffect !== 'd3multipleglitches' ? `<div class="mt-15">${InjuryRenderer.formatRandomEffect(result.injury.randomeffect, result.randomRoll)}</div>` : '',
+      result.injury.randomeffect && !['d3multipleinjuries', 'd3multipleglitches'].includes(result.injury.randomeffect) && result.randomRoll
+        ? `<div class="mt-15">${InjuryRenderer.formatRandomEffect(result.injury.randomeffect, result.randomRoll)}</div>` : '',
     ].filter(Boolean).join('');
-
-    const isGlitchMode = ['spyrer_hunting_rig_glitches', 'spyrer_hunting_rig_glitches_core'].includes(LastingInjuriesEngine.currentMode);
-    const additionalLabel = isGlitchMode ? 'Glitch' : 'Roll';
-    InjuryRenderer.displayAdditionalInjuries(result.additionalInjuries, resultDiv, additionalLabel);
-    InjuryRenderer.appendStatusWarnings(result.injury, resultDiv);
-
-    if (isGlitchMode) {
-      const allResults = [result.injury, ...(result.additionalInjuries || []).map(i => i.injury)];
-      const glitchCount = allResults.filter(i => i.glitch === 1).length;
-      if (glitchCount > 0) {
-        const countDiv = document.createElement('div');
-        countDiv.className = 'glitch-count-note mt-10';
-        countDiv.innerHTML = `${Icons.zap} <b>${glitchCount} glitch${glitchCount !== 1 ? 'es' : ''} generated</b>`;
-        resultDiv.appendChild(countDiv);
-      }
-    }
 
     resultsContainer.innerHTML = "";
     resultsContainer.appendChild(resultDiv);
-
-    if (!isGlitchMode) {
-      const eligibleInjuries = [
-        result.injury,
-        ...(result.additionalInjuries || []).map(a => a.injury)
-      ].filter(inj => inj.id && LastingInjuriesEngine.isMutationEligible(inj.id));
-      eligibleInjuries.forEach(inj => {
-        resultsContainer.appendChild(InjuryRenderer.createMutationCheckSection(inj));
-      });
-    }
+    InjuryRenderer.appendInjuryResultContent(result, resultDiv, resultsContainer, { isGlitchMode });
   },
 
 };

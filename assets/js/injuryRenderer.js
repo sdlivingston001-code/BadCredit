@@ -20,7 +20,7 @@ export const InjuryRenderer = {
   /** Static warning messages used for convalescence / recovery badges. */
 
   MESSAGES: {
-    convalescence: "This fighter cannot make <b>Post Battle Actions</b> (but are available for the next battle as normal).",
+    convalescence: "This fighter cannot make <b>Post Battle Actions</b> (but will be available for the next battle as normal).",
     recovery: "This fighter goes <b>into recovery</b>. They cannot make Post Battle Actions AND they miss the next battle."
   },
 
@@ -49,11 +49,10 @@ export const InjuryRenderer = {
    * @param {HTMLElement}  parentEl - DOM node to append warnings to.
    */
   appendStatusWarnings(injury, parentEl) {
-    if (injury.convalescence === 1) {
-      parentEl.appendChild(this.createWarningBox("convalescence", this.MESSAGES.convalescence));
-    }
     if (injury.intoRecovery === 1) {
       parentEl.appendChild(this.createWarningBox("recovery", this.MESSAGES.recovery));
+    } else if (injury.convalescence === 1) {
+      parentEl.appendChild(this.createWarningBox("convalescence", this.MESSAGES.convalescence));
     }
   },
 
@@ -95,6 +94,7 @@ export const InjuryRenderer = {
     const injDiv = document.createElement("div");
     injDiv.className = `result-box result-box-${colour || 'grey'}`;
     injDiv.innerHTML = [
+      rollInfo ? `<div class="result-roll-info text-small mb-5">${rollInfo}</div>` : '',
       `<div class="result-heading result-name"><b>${injury.name}</b></div>`,
       injury.fixedeffect ? `<div class="result-effect">${injury.fixedeffect}</div>` : '',
       injury.randomeffect && injury.randomeffect !== 'd3multipleinjuries' && randomRoll
@@ -106,11 +106,13 @@ export const InjuryRenderer = {
   /**
    * Render a list of cascading additional injuries (e.g. from "D3 Multiple Injuries").
    * Each sub-injury gets a staggered pop-in animation delay.
-   * @param {Object[]|null} injuries        - Array of { injury, roll, randomRoll } objects.
-   * @param {HTMLElement}    parentDiv       - DOM node to append the sub-injuries to.
+   * @param {Object[]|null} injuries             - Array of { injury, roll, randomRoll } objects.
+   * @param {HTMLElement}    parentDiv            - DOM node to append the sub-injuries to.
    * @param {string}         [rollLabelFormat='Roll'] - Prefix for roll labels.
+   * @param {boolean}        [suppressConvalescence=false] - Suppress convalescence warning when a
+   *   recovery warning will be shown elsewhere (e.g. primary injury or outcome carries intoRecovery).
    */
-  displayAdditionalInjuries(injuries, parentDiv, rollLabelFormat = 'Roll') {
+  displayAdditionalInjuries(injuries, parentDiv, rollLabelFormat = 'Roll', suppressConvalescence = false) {
     if (!injuries || injuries.length === 0) return;
 
     const additionalContainer = document.createElement("div");
@@ -137,11 +139,10 @@ export const InjuryRenderer = {
       if (injuryResult.injury.intoRecovery === 1) hasRecovery = true;
     });
 
-    if (hasConvalescence) {
-      additionalContainer.appendChild(this.createWarningBox("convalescence", this.MESSAGES.convalescence));
-    }
     if (hasRecovery) {
       additionalContainer.appendChild(this.createWarningBox("recovery", this.MESSAGES.recovery));
+    } else if (hasConvalescence && !suppressConvalescence) {
+      additionalContainer.appendChild(this.createWarningBox("convalescence", this.MESSAGES.convalescence));
     }
 
     parentDiv.appendChild(additionalContainer);
@@ -225,6 +226,112 @@ export const InjuryRenderer = {
     });
 
     return panel;
+  },
+
+  // Appends additional injuries, status warnings, glitch count, and mutation checks
+  // to an already-created injury box.
+  // injuryBox      – the primary result-box element (additional injuries + warnings go here)
+  // mutationContainer – the element that receives sibling mutation check sections
+  appendInjuryResultContent(result, injuryBox, mutationContainer, { isGlitchMode = false } = {}) {
+    const additionalLabel = isGlitchMode ? 'Glitch' : 'Roll';
+
+    // Pre-compute holistic recovery state across all injuries so that convalescence
+    // warnings are suppressed wherever a recovery warning will appear.
+    const primaryHasRecovery = result.injury?.intoRecovery === 1;
+    const additionalHasRecovery = (result.additionalInjuries || []).some(a => a.injury?.intoRecovery === 1);
+
+    // If the primary injury goes Into Recovery, suppress convalescence on additional injuries.
+    this.displayAdditionalInjuries(result.additionalInjuries, injuryBox, additionalLabel, primaryHasRecovery);
+
+    // If any additional injury goes Into Recovery, suppress convalescence on the primary.
+    const primaryForWarnings = additionalHasRecovery && !primaryHasRecovery
+      ? { ...result.injury, convalescence: 0 }
+      : result.injury;
+    this.appendStatusWarnings(primaryForWarnings, injuryBox);
+
+    if (isGlitchMode) {
+      const allResults = [result.injury, ...(result.additionalInjuries || []).map(i => i.injury)];
+      const glitchCount = allResults.filter(i => i.glitch === 1).length;
+      if (glitchCount > 0) {
+        const countDiv = document.createElement('div');
+        countDiv.className = 'glitch-count-note mt-10';
+        countDiv.innerHTML = `${Icons.zap} <b>${glitchCount} glitch${glitchCount !== 1 ? 'es' : ''} generated</b>`;
+        injuryBox.appendChild(countDiv);
+      }
+    } else {
+      const eligible = [result.injury, ...(result.additionalInjuries || []).map(a => a.injury)]
+        .filter(inj => inj && inj.id && LastingInjuriesEngine.isMutationEligible(inj.id));
+      eligible.forEach(inj => mutationContainer.appendChild(this.createMutationCheckSection(inj)));
+    }
+  },
+
+  // Renders a complete rogue-doc result (outcome box + stabilised injury + warnings + mutations)
+  // into containerEl, replacing its contents.
+  renderRogueDocResult(result, containerEl) {
+    const colour = result.outcome.colour || 'grey';
+    const resultDiv = document.createElement('div');
+    resultDiv.className = `result-box result-box-${colour} result-box-primary mt-20`;
+    resultDiv.innerHTML = [
+      `<h2 class="result-heading text-capitalize mt-0">${result.outcome.name}</h2>`,
+      result.outcome.fixedeffect ? `<div class="result-effect mt-10">${result.outcome.fixedeffect}</div>` : ''
+    ].filter(Boolean).join('');
+
+    if (result.outcome.randomeffect === 'stabilisedinjury' && result.stabilisedInjury) {
+      const injColour = result.stabilisedInjury.injury.colour || 'grey';
+      const injuryContainer = document.createElement('div');
+      injuryContainer.className = 'additional-injuries-container';
+      injuryContainer.appendChild(
+        this.createInjuryBox(
+          result.stabilisedInjury.injury, injColour,
+          `<b>D66 Roll:</b> ${result.stabilisedInjury.roll}`,
+          result.stabilisedInjury.randomRoll
+        )
+      );
+      resultDiv.appendChild(injuryContainer);
+
+      // Pre-compute holistic recovery state so convalescence is suppressed wherever
+      // a recovery warning will appear (additional injuries, primary, or outcome-level).
+      const primaryStabilisedHasRecovery = result.stabilisedInjury.injury?.intoRecovery === 1;
+      const additionalHasRecovery = (result.stabilisedInjury.additionalInjuries || [])
+        .some(a => a.injury?.intoRecovery === 1);
+      const outcomeHasRecovery = result.outcome.intoRecovery === 1 && colour !== 'black';
+
+      // Suppress additional convalescence if primary stabilised injury or outcome carries recovery.
+      this.displayAdditionalInjuries(
+        result.stabilisedInjury.additionalInjuries, resultDiv, 'D66',
+        primaryStabilisedHasRecovery || outcomeHasRecovery
+      );
+
+      // Suppress primary stabilised convalescence if any additional or outcome carries recovery.
+      const primaryForWarnings = (additionalHasRecovery || outcomeHasRecovery) && !primaryStabilisedHasRecovery
+        ? { ...result.stabilisedInjury.injury, convalescence: 0 }
+        : result.stabilisedInjury.injury;
+      this.appendStatusWarnings(primaryForWarnings, resultDiv);
+    }
+
+    // Outcome-level intoRecovery (YAML-driven; used by core-mode rogue doc outcomes)
+    if (result.outcome.intoRecovery === 1 && colour !== 'black') {
+      const stabilisedHasRecovery = result.stabilisedInjury && (
+        result.stabilisedInjury.injury?.intoRecovery === 1 ||
+        (result.stabilisedInjury.additionalInjuries || []).some(a => a.injury?.intoRecovery === 1)
+      );
+      if (!stabilisedHasRecovery) {
+        resultDiv.appendChild(this.createWarningBox('recovery', this.MESSAGES.recovery));
+      }
+    }
+
+    containerEl.innerHTML = '';
+    containerEl.appendChild(resultDiv);
+
+    const isGlitchMode = ['spyrer_hunting_rig_glitches', 'spyrer_hunting_rig_glitches_core']
+      .includes(typeof LastingInjuriesEngine !== 'undefined' ? LastingInjuriesEngine.currentMode : '');
+    if (!isGlitchMode && result.stabilisedInjury) {
+      const eligible = [
+        result.stabilisedInjury.injury,
+        ...(result.stabilisedInjury.additionalInjuries || []).map(a => a.injury)
+      ].filter(inj => inj && inj.id && LastingInjuriesEngine.isMutationEligible(inj.id));
+      eligible.forEach(inj => containerEl.appendChild(this.createMutationCheckSection(inj)));
+    }
   }
 
 };

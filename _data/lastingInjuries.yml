@@ -108,6 +108,7 @@ ironman_lasting_injuries:
 
 trading_post_rogue_doc:
   sides: 6
+  stabilised_injury_table: standard_lasting_injuries
   cost:
     sides: 6
     count: 2
@@ -138,6 +139,7 @@ trading_post_rogue_doc:
 
 hanger_on_rogue_doc:
   sides: 6
+  stabilised_injury_table: standard_lasting_injuries
   results:
     complications:
       values: [1]
@@ -148,6 +150,55 @@ hanger_on_rogue_doc:
       values: [2-6]
       name: stabilised
       randomeffect: stabilisedinjury
+      colour: grey
+
+trading_post_rogue_doc_core:
+  sides: 6
+  stabilised_injury_table: standard_lasting_injuries_core
+  cost:
+    sides: 6
+    count: 2
+    multiplier: 10
+    addition: 0
+  gangCostOverrides:
+    genestealer_cult:
+      sides: 6
+      count: 3
+      multiplier: 10
+      addition: 0
+  results:
+    complications:
+      values: [1]
+      name: complications
+      fixedeffect: "This fighter has died - Recover all his equipment."
+      colour: black
+    stabilised:
+      values: [2-5]
+      name: stabilised
+      randomeffect: stabilisedinjury
+      intoRecovery: 1
+      colour: grey
+    full_recovery:
+      values: [6]
+      name: Full Recovery
+      fixedeffect: "This fighter is Out Cold."
+      intoRecovery: 1
+      colour: green
+
+hanger_on_rogue_doc_core:
+  sides: 6
+  stabilised_injury_table: standard_lasting_injuries_core
+  results:
+    complications:
+      values: [1]
+      name: complications
+      fixedeffect: "This fighter has died - Recover all his equipment."
+      colour: black
+    stabilised:
+      values: [2-6]
+      name: stabilised
+      randomeffect: stabilisedinjury
+      intoRecovery: 1
       colour: grey
 
 standard_lasting_injuries_core:

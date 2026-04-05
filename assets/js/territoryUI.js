@@ -22,6 +22,7 @@
 
 import { Icons } from './icons.js';
 import { TimerUtil } from './timer.js';
+import { Dice } from './dice.js';
 import { TerritorySchemas } from './territorySchemas.js';
 import { TerritoryEngine } from './territoryEngine.js';
 import { LastingInjuriesEngine } from './lastingInjuriesEngine.js';
@@ -351,10 +352,21 @@ export const TerritoryUI = {
           const input = await this.showCollapsedDomeInjuryDialog(event.name);
           if (input) {
             const { totalFighters, injuryMode } = input;
-            LastingInjuriesEngine.setMode(injuryMode);
             const fighterNumber = Dice.d(totalFighters);
+
+            // Secundan Incursion: fighter #1 is a Spyrer — use the hunting rig glitch table instead
+            const GLITCH_MODE_MAP = {
+              'standard_lasting_injuries': 'spyrer_hunting_rig_glitches',
+              'standard_lasting_injuries_core': 'spyrer_hunting_rig_glitches_core'
+            };
+            const isSecundanIncursion = selectedGangKey === 'secundan_incursion';
+            const effectiveInjuryMode = (isSecundanIncursion && fighterNumber === 1 && GLITCH_MODE_MAP[injuryMode])
+              ? GLITCH_MODE_MAP[injuryMode]
+              : injuryMode;
+
+            LastingInjuriesEngine.setMode(effectiveInjuryMode);
             const injuryResult = LastingInjuriesEngine.resolveInjury();
-            event.injuryData = { fighterNumber, totalFighters, injuryMode, injuryResult };
+            event.injuryData = { fighterNumber, totalFighters, injuryMode: effectiveInjuryMode, injuryResult };
           }
         } else if (event.id === 'refuse_drift') {
           const totalFighters = await this.showFighterCountDialog(event.name, 'A waste-lurker attacks! Which fighter must miss the next battle?');
@@ -541,9 +553,9 @@ export const TerritoryUI = {
       dialog.className = 'suit-dialog';
 
       const injuryModes = [
-        { value: 'standard_lasting_injuries', label: 'House Rules (D66)' },
-        { value: 'standard_lasting_injuries_core', label: 'Core Rules (D66)' },
-        { value: 'ironman_lasting_injuries', label: 'Ironman (D6)' },
+        { value: 'standard_lasting_injuries', label: 'Lasting Injuries - House Rules (D66)' },
+        { value: 'standard_lasting_injuries_core', label: 'Lasting Injuries - Core Rules (D66)' },
+        { value: 'ironman_lasting_injuries', label: 'Lasting Injuries - Ironman (D6)' },
       ];
       const modeOptions = injuryModes.map(m => `<option value="${m.value}">${m.label}</option>`).join('');
 
@@ -714,13 +726,15 @@ export const TerritoryUI = {
 
         if (e.injuryData) {
           const { fighterNumber, totalFighters, injuryMode, injuryResult } = e.injuryData;
+          const isGlitchMode = ['spyrer_hunting_rig_glitches', 'spyrer_hunting_rig_glitches_core'].includes(injuryMode);
           const dieLabel = injuryMode === 'ironman_lasting_injuries' ? 'D6' : 'D66';
+          const outcomeLabel = isGlitchMode ? 'a hunting rig glitch' : 'a lasting injury';
 
           const injuryContainer = document.createElement("div");
           injuryContainer.className = "mt-10";
 
           const fighterInfo = document.createElement("p");
-          fighterInfo.innerHTML = `<b>D${totalFighters} Roll: ${fighterNumber}</b> — Fighter #${fighterNumber} suffers a lasting injury.`;
+          fighterInfo.innerHTML = `<b>D${totalFighters} Roll: ${fighterNumber}</b> — Fighter #${fighterNumber} suffers ${outcomeLabel}.`;
           injuryContainer.appendChild(fighterInfo);
 
           if (typeof InjuryRenderer !== 'undefined') {
@@ -731,8 +745,7 @@ export const TerritoryUI = {
               injuryResult.randomRoll
             );
             injuryContainer.appendChild(injuryBox);
-            InjuryRenderer.appendStatusWarnings(injuryResult.injury, injuryContainer);
-            InjuryRenderer.displayAdditionalInjuries(injuryResult.additionalInjuries, injuryContainer, 'Roll');
+            InjuryRenderer.appendInjuryResultContent(injuryResult, injuryBox, injuryContainer, { isGlitchMode });
           }
 
           li.appendChild(injuryContainer);

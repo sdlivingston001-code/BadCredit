@@ -228,7 +228,8 @@ export const PostBattleUI = {
     const gangSelector = document.getElementById('pb-rogue-doc-gang');
     const gangId = gangSelector?.checked ? 'genestealer_cult' : null;
 
-    if (mode === 'trading_post_rogue_doc') {
+    const modeData = LastingInjuriesEngine.injuriesData?.[mode];
+    if (modeData?.cost) {
       this.showCriticalInjuryCost(mode, gangId);
     } else {
       const result = LastingInjuriesEngine.resolveRogueDoc(mode);
@@ -292,46 +293,7 @@ export const PostBattleUI = {
   displayCriticalRogueDocResult(result) {
     const container = document.getElementById('pb-critical-injury-results');
     if (!container) return;
-
-    const colour = result.outcome.colour || 'grey';
-    const resultDiv = document.createElement('div');
-    resultDiv.className = `result-box result-box-${colour} result-box-primary mt-20`;
-    resultDiv.innerHTML = [
-      `<h2 class="result-heading text-capitalize mt-0">${result.outcome.name}</h2>`,
-      result.outcome.fixedeffect ? `<div class="result-effect mt-10">${result.outcome.fixedeffect}</div>` : ''
-    ].filter(Boolean).join('');
-
-    if (result.outcome.randomeffect === 'stabilisedinjury' && result.stabilisedInjury) {
-      const injuryContainer = document.createElement('div');
-      injuryContainer.className = 'additional-injuries-container';
-      const injColour = result.stabilisedInjury.injury.colour || 'grey';
-      injuryContainer.appendChild(
-        InjuryRenderer.createInjuryBox(result.stabilisedInjury.injury, injColour, null, result.stabilisedInjury.randomRoll)
-      );
-      resultDiv.appendChild(injuryContainer);
-
-      InjuryRenderer.displayAdditionalInjuries(
-        result.stabilisedInjury.additionalInjuries,
-        resultDiv,
-        'D66'
-      );
-    }
-
-    container.innerHTML = '';
-    container.appendChild(resultDiv);
-
-    // Mutation checks for any lasting injury produced by the rogue doc treatment
-    const isGlitchMode = ['spyrer_hunting_rig_glitches', 'spyrer_hunting_rig_glitches_core'].includes(LastingInjuriesEngine.currentMode);
-    if (!isGlitchMode && result.stabilisedInjury) {
-      const eligibleInjuries = [
-        result.stabilisedInjury.injury,
-        ...(result.stabilisedInjury.additionalInjuries || []).map(a => a.injury)
-      ].filter(inj => inj && inj.id && LastingInjuriesEngine.isMutationEligible(inj.id));
-      eligibleInjuries.forEach(inj => {
-        container.appendChild(InjuryRenderer.createMutationCheckSection(inj));
-      });
-    }
-
+    InjuryRenderer.renderRogueDocResult(result, container);
     if (typeof TimerUtil !== 'undefined') {
       TimerUtil.recordRolls('postBattleLastRun', this.buildCriticalRogueDocRolls(result));
     }
@@ -361,56 +323,24 @@ export const PostBattleUI = {
   displayInjuryResult(result, containerId = 'pb-injury-results') {
     const container = document.getElementById(containerId);
     if (!container) return;
-
     container.innerHTML = '';
-
     if (!result || !result.injury) {
       container.innerHTML = '<div class="error-box">Failed to resolve injury.</div>';
       return;
     }
-
     const colour = result.injury.colour || 'grey';
-    const nameText = colour === 'black'
-      ? `${Icons.skull} ${result.injury.name} ${Icons.skull}`
-      : result.injury.name;
-
+    const isGlitchMode = ['spyrer_hunting_rig_glitches', 'spyrer_hunting_rig_glitches_core'].includes(LastingInjuriesEngine.currentMode);
+    const nameText = colour === 'black' ? `${Icons.skull} ${result.injury.name} ${Icons.skull}` : result.injury.name;
     const box = document.createElement('div');
     box.className = `result-box result-box-${colour} result-box-primary mt-20`;
-    box.style.animationDelay = '0ms';
     box.innerHTML = [
       `<h3 class="result-heading mt-0 mb-0">${nameText}</h3>`,
       result.injury.fixedeffect ? `<div class="result-effect mt-10">${result.injury.fixedeffect}</div>` : '',
       result.randomRoll && result.injury.randomeffect === 'd3xpgain'
         ? `<div class="mt-15">Gain ${result.randomRoll.value} XP!</div>` : '',
     ].filter(Boolean).join('');
-
-    const isGlitchMode = ['spyrer_hunting_rig_glitches', 'spyrer_hunting_rig_glitches_core'].includes(LastingInjuriesEngine.currentMode);
-    const additionalLabel = isGlitchMode ? 'Glitch' : 'Roll';
-    InjuryRenderer.displayAdditionalInjuries(result.additionalInjuries, box, additionalLabel);
-    InjuryRenderer.appendStatusWarnings(result.injury, box);
-
-    if (isGlitchMode) {
-      const allResults = [result.injury, ...(result.additionalInjuries || []).map(i => i.injury)];
-      const glitchCount = allResults.filter(i => i.glitch === 1).length;
-      if (glitchCount > 0) {
-        const countDiv = document.createElement('div');
-        countDiv.className = 'glitch-count-note mt-10';
-        countDiv.innerHTML = `${Icons.zap} <b>${glitchCount} glitch${glitchCount !== 1 ? 'es' : ''} generated</b>`;
-        box.appendChild(countDiv);
-      }
-    }
-
     container.appendChild(box);
-
-    if (!isGlitchMode) {
-      const eligibleInjuries = [
-        result.injury,
-        ...(result.additionalInjuries || []).map(a => a.injury)
-      ].filter(inj => inj.id && LastingInjuriesEngine.isMutationEligible(inj.id));
-      eligibleInjuries.forEach(inj => {
-        container.appendChild(InjuryRenderer.createMutationCheckSection(inj));
-      });
-    }
+    InjuryRenderer.appendInjuryResultContent(result, box, container, { isGlitchMode });
   },
 
 };
