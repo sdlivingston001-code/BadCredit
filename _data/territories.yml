@@ -1,5 +1,5 @@
 settlement:
-  name: Settlement (*)
+  name: Settlement
   level: 1
   income:
     schema: standard
@@ -27,13 +27,13 @@ settlement:
   campaign: 1 # 1= include, 0 = exclude
 
 spyrer_base_camp:
-  name: Spyrer Base Camp (Spyrers)
+  name: Spyrer Base Camp
   level: 1
   trading_special_rules_spyrers: "<b>Recovery Systems</b>: During the Wrap-up of each battle the Spyre Hunting Party gang takes part in, one Spyrer may perform post-battle actions even if they are in Convalescence. A Spyre Hunting Party gang may never lose control of their Spyrer Base Camp Territory."
   campaign: 1 # 1= include, 0 = exclude
 
 palanite_precinct:
-  name: Palanite Precinct (Pal Enf)
+  name: Palanite Precinct
   level: 1
   income_enforcers:
     schema: standard
@@ -42,7 +42,7 @@ palanite_precinct:
   campaign: 1 # 1= include, 0 = exclude
 
 badzone_precinct:
-  name: Badzone Precinct (Badz Enf)
+  name: Badzone Precinct
   level: 1
   income_badzone_enforcers:
     schema: standard
@@ -51,7 +51,7 @@ badzone_precinct:
   campaign: 1 # 1= include, 0 = exclude
 
 nomads_outpost:
-  name: Nomads' Outpost (AWN)
+  name: Nomads' Outpost
   level: 1
   income_ash_waste_nomads:
     schema: standard
@@ -63,7 +63,7 @@ nomads_outpost:
   campaign: 1 # 1= include, 0 = exclude
 
 old_ruins:
-  name: Old Ruins (*)
+  name: Old Ruins
   level: 2
   income:
     schema: standard
@@ -72,7 +72,7 @@ old_ruins:
   campaign: 1 # 1= include, 0 = exclude
 
 rogue_doc_shop:
-  name: Rogue Doc Shop (*)
+  name: Rogue Doc Shop
   level: 2
   income:
     schema: standard
@@ -80,26 +80,26 @@ rogue_doc_shop:
   campaign: 1 # 1= include, 0 = exclude
 
 promethium_cache:
-  name: Promethium Cache (*)
+  name: Promethium Cache
   level: 2
   fixed_gear: "Whilst it controls this Territory, three fighters in the gang gain <b>Incendiary Charges</b>. Nil credit cost and nil gang rating impact."
   battle_special_rules: "All fighters in the gang may re-roll Ammo tests for any weapon that has the <b>Blaze</b> trait."
   campaign: 1 # 1= include, 0 = exclude
 
 wastes:
-  name: Wastes (*)
+  name: Wastes
   level: 2
   scenario_selection_special_rules: " If challenged in the Occupation phase, the gang may choose the Territory at stake in the battle, even though it would normally be chosen by the challenger. If challenged in the Takeover phase for a Territory the gang already controls, make an Intelligence test for the gang Leader. If the test is passed, the player of the gang may choose to play the Ambush scenario instead of rolling. They are automatically the attacker."
   campaign: 1 # 1= include, 0 = exclude
 
 sludge_sea:
-  name: Sludge Sea (*)
+  name: Sludge Sea
   level: 2
   fixed_gear: "Whilst it controls this Territory, three fighters in the gang gain <b>Choke Gas Grenades</b>. Nil credit cost and nil gang rating impact."
   campaign: 1 # 1= include, 0 = exclude
 
 workshop:
-  name: Workshop (*)
+  name: Workshop
   level: 2
   income:
     schema: standard
@@ -107,7 +107,7 @@ workshop:
   campaign: 1 # 1= include, 0 = exclude
 
 collapsed_dome:
-  name: Collapsed Dome (*)
+  name: Collapsed Dome
   level: 2
   income:
     schema: userDefinedNumber
@@ -122,8 +122,8 @@ collapsed_dome:
   campaign: 1 # 1= include, 0 = exclude
 
 refuse_drift:
-  name: Refuse Drift (Cawdor, Helot Cultists)
-  level: 3
+  name: Refuse Drift
+  level: 2
   income:
     schema: withDuplicateEvent  # Use at least 2 dice and trigger on any duplicates
     multiplier: 5  # Override default multiplier of 10
@@ -142,8 +142,8 @@ refuse_drift:
   campaign: 1 # 1= include, 0 = exclude
 
 corpse_farm:
-  name: Corpse Farm (Cawdor, CGC, Helot Cultists)
-  level: 3
+  name: Corpse Farm
+  level: 2
   income:
     schema: userDefinedNumber  # Provides count_min: 0, count_max: 100
     count_message: "How many bodies do you have?\n\nThat is, (approximately) how many fighters were deleted from either your or your opponents gang rosters' during the Update Roster post battle step over the last month?"
@@ -165,8 +165,8 @@ corpse_farm:
   campaign: 1 # 1= include, 0 = exclude
 
 bone_shrine:
-  name: Bone Shrine (Cawdor, Helot Cultists)
-  level: 3
+  name: Bone Shrine
+  level: 2
   income:
     schema: standard
     count: 2 # Override default single die
@@ -184,8 +184,8 @@ bone_shrine:
   campaign: 1 # 1= include, 0 = exclude
 
 drinking_hole:
-  name: Drinking Hole (Delaque)
-  level: 3
+  name: Drinking Hole
+  level: 2
   battle_special_rules: "Whilst it controls this Territory, any fighter in the gang may re-roll any failed Cool tests. If a fighter uses this option, place a marker on their card to show that they have hit the bottle. While a fighter has at least one marker from this territory, they suffer a -1 modifier to hit rolls for the rest of the battle."
   battle_special_rules_delaque: "The gang that controls this Territory may nominate three enemy fighters at the start of the battle, and place an Intoxicated marker on each fighter’s card to show that their drink was spiked. The marked fighters suffer a -1 penalty to all tests and checks for the duration of the battle."
   reputation: "Whilst it controls this Territory, the gang adds +1 to its Reputation."
@@ -193,8 +193,8 @@ drinking_hole:
   campaign: 1 # 1= include, 0 = exclude
 
 gambling_den:
-  name: Gambling Den (Delaque)
-  level: 3
+  name: Gambling Den
+  level: 2
   reputation: "Whilst it controls this Territory, the gang adds +1 to its Reputation."
   income:
     schema: deckBased
@@ -208,15 +208,15 @@ gambling_den:
   campaign: 1 # 1= include, 0 = exclude
 
 needle_ways:
-  name: Needle Ways (Delaque)
-  level: 3
+  name: Needle Ways
+  level: 2
   battle_special_rules: "Whilst it controls this Territory, the gang may select up to three fighters – these fighters gain the Infiltrate skill."
   battle_special_rules_delaque: "Whilst it controls this Territory, the gang may select up to six fighters – these fighters gain the Infiltrate skill."
   campaign: 0 # 1= include, 0 = exclude
 
 synth_still:
-  name: Synth Still (Escher, Squats)
-  level: 3
+  name: Synth Still
+  level: 2
   battle_special_rules: " Whilst it controls this Territory, the gang treats chem-synths, medicae kits, stimm-slug stashes and any weapon with the Gas or Toxin trait as Common."
   battle_special_rules_escher: " Whilst it controls this Territory, the gang treats chem-synths, medicae kits, stimm-slug stashes and any weapon with the Gas or Toxin trait as Common, and halves the cost of these items (rounding up)."
   battle_special_rules_squats: " Whilst it controls this Territory, the gang treats chem-synths, medicae kits, stimm-slug stashes and any weapon with the Gas or Toxin trait as Common, and halves the cost of these items (rounding up)."
@@ -225,16 +225,16 @@ synth_still:
   campaign: 1 # 1= include, 0 = exclude
 
 stinger_mould_sprawl:
-  name: Stinger Mould Sprawl (Escher)
-  level: 3
+  name: Stinger Mould Sprawl
+  level: 2
   trading_special_rules: " Whilst it controls this Territory, the gang treats chem-synths, medicae kits, stimm-slug stashes and any weapon with the Gas or Toxin trait as Common."
   trading_special_rules_escher: " Whilst it controls this Territory, the gang treats chem-synths, medicae kits, stimm-slug stashes and any weapon with the Gas or Toxin trait as Common, and halves the cost of these items (rounding up)."
   reputation_escher: "Whilst it controls this Territory, the gang adds +1 to its Reputation."
   campaign: 1 # 1= include, 0 = exclude
 
 narco_den:
-  name: Narco Den (Escher)
-  level: 3
+  name: Narco Den
+  level: 2
   income:
     schema: standard
     multiplier: 5 # Override default multiplier of 10
@@ -249,8 +249,8 @@ narco_den:
   campaign: 1 # 1= include, 0 = exclude
 
 slag_furnace:
-  name: Slag Furnace (Goliath)
-  level: 3
+  name: Slag Furnace
+  level: 2
   income:
     schema: standard
     multiplier: 5 # Override default multiplier of 10
@@ -264,16 +264,16 @@ slag_furnace:
   campaign: 1 # 1= include, 0 = exclude
 
 fighting_pits:
-  name: Fighting Pits (Goliath, CGC)
-  level: 3
+  name: Fighting Pits
+  level: 2
   fixed_recruit: "Whilst it controls this Territory, the gang may recruit <b>two Hive Scum Hired Guns</b> for free, including their equipment, prior to every battle."
   reputation_goliath: "Whilst it controls this Territory, the gang adds +2 to its Reputation."
   reputation_corpse_grinder_cult: "Whilst it controls this Territory, the gang adds +2 to its Reputation."
   campaign: 0 # 1= include, 0 = exclude
 
 smelting_works:
-  name: Smelting Works (Goliath)
-  level: 3
+  name: Smelting Works
+  level: 2
   income:
     schema: standard
     multiplier: 5 # Override default multiplier of 10
@@ -287,8 +287,8 @@ smelting_works:
   campaign: 1 # 1= include, 0 = exclude
 
 mine_workings:
-  name: Mine Workings (Orlock, GSC, Squats)
-  level: 3
+  name: Mine Workings
+  level: 2
   income:
     schema: standard
     effect: "Captured fighters mechanic removed due to special campaign rules"
@@ -298,8 +298,8 @@ mine_workings:
   campaign: 1 # 1= include, 0 = exclude
 
 tunnels:
-  name: Tunnels (Orlock, GSC)
-  level: 3
+  name: Tunnels
+  level: 2
   battle_special_rules: " Whilst it controls this Territory, the gang may choose to have up to three fighters deploy via tunnels ahead of any battle. These fighters must be part of the crew for the battle, but instead of being set up on the battlefield, they are placed to one side. During the Deployment phase, the player sets up two 2-inch wide tunnel entrance markers on any table edge on the ground surface of the battlefield. During the Priority phase of each turn, roll a D6. On a 4+, the group of fighters arrive on the battlefield. That turn they may be activated as a single group, and must move onto the battlefield from one of the tunnel entrance markers. The members of the group must all arrive through the same tunnel entrance. If the battle ends before the fighters arrive, they take no part in the battle."
   battle_special_rules_orlock: " Whilst it controls this Territory, the gang may choose to have up to six fighters (If 4 or more fighters are selected, then those fighters must split into two equally sized groups. If 3 or less fighters they deploy as a single group) deploy via tunnels ahead of any battle. These fighters must be part of the crew for the battle, but instead of being set up on the battlefield, they are placed to one side. During the Deployment phase, the player sets up two 2-inch wide tunnel entrance markers on any table edge on the ground surface of the battlefield. During the Priority phase of each turn, roll a D6 and resolve separately for each group: On a 4+, the group of fighters arrive on the battlefield. That turn they may be activated as a single group, and must move onto the battlefield from one of the tunnel entrance markers. The members of the group must all arrive through the same tunnel entrance. If the battle ends before the fighters arrive, they take no part in the battle."
   battle_special_rules_genestealer_cult: " Whilst it controls this Territory, the gang may choose to have up to six fighters (If 4 or more fighters are selected, then those fighters must split into two equally sized groups. If 3 or less fighters they deploy as a single group) deploy via tunnels ahead of any battle. These fighters must be part of the crew for the battle, but instead of being set up on the battlefield, they are placed to one side. During the Deployment phase, the player sets up two 2-inch wide tunnel entrance markers on any table edge on the ground surface of the battlefield. During the Priority phase of each turn, roll a D6 and resolve separately for each group: On a 4+, the group of fighters arrive on the battlefield. That turn they may be activated as a single group, and must move onto the battlefield from one of the tunnel entrance markers. The members of the group must all arrive through the same tunnel entrance. If the battle ends before the fighters arrive, they take no part in the battle."
@@ -308,8 +308,8 @@ tunnels:
   campaign: 0 # 1= include, 0 = exclude
 
 toll_crossing:
-  name: Toll Crossing (Orlock, GSC)
-  level: 3
+  name: Toll Crossing
+  level: 2
   income:
     schema: standard
     multiplier: 5 # Override default multiplier of 10
@@ -318,23 +318,23 @@ toll_crossing:
   campaign: 1 # 1= include, 0 = exclude
 
 generatorium:
-  name: Generatorium (Van Saar)
-  level: 3
+  name: Generatorium
+  level: 2
   battle_special_rules: "If their gang controls this Territory, a player may choose to stall the generators, temporarily cutting the power to the area in which a battle is taking place and plunging it into darkness. The player may declare they will do this at the beginning of any Priority phase, before the roll for Priority. For the remainder of the battle, the Pitch Black rules (see Core Rulebook p.193) are in effect. However, at the start of each End phase, there is a chance that the generators will automatically restart and the lights flood back. At the start of each End phase, before making any Bottle checks, the player that controls this Territory rolls a D6. If the result is a 5 or more, the generators restart and the Pitch Black rules immediately cease to be in effect. If the roll is a 1-4, the generators stay silent."
   reputation_van_saar: "Whilst it controls this Territory, the gang adds +1 to its Reputation."
   campaign: 1 # 1= include, 0 = exclude
 
 archaeotech_device:
-  name: Archaeotech Device (Van Saar)
-  level: 3
+  name: Archaeotech Device
+  level: 2
   battle_special_rules: " Any number of weapons owned by the gang may be given <b>one</b> of the following Traits for free: <b>Blaze, Rad-phage, Seismic, or Shock</b>. All weapons must be given the same Trait and new weapons purchased later may also be given this Trait. These weapons also gain the <b>Unstable</b> Trait. If the Territory is lost, the weapons lose these additional Traits."
   battle_special_rules_van_saar: " The gang may give any number of weapons it owns <b>two</b> of the following Traits for free: <b>Blaze, Rad-phage, Seismic, or Shock</b>. All weapons must be given the same Traits and new weapons purchased later may also be given these Traits. These weapons also gain the <b>Unstable</b> trait. If the Territory is lost, the weapons lose these additional Traits."
   reputation_van_saar: "Whilst it controls this Territory, the gang adds +2 to its Reputation."
   campaign: 1 # 1= include, 0 = exclude
 
 tech_bazaar:
-  name: Tech Bazaar (Van Saar)
-  level: 3
+  name: Tech Bazaar
+  level: 2
   income:
     schema: standard
   income_van_saar:
