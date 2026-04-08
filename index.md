@@ -36,7 +36,9 @@ title: BadCredit
 
 Learn more about the rules, world, and design behind the system.
 
-[Promotions]({{ site.baseurl }}/advancements/)<br><br>
-[Pre-Battle Sequence]({{ site.baseurl }}/pre-battle/)<br><br>
-[Post-Battle Sequence]({{ site.baseurl }}/tools/post-battle.html)<br><br>
+[Pre-Battle Sequence]({{ site.baseurl }}/pre-battle/)
+
+[Post-Battle Sequence]({{ site.baseurl }}/tools/post-battle.html)
+
+[DownTime]({{ site.baseurl }}/downTime/)
 <!-- [Campaign Viewer]({{ site.baseurl }}/tools/campaignViewer.html)<br><br> -->

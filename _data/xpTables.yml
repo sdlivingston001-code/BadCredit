@@ -27,6 +27,10 @@ advancements_userchoice:
     cost: "4 Kill Count"
     advancement: "Random Spyrer Suit Evolution."
     ratingIncrease: "Varies"
+  get_promoted:
+    cost: 5
+    advancement: "If you meet all the special rule criteria on the fighter card, then trigger the fighters' promotion rule!"
+    ratingIncrease: 0
 
 advancements_random:
   sides: 6
