@@ -40,5 +40,5 @@ Learn more about the rules, world, and design behind the system.
 
 [Post-Battle Sequence]({{ site.baseurl }}/tools/post-battle.html)
 
-[DownTime]({{ site.baseurl }}/downTime/)
+[Down Time]({{ site.baseurl }}/downtime/)
 <!-- [Campaign Viewer]({{ site.baseurl }}/tools/campaignViewer.html)<br><br> -->
