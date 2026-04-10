@@ -15,6 +15,7 @@
 import { TimerUtil } from './timer.js';
 import { scenario_MeatForTheGrinderEngine } from './scenario_MeatForTheGrinderEngine.js';
 import { fetchJSON } from './dataLoader.js';
+import { SkillsRenderer } from './skillsRenderer.js';
 
 export const scenario_MeatForTheGrinderUI = {
   async init(jsonPath, traitsJsonPath, skillsJsonPath) {
@@ -102,14 +103,7 @@ export const scenario_MeatForTheGrinderUI = {
 
   renderFighterSkills(skillsData) {
     const container = document.getElementById('fighter-skills-container');
-    if (!container || !skillsData || !skillsData.fighter_skills) return;
-
-    container.innerHTML = Object.values(skillsData.fighter_skills).map(skill =>
-      `<details class="reference-tables-collapsible">
-        <summary>${skill.name}</summary>
-        ${skill.description}
-      </details>`
-    ).join('');
+    SkillsRenderer.renderSkills(skillsData, container, ['True Grit', 'Iron Jaw', 'Unstoppable']);
   },
 
   renderWeaponTable(data) {

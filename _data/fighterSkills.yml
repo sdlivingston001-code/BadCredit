@@ -1,19 +1,338 @@
 fighter_skills:
-  True Grit:
-    name: True Grit
-    description: |
-      <p><b>True Grit:</b> When making an <b>Injury roll</b>, roll 1 less Injury dice. If the fighter was rolling only 1 Injury die, roll two and the controlling player chooses which to discard.</p>
+  Agility:
+    Catfall:
+      number: 1
+      name: Catfall
+      description: |
+        <p><b>Catfall:</b> When this fighter falls or jumps down from a ledge, count the vertical distance as half (rounded up). If not <b>Prone and Seriously Injured</b> or taken <b>Out of Action</b> by the fall, make an <b>Initiative test</b> – if passed, they remain <b>Standing</b> rather than becoming <b>Prone and Pinned</b>.</p>
 
-  Iron Jaw:
-    name: Iron Jaw
-    description: |
-      <p><b>Iron Jaw:</b> Increase this fighter's <b>Toughness</b> by 2 vs. close combat weapons with <b>AP -</b>.</p>
+    Clamber:
+      number: 2
+      name: Clamber
+      description: |
+        <p><b>Clamber:</b> When this fighter climbs, their movement distance is not halved – they always count as climbing a ladder.</p>
 
-  Unstoppable:
-    name: Unstoppable
-    description: |
-      <p><b>Unstoppable:</b> Before making a <b>Recovery test</b>, roll 1D6; <u>on a 4+</u> the skill triggers as follows:</p>
-      <ul>
-        <li>If the fighter has at least one <b>Flesh Wound</b> token, they may discard a single <b>Flesh Wound</b> token.</li>
-        <li>If the fighter had no <b>Flesh Wounds</b>, they instead gain an additional <b>Injury die</b> for the <b>Recovery test</b>, the controlling player chooses which die to discard.</li>
-      </ul>
+    Dodge:
+      number: 3
+      name: Dodge
+      description: |
+        <p><b>Dodge:</b> If this fighter suffers a wound, roll a D6. On a 6, the attack is dodged with no further effect; otherwise resolve as normal. Against Blast or Flame attacks, a 6 allows the fighter to move up to 2" (not within 1" of an enemy) before checking if hit.</p>
+
+    Mighty Leap:
+      number: 4
+      name: Mighty Leap
+      description: |
+        <p><b>Mighty Leap:</b> Ignore the first 2" when measuring a gap to leap across. The fighter may leap gaps of 2" plus their base size or less without an Initiative test. All other leaping rules still apply.</p>
+
+    Spring Up:
+      number: 5
+      name: Spring Up
+      description: |
+        <p><b>Spring Up:</b> When activated while <b>Prone and Pinned</b>, make an <b>Initiative test</b>. If passed, the fighter may Stand Up for free. If failed, standing up still costs one action as normal.</p>
+
+    Sprint:
+      number: 6
+      name: Sprint
+      description: |
+        <p><b>Sprint:</b> If this fighter makes two Move (Simple) actions, the second may be a Sprint – moving at double their Movement characteristic.</p>
+
+  Brawn:
+    Bull Charge:
+      number: 1
+      name: Bull Charge
+      description: |
+        <p><b>Bull Charge:</b> When making close combat attacks as part of a Charge (Double) action, Melee weapons gain the <b>Knockback</b> trait and are resolved at <b>+1 Strength</b>.</p>
+
+    Bulging Biceps:
+      number: 2
+      name: Bulging Biceps
+      description: |
+        <p><b>Bulging Biceps:</b> This fighter may wield an Unwieldy weapon in one hand rather than two. Unwieldy weapons still count as two weapons for carrying purposes.</p>
+
+    Crushing Blow:
+      number: 3
+      name: Crushing Blow
+      description: |
+        <p><b>Crushing Blow:</b> Before rolling to hit, nominate one attack dice as a Crushing Blow (not a Sidearm weapon). If it hits, that attack's <b>Strength and Damage are each increased by 1</b>.</p>
+
+    Headbutt:
+      number: 4
+      name: Headbutt
+      description: |
+        <p><b>Headbutt (Free):</b> While <b>Standing and Engaged</b>, pick an enemy in base contact and roll two D6. If either result equals or exceeds their Toughness, they suffer a hit at this fighter's Strength +2, Damage 2. If both dice fail, this fighter instead suffers a hit at their own Strength, Damage 1.</p>
+
+    Hurl:
+      number: 5
+      name: Hurl
+      description: |
+        <p><b>Hurl (Basic):</b> While <b>Standing and Engaged</b>, pick an enemy in base contact (or a <b>Prone and Seriously Injured</b> enemy within 1"). Make an <b>Initiative test</b> for the enemy. If failed, move them D3" in any direction – if <b>Standing</b>, they become <b>Prone and Pinned</b>. Any model they contact suffers a Strength 3, Damage 1 hit and becomes <b>Prone and Pinned</b>. Can also be performed for free after a Charge (Double) instead of a free Fight (Basic).</p>
+
+    Iron Jaw:
+      number: 6
+      name: Iron Jaw
+      description: |
+        <p><b>Iron Jaw:</b> Increase this fighter's <b>Toughness</b> by 2 vs. close combat weapons with <b>AP -</b>.</p>
+
+  Combat:
+    Combat Master:
+      number: 1
+      name: Combat Master
+      description: |
+        <p><b>Combat Master:</b> This fighter never suffers hit roll penalties for interference and can always grant assists, regardless of how many enemies they are <b>Engaged</b> with.</p>
+
+    Counter-attack:
+      number: 2
+      name: Counter-attack
+      description: |
+        <p><b>Counter-attack:</b> When making Reaction attacks in close combat, roll one additional Attack dice for each of the attacker's Attacks that failed to hit.</p>
+
+    Disarm:
+      number: 3
+      name: Disarm
+      description: |
+        <p><b>Disarm:</b> All Melee weapons used by this fighter gain the <b>Disarm</b> trait. If a weapon already has it, the target is disarmed on a natural 5 or 6 rather than only a 6.</p>
+
+    Parry:
+      number: 4
+      name: Parry
+      description: |
+        <p><b>Parry:</b> This fighter can parry as though carrying a weapon with the Parry trait. If they already have one or more Parry weapons, they may parry one additional attack.</p>
+
+    Rain of Blows:
+      number: 5
+      name: Rain of Blows
+      description: |
+        <p><b>Rain of Blows:</b> This fighter treats Fight as a <b>Simple</b> action rather than Basic, allowing two Fight (Simple) actions per activation.</p>
+
+    Step Aside:
+      number: 6
+      name: Step Aside
+      description: |
+        <p><b>Step Aside:</b> When hit in close combat, make an <b>Initiative test</b>. If passed, the attack misses. Can only be used once per enemy per round of close combat.</p>
+
+  Cunning:
+    Backstab:
+      number: 1
+      name: Backstab
+      description: |
+        <p><b>Backstab:</b> All Melee weapons used by this fighter gain the <b>Backstab</b> trait. If a weapon already has it, add 2 to Strength (rather than the usual 1) when the trait is triggered.</p>
+
+    Escape Artist:
+      number: 2
+      name: Escape Artist
+      description: |
+        <p><b>Escape Artist:</b> Add 2 to the Initiative test result when making a Retreat (Basic) action (a natural 1 still fails). If Captured and equipped with a skinblade, add 1 to the escape roll in a Rescue Mission.</p>
+
+    Evade:
+      number: 3
+      name: Evade
+      description: |
+        <p><b>Evade:</b> If <b>Standing and Active</b> and not in cover, enemy ranged attacks against this fighter suffer an additional <b>-1 to hit</b>, or <b>-2</b> if at Long range.</p>
+
+    Infiltrate:
+      number: 4
+      name: Infiltrate
+      description: |
+        <p><b>Infiltrate:</b> Instead of setting up at the battle start, place this fighter to one side. Immediately before round 1, deploy them anywhere not visible to enemies and not within 6" of any. If both players have Infiltrators, alternate placement starting with the roll-off winner.</p>
+
+    Lie Low:
+      number: 5
+      name: Lie Low
+      description: |
+        <p><b>Lie Low:</b> While Prone, enemy fighters cannot target this fighter with ranged attacks unless within the weapon's Short range. Weapons with no Short range are unaffected.</p>
+
+    Overwatch:
+      number: 6
+      name: Overwatch
+      description: |
+        <p><b>Overwatch:</b> If <b>Standing and Active</b> with a Ready marker, this fighter may interrupt a visible enemy's declared action. They lose their Ready marker and immediately make a Shoot (Basic) action against that enemy. If the enemy is <b>Prone and Pinned</b> or <b>Seriously Injured</b> as a result, their activation ends immediately.</p>
+
+  Driving:
+    Jink:
+      number: 1
+      name: Jink
+      description: |
+        <p><b>Jink:</b> Once per round, when this vehicle is hit, roll a D6. On a 6+, the hit is ignored. This save cannot be modified by AP.</p>
+
+    Expert Driver:
+      number: 2
+      name: Expert Driver
+      description: |
+        <p><b>Expert Driver:</b> Add 1 to the result when this vehicle makes a Loss of Control test.</p>
+
+    Heavy Foot:
+      number: 3
+      name: Heavy Foot
+      description: |
+        <p><b>Heavy Foot:</b> Once per round, when this vehicle performs a Move (Simple) or Ram (Double) action, increase its Movement by D3". On a natural 1, the vehicle suffers a Glancing Hit to its Engine.</p>
+
+    Slalom:
+      number: 4
+      name: Slalom
+      description: |
+        <p><b>Slalom:</b> Once per round, when this vehicle performs a Move (Simple) action, it may make one additional turn of up to 45° at any point during its move.</p>
+
+    T-bone:
+      number: 5
+      name: T-bone
+      description: |
+        <p><b>T-bone:</b> If this vehicle has a Head-on Collision with another vehicle or terrain, add D3 to its Front Toughness for the duration of that collision.</p>
+
+    Running Repairs:
+      number: 6
+      name: Running Repairs
+      description: |
+        <p><b>Running Repairs:</b> If a natural 6 is rolled on a Handling test to Restart this Stalled vehicle, it also regains one lost Hull Point.</p>
+
+  Ferocity:
+    Berserker:
+      number: 1
+      name: Berserker
+      description: |
+        <p><b>Berserker:</b> When making close combat attacks as part of a Charge (Double) action, roll one additional Attack dice.</p>
+
+    Fearsome:
+      number: 2
+      name: Fearsome
+      description: |
+        <p><b>Fearsome:</b> Any enemy wishing to Charge this fighter must first pass a <b>Willpower test</b>. If failed, they cannot move and their activation ends immediately.</p>
+
+    Impetuous:
+      number: 3
+      name: Impetuous
+      description: |
+        <p><b>Impetuous:</b> When this fighter consolidates after close combat, they may move up to 4" instead of the usual 2".</p>
+
+    Nerves of Steel:
+      number: 4
+      name: Nerves of Steel
+      description: |
+        <p><b>Nerves of Steel:</b> When hit by a ranged attack, make a <b>Cool test</b>. If passed, the fighter may choose not to become <b>Prone and Pinned</b>.</p>
+
+    True Grit:
+      number: 5
+      name: True Grit
+      description: |
+        <p><b>True Grit:</b> When making an <b>Injury roll</b>, roll 1 less Injury dice. If the fighter was rolling only 1 Injury die, roll two and the controlling player chooses which to discard.</p>
+
+    Unstoppable:
+      number: 6
+      name: Unstoppable
+      description: |
+        <p><b>Unstoppable:</b> Before making a <b>Recovery test</b>, roll 1D6; <u>on a 4+</u> the skill triggers as follows:</p>
+        <ul>
+          <li>If the fighter has at least one <b>Flesh Wound</b> token, they may discard a single <b>Flesh Wound</b> token.</li>
+          <li>If the fighter had no <b>Flesh Wounds</b>, they instead gain an additional <b>Injury die</b> for the <b>Recovery test</b>, the controlling player chooses which die to discard.</li>
+        </ul>
+
+  Leadership:
+    Commanding Presence:
+      number: 1
+      name: Commanding Presence
+      description: |
+        <p><b>Commanding Presence:</b> When activating for a group activation, include one additional fighter than normal (e.g. a Champion may activate two others, a Leader three). Cannot be gained by a vehicle.</p>
+
+    Inspirational:
+      number: 2
+      name: Inspirational
+      description: |
+        <p><b>Inspirational:</b> If a friendly model within 6" fails a <b>Cool test</b>, make a <b>Leadership test</b> for this model. If passed, the Cool test also counts as passed.</p>
+
+    Iron Will:
+      number: 3
+      name: Iron Will
+      description: |
+        <p><b>Iron Will:</b> Subtract 1 from all <b>Bottle check</b> results while this model is on the battlefield and not <b>Prone and Seriously Injured</b> or Wrecked.</p>
+
+    Mentor:
+      number: 4
+      name: Mentor
+      description: |
+        <p><b>Mentor:</b> Each time a friendly model within 6" gains XP, make a <b>Leadership test</b> for this model. If passed, that model gains 1 additional XP.</p>
+
+    Overseer:
+      number: 5
+      name: Overseer
+      description: |
+        <p><b>Order (Double):</b> If <b>Standing and Active</b> or Mobile, make a <b>Leadership test</b>. If passed, pick a friendly fighter within 6" – they immediately make two actions as though it were their activation, even if not Ready. If they are Ready, these actions do not remove their Ready marker.</p>
+
+    Regroup:
+      number: 6
+      name: Regroup
+      description: |
+        <p><b>Regroup:</b> If <b>Standing and Active</b> or Mobile at end of activation, make a <b>Leadership test</b>. If passed, all friendly Broken models within 6" immediately recover from being Broken.</p>
+
+  Savant:
+    Ballistics Expert:
+      number: 1
+      name: Ballistics Expert
+      description: |
+        <p><b>Ballistics Expert:</b> When making an Aim (Basic) action, make an <b>Intelligence test</b>. If passed, gain an additional <b>+1 to hit</b>.</p>
+
+    Connected:
+      number: 2
+      name: Connected
+      description: |
+        <p><b>Connected:</b> This model may make an additional Trade action during the post-battle sequence (potentially two Trade actions total). Cannot be used if unable to make post-battle actions.</p>
+
+    Fixer:
+      number: 3
+      name: Fixer
+      description: |
+        <p><b>Fixer:</b> In the Receive Rewards step, as long as this model is not Captured or In Recovery, their gang earns an additional <b>D3×10 credits</b>. They need not have fought in the battle.</p>
+
+    Medicae:
+      number: 4
+      name: Medicae
+      description: |
+        <p><b>Treat Wounds (Basic):</b> Roll a D6. On a 3+, a friendly fighter within 1" either regains a lost Wound or loses a Flesh Wound (controlling player's choice). Cannot be gained by a vehicle.</p>
+
+    Munitioneer:
+      number: 5
+      name: Munitioneer
+      description: |
+        <p><b>Munitioneer:</b> Whenever an Ammo test is failed for this model or a gang member within 6", it may be re-rolled.</p>
+
+    Savvy Trader:
+      number: 6
+      name: Savvy Trader
+      description: |
+        <p><b>Savvy Trader:</b> When making a Trade action, add 1 to the Availability roll for Rare/Illegal items. Additionally, one item (not one type) may be purchased for 20 credits less on this visit.</p>
+
+  Shooting:
+    Fast Shot:
+      number: 1
+      name: Fast Shot
+      description: |
+        <p><b>Fast Shot:</b> This model treats Shoot and Fire All as <b>Simple</b> actions rather than Basic, provided they do not attack with an Unwieldy weapon.</p>
+
+    Gunfighter:
+      number: 2
+      name: Gunfighter
+      description: |
+        <p><b>Gunfighter:</b> When using Twin Guns Blazing with two Sidearm weapons, this model does not suffer the <b>-1 hit penalty</b> and may target a different enemy with each weapon.</p>
+
+    Hip Shooting:
+      number: 3
+      name: Hip Shooting
+      description: |
+        <p><b>Hip Shooting:</b> Vehicles treat Move &amp; Shoot as Simple (not Basic) unless using an Unwieldy weapon.</p>
+        <p>Fighters may use: <b>Run and Gun (Double)</b> – move up to double Movement then make a ranged attack at an additional <b>-1 to hit</b>. Unwieldy weapons cannot be used.</p>
+
+    Marksman:
+      number: 4
+      name: Marksman
+      description: |
+        <p><b>Marksman:</b> This model ignores Target Priority. A natural 6 to hit with a non-Blast ranged weapon scores a critical hit – the weapon's <b>Damage is doubled</b> (only the first hit if Rapid Fire).</p>
+
+    Precision Shot:
+      number: 5
+      name: Precision Shot
+      description: |
+        <p><b>Precision Shot:</b> If the hit roll for a non-Blast ranged attack is a natural 6, the shot hits an exposed area and <b>no armour save</b> can be made.</p>
+
+    Trick Shot:
+      number: 6
+      name: Trick Shot
+      description: |
+        <p><b>Trick Shot:</b> This model suffers no hit roll penalty when the target is <b>Engaged</b> or in partial cover. Against targets in full cover, the penalty is reduced to <b>-1</b> instead of -2.</p>

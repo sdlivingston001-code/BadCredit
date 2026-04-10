@@ -4,19 +4,27 @@ title: "Downtime"
 ---
 
 # Down Time
-This section reflects the campaigns' House Rules. There is no specific order to complete the tasks.
+This section reflects the campaigns' House Rules.
+* There is no specific order to complete the tasks.
+* Feel free to organise additional "non-main" games.
+
+<br>
+
+## Reboot your gang
+
+Retire your gang and start a new one - this can be for any reason. The arbitrator will suggest a credit limit / rules for equipment etc. to work with.
 
 <br>
 
 ## Credit Injection from your backers
 
-All gangs recieve 250 credits to spend on:
-* House list weapons & wargear
-* Gang list fighters
-* Recruit Hangers-on and Brutes (assuming you have the Reputation to do so!)
-* Funding Promotion activity (see below)
+All gangs recieve 250 credits to:
+* Purchase weapons & wargear from House Lists
+* Recruiting fighters from their gang lists
+* Recruit Hangers-on and Brutes (assuming you have the Reputation / Slots to do so!)
+* Spend on promoted fighters
 
-Any credits (from the 250) not spent will be lost when the next phase begins.
+If these credits aren't spent they will be lost.
 
 <br>
 
@@ -28,36 +36,37 @@ If it is narratively sensible/relevant to do so... Work with your arbitrator to 
 
 ## Promotions
 
-* Happen at the controlling players choice (not mandatory)
-* Are **0 XP** cost if they occur at Downtime
+Promotions during Down Time are:
+* Non-mandatory - i.e. they occur at the controlling players choice
+* Free! **Nil XP** cost.
 
 Typical examples:
 * Juves with three advancements -> Specialist
 * Prospects with three advancements -> Champions
 
-**House Rule**
+**House Rule / Narrative**
 
 When a fighter has become distinguished enough to adopt to their new role they leave behind their old role completely. This means that any role specific equipment, skills, and special rules are lost (e.g. initiate mask / wrecker jump booster / neotek grav-cutter / ...).
 
 **Process**
 
-* Create the new fighter card...
-    * Add the relevant fighter card with the following changes:
+* Create a new fighter card...
+    * with the following changes:
         * Cost (credits) = 0
         * 'Use Listed Cost for Rating' must be checked
-    * Follow all **'at creation'** rules as normal, for example
+    * following all **'at creation'** rules as normal, for example
         * Free skill choice for Champions
         * Special Rules (e.g. Van Saar Archeotek 'Master of Cyberteknika' special rule which grants a free Alpha Cyberteknika to this fighter)
 * Overlay their traumatic and glorious past\*
     * Add all **Lasting Injuries**
-    * Add all **Advancements** (nil XP cost, standard credit cost)
+    * Add all **Advancements** (nil XP cost, credit increase per XP process)
     * Add any unspent **XP**
 * Manage their weapons & wargear (='gear') and unspent XP
-    * Ignore old role-based gear
-    * Transfer any gear allowed under their new fighter profile
-    * Place in stash any items no longer allowed under their new fighter profile
+    * Ignore any old role-based gear
+    * Place in stash any items no longer wanted or allowed under their new fighter profile
+    * Transfer any gear that you want to retain (it must be allowed by the new fighter profile)
     * Spend any unspent **XP**
-* Retire the old fighter card (it's might be useful to have a reference)
+* Retire the old fighter card
 
 <br>
 
