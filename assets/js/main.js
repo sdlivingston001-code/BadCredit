@@ -14,4 +14,14 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('button').forEach(button => {
     button.classList.add('btn');
   });
+
+  // Flash buttons grey on click, then fade back to their original colour
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    btn.classList.remove('btn-clicked');
+    void btn.offsetWidth; // force reflow so animation restarts if clicked again mid-flash
+    btn.classList.add('btn-clicked');
+    setTimeout(() => btn.classList.remove('btn-clicked'), 2500); // matches btn-click-flash duration
+  });
 });

@@ -17,6 +17,7 @@ import { TimerUtil } from './timer.js';
 import { LastingInjuriesEngine } from './lastingInjuriesEngine.js';
 import { InjuryRenderer } from './injuryRenderer.js';
 import { fetchJSON } from './dataLoader.js';
+import { animatedReplace } from './uiUtils.js';
 
 export const LastingInjuriesUI = {
   injuriesData: null,
@@ -233,9 +234,10 @@ export const LastingInjuriesUI = {
         ? `<div class="mt-15">${InjuryRenderer.formatRandomEffect(result.injury.randomeffect, result.randomRoll)}</div>` : '',
     ].filter(Boolean).join('');
 
-    resultsContainer.innerHTML = "";
-    resultsContainer.appendChild(resultDiv);
-    InjuryRenderer.appendInjuryResultContent(result, resultDiv, resultsContainer, { isGlitchMode });
+    const wrapper = document.createElement('div');
+    wrapper.appendChild(resultDiv);
+    InjuryRenderer.appendInjuryResultContent(result, resultDiv, wrapper, { isGlitchMode });
+    animatedReplace(resultsContainer, wrapper);
   },
 
 };

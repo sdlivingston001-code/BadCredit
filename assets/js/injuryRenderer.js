@@ -14,6 +14,7 @@
 
 import { Icons } from './icons.js';
 import { LastingInjuriesEngine } from './lastingInjuriesEngine.js';
+import { animatedReplace } from './uiUtils.js';
 
 export const InjuryRenderer = {
 
@@ -320,8 +321,8 @@ export const InjuryRenderer = {
       }
     }
 
-    containerEl.innerHTML = '';
-    containerEl.appendChild(resultDiv);
+    const wrapper = document.createElement('div');
+    wrapper.appendChild(resultDiv);
 
     const isGlitchMode = ['spyrer_hunting_rig_glitches', 'spyrer_hunting_rig_glitches_core']
       .includes(typeof LastingInjuriesEngine !== 'undefined' ? LastingInjuriesEngine.currentMode : '');
@@ -330,8 +331,10 @@ export const InjuryRenderer = {
         result.stabilisedInjury.injury,
         ...(result.stabilisedInjury.additionalInjuries || []).map(a => a.injury)
       ].filter(inj => inj && inj.id && LastingInjuriesEngine.isMutationEligible(inj.id));
-      eligible.forEach(inj => containerEl.appendChild(this.createMutationCheckSection(inj)));
+      eligible.forEach(inj => wrapper.appendChild(this.createMutationCheckSection(inj)));
     }
+
+    animatedReplace(containerEl, wrapper);
   }
 
 };

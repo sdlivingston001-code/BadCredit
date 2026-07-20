@@ -16,6 +16,7 @@ import { TimerUtil } from './timer.js';
 import { scenario_MeatForTheGrinderEngine } from './scenario_MeatForTheGrinderEngine.js';
 import { fetchJSON } from './dataLoader.js';
 import { SkillsRenderer } from './skillsRenderer.js';
+import { animatedReplace } from './uiUtils.js';
 
 export const scenario_MeatForTheGrinderUI = {
   async init(jsonPath, traitsJsonPath, skillsJsonPath) {
@@ -171,15 +172,15 @@ export const scenario_MeatForTheGrinderUI = {
     const effectHtml = result.fixedeffect
       ? `<div class="result-effect">${result.fixedeffect}</div>`
       : '';
-    const diceHtml = rolls ? `(${rolls.join(' + ')}) = ` : '';
 
-    container.innerHTML = `
-      <div class="result-box result-box-${colour} mt-20">
-        <div class="result-heading result-name"><b>${result.name}</b></div>
-        ${effectHtml}
-      </div>
-    `;
+    const div = document.createElement('div');
+    div.className = `result-box result-box-${colour} mt-20`;
+    div.innerHTML = [
+      `<div class="result-heading result-name"><b>${result.name}</b></div>`,
+      effectHtml,
+    ].filter(Boolean).join('');
 
+    animatedReplace(container, div);
     container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 };

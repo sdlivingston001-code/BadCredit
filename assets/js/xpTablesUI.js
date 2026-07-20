@@ -18,6 +18,7 @@ import { Icons } from './icons.js';
 import { TimerUtil } from './timer.js';
 import { XPTablesEngine } from './xpTablesEngine.js';
 import { fetchJSON } from './dataLoader.js';
+import { animatedReplace } from './uiUtils.js';
 
 export const XPTablesUI = {
   xpData: null,
@@ -251,8 +252,7 @@ export const XPTablesUI = {
     const div = document.createElement('div');
     div.className = 'result-box result-box-green mt-20';
     div.innerHTML = `<div class="result-heading result-name">${resultLabel}</div>${footnote}${conditionalSpecialHtml}`;
-    resultsContainer.innerHTML = '';
-    resultsContainer.appendChild(div);
+    animatedReplace(resultsContainer, div);
     resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
     if (typeof TimerUtil !== 'undefined') {
@@ -336,9 +336,6 @@ export const XPTablesUI = {
     const resultsContainer = document.getElementById("xp-tables-results");
     if (!resultsContainer) return;
 
-    // Clear previous results
-    resultsContainer.innerHTML = "";
-
     if (advancementResult.error) {
       resultsContainer.innerHTML = `<div class="error-box">${advancementResult.error}</div>`;
       return;
@@ -352,7 +349,7 @@ export const XPTablesUI = {
     const resultBox = this.createAdvancementResultBox(advancementResult.result, advancementResult.rolls, advancementResult.total);
     mainContainer.appendChild(resultBox);
 
-    resultsContainer.appendChild(mainContainer);
+    animatedReplace(resultsContainer, mainContainer);
 
     // Scroll to results
     resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -361,9 +358,6 @@ export const XPTablesUI = {
   displaySkillResult(skillResult) {
     const resultsContainer = document.getElementById("xp-tables-results");
     if (!resultsContainer) return;
-
-    // Clear previous results
-    resultsContainer.innerHTML = "";
 
     if (skillResult.error) {
       resultsContainer.innerHTML = `<div class="error-box">${skillResult.error}</div>`;
@@ -393,7 +387,7 @@ export const XPTablesUI = {
     note.textContent = "* If you already have the random skill, select one from that skillset instead.";
     mainContainer.appendChild(note);
 
-    resultsContainer.appendChild(mainContainer);
+    animatedReplace(resultsContainer, mainContainer);
 
     // Scroll to results
     resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });

@@ -2,9 +2,7 @@ id: 9_borderDispute
 number: 9
 name: Border Dispute
 
-# ──────────────────────────────────────────────────────────────────────────────
 # BATTLE TYPE
-# ──────────────────────────────────────────────────────────────────────────────
 battle_type:
   type: underhive
   restrictions:
@@ -13,21 +11,17 @@ battle_type:
       Mounted condition cannot be included</span> in either gang's starting
       crew or Reinforcements.
 
-# ──────────────────────────────────────────────────────────────────────────────
 # BATTLEFIELD
-# ──────────────────────────────────────────────────────────────────────────────
 battlefield:
   setup: standard
 
-# ──────────────────────────────────────────────────────────────────────────────
 # CREWS
-# ──────────────────────────────────────────────────────────────────────────────
 crews:
   method: Hybrid Selection
   dice: "D3+3"
   reinforcements_deck: true
+
 # DEPLOYMENT
-# ──────────────────────────────────────────────────────────────────────────────
 deployment:
   steps:
     - >-
@@ -43,9 +37,7 @@ deployment:
       their own turf. The relic must be set up <b>at least 5" from any
       battlefield edge</b>. It can be a generic token or a small terrain feature.
 
-# ──────────────────────────────────────────────────────────────────────────────
 # GANG TACTICS
-# ──────────────────────────────────────────────────────────────────────────────
 gang_tactics:
   default: none
   per_round:
@@ -59,17 +51,13 @@ gang_tactics:
       Randomly determine one gang tactic per full 100 credits of difference
       between Gang Ratings.
 
-# ──────────────────────────────────────────────────────────────────────────────
 # ENDING THE BATTLE
-# ──────────────────────────────────────────────────────────────────────────────
 ending:
   condition: >-
     <span class="text-trigger">If either gang has no fighters left on the
     battlefield at the end of any round</span>, the battle ends immediately.
 
-# ──────────────────────────────────────────────────────────────────────────────
 # VICTORY
-# ──────────────────────────────────────────────────────────────────────────────
 victory:
   winner: >-
     The gang with fighters remaining on the battlefield &mdash; not including
@@ -77,9 +65,7 @@ victory:
     whose <span class="text-keyword">gang relic</span> has not been defiled.
   draw: Any other result.
 
-# ──────────────────────────────────────────────────────────────────────────────
 # REWARDS
-# ──────────────────────────────────────────────────────────────────────────────
 rewards:
   credits:
     - condition: Gang's relic was not defiled
@@ -110,9 +96,7 @@ rewards:
         - gang: bottled out
           amount: -1
 
-# ──────────────────────────────────────────────────────────────────────────────
 # SPECIAL RULES
-# ──────────────────────────────────────────────────────────────────────────────
 special_rules:
 
   gang_relics:

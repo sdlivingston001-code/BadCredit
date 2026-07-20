@@ -21,6 +21,7 @@ import { PostBattleEngine } from './postBattleEngine.js';
 import { LastingInjuriesEngine } from './lastingInjuriesEngine.js';
 import { InjuryRenderer } from './injuryRenderer.js';
 import { fetchJSON } from './dataLoader.js';
+import { animatedReplace } from './uiUtils.js';
 
 export const PostBattleUI = {
 
@@ -132,10 +133,10 @@ export const PostBattleUI = {
       heading = '3- Fighter is Captured';
     }
 
-    container.innerHTML = `
-      <div class="result-box result-box-${colour} result-box-primary mt-20">
-        <h3 class="result-heading mt-0 mb-0">${heading}</h3>
-      </div>`;
+    const div = document.createElement('div');
+    div.className = `result-box result-box-${colour} result-box-primary mt-20`;
+    div.innerHTML = `<h3 class="result-heading mt-0 mb-0">${heading}</h3>`;
+    animatedReplace(container, div);
   },
 
   onRollSuccumb() {
@@ -157,7 +158,10 @@ export const PostBattleUI = {
       const label = succumbed
         ? `2- Suffer a Lasting Injury!`
         : `3+ Okay, no lasting injury.`;
-      succumbResults.innerHTML = `<div class="result-box result-box-${colour}">${label}</div>`;
+      const div = document.createElement('div');
+      div.className = `result-box result-box-${colour}`;
+      div.textContent = label;
+      animatedReplace(succumbResults, div);
     }
 
     // Show/hide the Resolve Lasting Injury button
@@ -242,8 +246,6 @@ export const PostBattleUI = {
     const container = document.getElementById('pb-critical-injury-results');
     if (!container) return;
 
-    container.innerHTML = '';
-
     if (costResult === null) {
       container.innerHTML = '<div class="error-box">Error: Injury data not loaded. Please refresh the page.</div>';
       return;
@@ -256,38 +258,41 @@ export const PostBattleUI = {
       TimerUtil.recordRolls('postBattleLastRun', ['[Critical Injury]', `Cost: ${cost} credits (${rollLabel})`]);
     }
 
-    container.innerHTML = `
-      <div class="cost-box">
-        <h2>Treatment Cost</h2>
-        <h1>${cost} credits</h1>
-        <p class="text-base mb-20">Do you want to proceed with treatment?</p>
-        <div class="flex-center">
-          <button id="pb-proceed-critical-treatment" class="btn btn-success">Proceed with Treatment</button>
-          <button id="pb-refuse-critical-treatment" class="btn btn-danger">Refuse Treatment</button>
-        </div>
+    const costDiv = document.createElement('div');
+    costDiv.className = 'cost-box';
+    costDiv.innerHTML = `
+      <h2>Treatment Cost</h2>
+      <h1>${cost} credits</h1>
+      <p class="text-base mb-20">Do you want to proceed with treatment?</p>
+      <div class="flex-center">
+        <button id="pb-proceed-critical-treatment" class="btn btn-success">Proceed with Treatment</button>
+        <button id="pb-refuse-critical-treatment" class="btn btn-danger">Refuse Treatment</button>
       </div>
     `;
 
-    container.querySelector('#pb-proceed-critical-treatment').addEventListener('click', () => {
+    costDiv.querySelector('#pb-proceed-critical-treatment').addEventListener('click', () => {
       const result = LastingInjuriesEngine.resolveRogueDoc(mode, cost);
       result.costRolls = rolls;
       this.displayCriticalRogueDocResult(result);
     });
-    container.querySelector('#pb-refuse-critical-treatment').addEventListener('click', () => {
+    costDiv.querySelector('#pb-refuse-critical-treatment').addEventListener('click', () => {
       this.displayCriticalFighterDeath();
     });
+
+    animatedReplace(container, costDiv);
   },
 
   displayCriticalFighterDeath() {
     const container = document.getElementById('pb-critical-injury-results');
     if (!container) return;
 
-    container.innerHTML = `
-      <div class="death-box">
-        <h2 class="mt-0">${Icons.skull} Fighter Dies ${Icons.skull}</h2>
-        <p class="text-base mb-0">Without medical treatment, the fighter succumbs to their injuries and dies.<br><br>You recover their equipment.</p>
-      </div>
+    const div = document.createElement('div');
+    div.className = 'death-box';
+    div.innerHTML = `
+      <h2 class="mt-0">${Icons.skull} Fighter Dies ${Icons.skull}</h2>
+      <p class="text-base mb-0">Without medical treatment, the fighter succumbs to their injuries and dies.<br><br>You recover their equipment.</p>
     `;
+    animatedReplace(container, div);
   },
 
   displayCriticalRogueDocResult(result) {
@@ -323,9 +328,8 @@ export const PostBattleUI = {
   displayInjuryResult(result, containerId = 'pb-injury-results') {
     const container = document.getElementById(containerId);
     if (!container) return;
-    container.innerHTML = '';
     if (!result || !result.injury) {
-      container.innerHTML = '<div class="error-box">Failed to resolve injury.</div>';
+      animatedReplace(container, '<div class="error-box">Failed to resolve injury.</div>');
       return;
     }
     const colour = result.injury.colour || 'grey';
@@ -339,8 +343,10 @@ export const PostBattleUI = {
       result.randomRoll && result.injury.randomeffect === 'd3xpgain'
         ? `<div class="mt-15">Gain ${result.randomRoll.value} XP!</div>` : '',
     ].filter(Boolean).join('');
-    container.appendChild(box);
-    InjuryRenderer.appendInjuryResultContent(result, box, container, { isGlitchMode });
+    const wrapper = document.createElement('div');
+    wrapper.appendChild(box);
+    InjuryRenderer.appendInjuryResultContent(result, box, wrapper, { isGlitchMode });
+    animatedReplace(container, wrapper);
   },
 
 };

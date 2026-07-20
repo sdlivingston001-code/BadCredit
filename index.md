@@ -17,6 +17,12 @@ title: BadCredit
 <!-- Pyschic Powers -->
 
 ---
+## Third Party Tools...
+
+<span id="idx-rulesnatcher"></span>[Rule Snatcher](https://n23-rulesnatcher.ashenquarter.com/)<br><br>
+
+
+---
 ## Scenario Tools
 <span id="idx-sotw"></span>[Meat for the Grinder]({{ site.baseurl }}/tools/scenario_MeatForTheGrinder.html)<br><br>
 
@@ -26,7 +32,8 @@ title: BadCredit
   document.getElementById('idx-injuries').innerHTML = Icons.firstAid + ' ';
   document.getElementById('idx-loot').innerHTML = Icons.treasureChest + ' ';
   document.getElementById('idx-xp').innerHTML = Icons.militaryMedal + ' ';
-  document.getElementById('idx-sotw').innerHTML = Icons.clipboardList + ' ';
+  document.getElementById('idx-rulesnatcher').innerHTML = Icons.clipboardList + ' ';
+  document.getElementById('idx-sotw').innerHTML = Icons.swords + ' ';  
 </script>
 
 

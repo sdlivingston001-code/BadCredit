@@ -18,6 +18,7 @@ import { Icons } from './icons.js';
 import { TimerUtil } from './timer.js';
 import { LootCasketEngine } from './lootCasketEngine.js';
 import { fetchJSON } from './dataLoader.js';
+import { animatedReplace } from './uiUtils.js';
 
 export const LootCasketUI = {
   lootData: null,
@@ -278,8 +279,6 @@ export const LootCasketUI = {
     const resultsContainer = document.getElementById("loot-casket-results");
     if (!resultsContainer) return;
 
-    resultsContainer.innerHTML = "";
-
     if (lootResult.error) {
       resultsContainer.innerHTML = `<div class="error-box">${lootResult.error}</div>`;
       return;
@@ -298,7 +297,7 @@ export const LootCasketUI = {
       this.displayNestedEffect(lootResult.randomEffect, mainContainer);
     }
 
-    resultsContainer.appendChild(mainContainer);
+    animatedReplace(resultsContainer, mainContainer);
     resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 };
