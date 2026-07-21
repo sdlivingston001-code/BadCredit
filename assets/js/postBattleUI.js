@@ -54,6 +54,10 @@ export const PostBattleUI = {
     if (modeSelector) {
       modeSelector.addEventListener('change', (e) => {
         LastingInjuriesEngine.setMode(e.target.value);
+        ['pb-injury-cyberteknika', 'pb-ransom-injury-cyberteknika', 'pb-critical-injury-cyberteknika'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.innerHTML = '';
+        });
       });
     }
 
@@ -152,6 +156,8 @@ export const PostBattleUI = {
 
     // Clear previous injury result whenever we re-roll succumb
     if (injuryResults) injuryResults.innerHTML = '';
+    const cyberteknikaResults = document.getElementById('pb-injury-cyberteknika');
+    if (cyberteknikaResults) cyberteknikaResults.innerHTML = '';
 
     if (succumbResults) {
       const colour = succumbed ? 'red' : 'green';
@@ -180,7 +186,7 @@ export const PostBattleUI = {
       TimerUtil.markRun('postBattleLastRun', this.buildInjuryRolls(result, diceLabel, '[Lasting Injury]'));
     }
 
-    this.displayInjuryResult(result, 'pb-injury-results');
+    this.displayInjuryResult(result, 'pb-injury-results', 'pb-injury-cyberteknika');
   },
 
   onResolveRansomInjury() {
@@ -193,7 +199,7 @@ export const PostBattleUI = {
       TimerUtil.markRun('postBattleLastRun', this.buildInjuryRolls(result, diceLabel, '[Ransom]'));
     }
 
-    this.displayInjuryResult(result, 'pb-ransom-injury-results');
+    this.displayInjuryResult(result, 'pb-ransom-injury-results', 'pb-ransom-injury-cyberteknika');
   },
 
   buildInjuryRolls(result, diceLabel, prefix = '') {
@@ -286,6 +292,9 @@ export const PostBattleUI = {
     const container = document.getElementById('pb-critical-injury-results');
     if (!container) return;
 
+    const cyberteknikaContainer = document.getElementById('pb-critical-injury-cyberteknika');
+    if (cyberteknikaContainer) cyberteknikaContainer.innerHTML = '';
+
     const div = document.createElement('div');
     div.className = 'death-box';
     div.innerHTML = `
@@ -301,6 +310,9 @@ export const PostBattleUI = {
     InjuryRenderer.renderRogueDocResult(result, container);
     if (typeof TimerUtil !== 'undefined') {
       TimerUtil.recordRolls('postBattleLastRun', this.buildCriticalRogueDocRolls(result));
+    }
+    if (result.stabilisedInjury) {
+      this.updateCyberteknikaButtons(result.stabilisedInjury, 'pb-critical-injury-cyberteknika');
     }
   },
 
@@ -325,7 +337,7 @@ export const PostBattleUI = {
     return rolls;
   },
 
-  displayInjuryResult(result, containerId = 'pb-injury-results') {
+  displayInjuryResult(result, containerId = 'pb-injury-results', cyberteknikaContainerId = null) {
     const container = document.getElementById(containerId);
     if (!container) return;
     if (!result || !result.injury) {
@@ -347,6 +359,60 @@ export const PostBattleUI = {
     wrapper.appendChild(box);
     InjuryRenderer.appendInjuryResultContent(result, box, wrapper, { isGlitchMode });
     animatedReplace(container, wrapper);
+    if (cyberteknikaContainerId) {
+      this.updateCyberteknikaButtons(result, cyberteknikaContainerId);
+    }
+  },
+
+  updateCyberteknikaButtons(result, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = '';
+
+    const mode = LastingInjuriesEngine.currentMode;
+    const incompatibleModes = ['spyrer_hunting_rig_glitches', 'spyrer_hunting_rig_glitches_core', 'ironman_lasting_injuries'];
+    if (incompatibleModes.includes(mode)) return;
+
+    const cybData = LastingInjuriesEngine.injuriesData?.cyberteknika_exceptions;
+    if (!cybData) return;
+
+    const allInjuries = [result.injury, ...(result.additionalInjuries || []).map(i => i.injury)];
+    const eligible = allInjuries.filter(inj => LastingInjuriesEngine.isCyberteknikaEligible(inj?.id));
+
+    eligible.forEach(injury => {
+      const cybName = cybData.cyberteknika?.[injury.id]?.name || 'Archaeo-Cyberteknika';
+      const resultDiv = document.createElement('div');
+      const btn = document.createElement('button');
+      btn.className = 'btn btn-primary mt-20';
+      btn.textContent = `Roll Archaeo-Cyberteknika Test \u2014 ${injury.name} (${cybName})`;
+      btn.addEventListener('click', () => {
+        btn.disabled = true;
+        this.rollAndDisplayCyberteknikaResult(injury, cybName, resultDiv);
+      });
+      container.appendChild(btn);
+      container.appendChild(resultDiv);
+    });
+  },
+
+  rollAndDisplayCyberteknikaResult(injury, cybName, container) {
+    const result = LastingInjuriesEngine.rollCyberteknikaTest();
+    if (!result) return;
+
+    const cybData = LastingInjuriesEngine.injuriesData?.cyberteknika_exceptions;
+    const threshold = cybData?.test?.threshold ?? 4;
+    const statusText = result.success ? `Pass (${threshold}+)` : 'Fail';
+    const comment = result.success
+      ? (cybData?.test?.pass_comment || '')
+      : (cybData?.test?.fail_comment || '');
+    const bonusText = result.bonus > 0 ? ` + ${result.bonus} = ${result.total}` : '';
+
+    animatedReplace(container, `
+      <div class="result-box result-box-blue mt-20">
+        <h3 class="result-heading mt-0 mb-0">${injury.name} &#x2192; ${cybName} Archaeo-Cyberteknika</h3>
+        <div class="result-effect mt-10"><b>${statusText}</b> &mdash; D6: ${result.roll}${bonusText}</div>
+        ${comment ? `<div class="mt-10">${comment}</div>` : ''}
+      </div>
+    `);
   },
 
 };

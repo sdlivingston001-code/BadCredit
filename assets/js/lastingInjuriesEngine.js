@@ -370,5 +370,32 @@ export const LastingInjuriesEngine = {
 
   getMutationModifiers() {
     return this.injuriesData?.mutation_exceptions?.test?.modifiers || [];
+  },
+
+  isCyberteknikaEligible(injuryId) {
+    const cybData = this.injuriesData?.cyberteknika_exceptions;
+    if (!cybData) return false;
+    return (cybData.included_injuries || []).includes(injuryId);
+  },
+
+  rollCyberteknikaTest(modifierIds = []) {
+    const cybData = this.injuriesData?.cyberteknika_exceptions;
+    if (!cybData) return null;
+    const roll = Dice.d(6);
+    const bonus = modifierIds.reduce((sum, id) => {
+      const mod = (cybData.test.modifiers || []).find(m => m.id === id);
+      return sum + (mod ? mod.value : 0);
+    }, 0);
+    const total = roll + bonus;
+    return {
+      roll,
+      bonus,
+      total,
+      success: total >= cybData.test.threshold
+    };
+  },
+
+  getCyberteknikaModifiers() {
+    return this.injuriesData?.cyberteknika_exceptions?.test?.modifiers || [];
   }
 };

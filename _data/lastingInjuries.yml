@@ -606,3 +606,26 @@ mutation_exceptions:
       name: Twisted Flesh
       fixedeffect: "When the fighter activates, they may remove one <b>Flesh Wound</b> from their Fighter card. The fighter cannot benefit from bio-boosters, medicae kits or assistance from other fighters when making <b>Recovery tests</b>."
       colour: purple
+
+cyberteknika_exceptions:
+  included_injuries: [humiliated, head_injury, eye_injury, hand_injury, hobbled, spinal_injury, enfeebled]
+  test:
+    die: d6
+    threshold: 4
+    pass_comment: "Ignore the Lasting Injury characteristic impact! The archaeo-cyberteknika has survived."
+    fail_comment: "Ignore the Lasting Injury characteristic impact... but the archaeo-cyberteknika has been damaged. To restore the archaeo-cyberteknika to full functionality pay half its cost in credits."
+  cyberteknika:
+    humiliated:
+      name: Cranial
+    head_injury:
+      name: Cranial
+    eye_injury:
+      name: Ocular
+    hand_injury:
+      name: Sindextrous
+    hobbled:
+      name: Motive
+    spinal_injury:
+      name: Torsonic
+    enfeebled:
+      name: Vascular
