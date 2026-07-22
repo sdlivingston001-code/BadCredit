@@ -21,7 +21,7 @@ import { PostBattleEngine } from './postBattleEngine.js';
 import { LastingInjuriesEngine } from './lastingInjuriesEngine.js';
 import { InjuryRenderer } from './injuryRenderer.js';
 import { fetchJSON } from './dataLoader.js';
-import { animatedReplace } from './uiUtils.js';
+import { animatedReplace, delay, moveMutationSections } from './uiUtils.js';
 
 export const PostBattleUI = {
 
@@ -143,7 +143,7 @@ export const PostBattleUI = {
     animatedReplace(container, div);
   },
 
-  onRollSuccumb() {
+  async onRollSuccumb() {
     const { roll, succumbed } = PostBattleEngine.rollSuccumb();
 
     if (typeof TimerUtil !== 'undefined') {
@@ -167,7 +167,7 @@ export const PostBattleUI = {
       const div = document.createElement('div');
       div.className = `result-box result-box-${colour}`;
       div.textContent = label;
-      animatedReplace(succumbResults, div);
+      await animatedReplace(succumbResults, div);
     }
 
     // Show/hide the Resolve Lasting Injury button
@@ -186,7 +186,7 @@ export const PostBattleUI = {
       TimerUtil.markRun('postBattleLastRun', this.buildInjuryRolls(result, diceLabel, '[Lasting Injury]'));
     }
 
-    this.displayInjuryResult(result, 'pb-injury-results', 'pb-injury-cyberteknika');
+    this.displayInjuryResult(result, 'pb-injury-results', 'pb-injury-cyberteknika', 'pb-injury-mutation');
   },
 
   onResolveRansomInjury() {
@@ -199,7 +199,7 @@ export const PostBattleUI = {
       TimerUtil.markRun('postBattleLastRun', this.buildInjuryRolls(result, diceLabel, '[Ransom]'));
     }
 
-    this.displayInjuryResult(result, 'pb-ransom-injury-results', 'pb-ransom-injury-cyberteknika');
+    this.displayInjuryResult(result, 'pb-ransom-injury-results', 'pb-ransom-injury-cyberteknika', 'pb-ransom-injury-mutation');
   },
 
   buildInjuryRolls(result, diceLabel, prefix = '') {
@@ -294,6 +294,8 @@ export const PostBattleUI = {
 
     const cyberteknikaContainer = document.getElementById('pb-critical-injury-cyberteknika');
     if (cyberteknikaContainer) cyberteknikaContainer.innerHTML = '';
+    const mutContainer = document.getElementById('pb-critical-injury-mutation');
+    if (mutContainer) mutContainer.innerHTML = '';
 
     const div = document.createElement('div');
     div.className = 'death-box';
@@ -304,15 +306,29 @@ export const PostBattleUI = {
     animatedReplace(container, div);
   },
 
-  displayCriticalRogueDocResult(result) {
+  async displayCriticalRogueDocResult(result) {
     const container = document.getElementById('pb-critical-injury-results');
     if (!container) return;
-    InjuryRenderer.renderRogueDocResult(result, container);
+
+    // Clear secondary check buttons immediately so they don't linger during cogitation
+    const cybContainer = document.getElementById('pb-critical-injury-cyberteknika');
+    if (cybContainer) cybContainer.innerHTML = '';
+    const mutContainer = document.getElementById('pb-critical-injury-mutation');
+    if (mutContainer) mutContainer.innerHTML = '';
+
+    await InjuryRenderer.renderRogueDocResult(result, container);
     if (typeof TimerUtil !== 'undefined') {
       TimerUtil.recordRolls('postBattleLastRun', this.buildCriticalRogueDocRolls(result));
     }
+    await delay(350);
+
     if (result.stabilisedInjury) {
-      this.updateCyberteknikaButtons(result.stabilisedInjury, 'pb-critical-injury-cyberteknika');
+      InjuryRenderer.renderCyberteknikaButtons(result.stabilisedInjury, document.getElementById('pb-critical-injury-cyberteknika'));
+    }
+
+    if (mutContainer) {
+      await delay(350);
+      moveMutationSections(container, mutContainer);
     }
   },
 
@@ -337,11 +353,20 @@ export const PostBattleUI = {
     return rolls;
   },
 
-  displayInjuryResult(result, containerId = 'pb-injury-results', cyberteknikaContainerId = null) {
+  async displayInjuryResult(result, containerId = 'pb-injury-results', cyberteknikaContainerId = null, mutationContainerId = null) {
     const container = document.getElementById(containerId);
     if (!container) return;
+
+    // Clear secondary check buttons immediately so they don't linger during cogitation
+    if (cyberteknikaContainerId) {
+      const cybContainer = document.getElementById(cyberteknikaContainerId);
+      if (cybContainer) cybContainer.innerHTML = '';
+    }
+    const mutContainer = mutationContainerId ? document.getElementById(mutationContainerId) : null;
+    if (mutContainer) mutContainer.innerHTML = '';
+
     if (!result || !result.injury) {
-      animatedReplace(container, '<div class="error-box">Failed to resolve injury.</div>');
+      await animatedReplace(container, '<div class="error-box">Failed to resolve injury.</div>');
       return;
     }
     const colour = result.injury.colour || 'grey';
@@ -358,61 +383,17 @@ export const PostBattleUI = {
     const wrapper = document.createElement('div');
     wrapper.appendChild(box);
     InjuryRenderer.appendInjuryResultContent(result, box, wrapper, { isGlitchMode });
-    animatedReplace(container, wrapper);
+    await animatedReplace(container, wrapper);
+    await delay(350);
+
     if (cyberteknikaContainerId) {
-      this.updateCyberteknikaButtons(result, cyberteknikaContainerId);
+      InjuryRenderer.renderCyberteknikaButtons(result, document.getElementById(cyberteknikaContainerId));
     }
-  },
 
-  updateCyberteknikaButtons(result, containerId) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-    container.innerHTML = '';
-
-    const mode = LastingInjuriesEngine.currentMode;
-    const incompatibleModes = ['spyrer_hunting_rig_glitches', 'spyrer_hunting_rig_glitches_core', 'ironman_lasting_injuries'];
-    if (incompatibleModes.includes(mode)) return;
-
-    const cybData = LastingInjuriesEngine.injuriesData?.cyberteknika_exceptions;
-    if (!cybData) return;
-
-    const allInjuries = [result.injury, ...(result.additionalInjuries || []).map(i => i.injury)];
-    const eligible = allInjuries.filter(inj => LastingInjuriesEngine.isCyberteknikaEligible(inj?.id));
-
-    eligible.forEach(injury => {
-      const cybName = cybData.cyberteknika?.[injury.id]?.name || 'Archaeo-Cyberteknika';
-      const resultDiv = document.createElement('div');
-      const btn = document.createElement('button');
-      btn.className = 'btn btn-primary mt-20';
-      btn.textContent = `Roll Archaeo-Cyberteknika Test \u2014 ${injury.name} (${cybName})`;
-      btn.addEventListener('click', () => {
-        btn.disabled = true;
-        this.rollAndDisplayCyberteknikaResult(injury, cybName, resultDiv);
-      });
-      container.appendChild(btn);
-      container.appendChild(resultDiv);
-    });
-  },
-
-  rollAndDisplayCyberteknikaResult(injury, cybName, container) {
-    const result = LastingInjuriesEngine.rollCyberteknikaTest();
-    if (!result) return;
-
-    const cybData = LastingInjuriesEngine.injuriesData?.cyberteknika_exceptions;
-    const threshold = cybData?.test?.threshold ?? 4;
-    const statusText = result.success ? `Pass (${threshold}+)` : 'Fail';
-    const comment = result.success
-      ? (cybData?.test?.pass_comment || '')
-      : (cybData?.test?.fail_comment || '');
-    const bonusText = result.bonus > 0 ? ` + ${result.bonus} = ${result.total}` : '';
-
-    animatedReplace(container, `
-      <div class="result-box result-box-blue mt-20">
-        <h3 class="result-heading mt-0 mb-0">${injury.name} &#x2192; ${cybName} Archaeo-Cyberteknika</h3>
-        <div class="result-effect mt-10"><b>${statusText}</b> &mdash; D6: ${result.roll}${bonusText}</div>
-        ${comment ? `<div class="mt-10">${comment}</div>` : ''}
-      </div>
-    `);
+    if (mutContainer) {
+      await delay(350);
+      moveMutationSections(container, mutContainer);
+    }
   },
 
 };

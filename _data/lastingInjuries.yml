@@ -612,8 +612,8 @@ cyberteknika_exceptions:
   test:
     die: d6
     threshold: 4
-    pass_comment: "Ignore the Lasting Injury characteristic impact! The archaeo-cyberteknika has survived."
-    fail_comment: "Ignore the Lasting Injury characteristic impact... but the archaeo-cyberteknika has been damaged. To restore the archaeo-cyberteknika to full functionality pay half its cost in credits."
+    pass_comment: "<br>Ignore any characteristic impact from the Lasting Injury.<br>The archaeo-cyberteknika is undamaged."
+    fail_comment: "<br>Ignore any characteristic impact from the Lasting Injury, but the archaeo-cyberteknika has been damaged.<br>To restore the archaeo-cyberteknika to full functionality pay half its cost in credits."
   cyberteknika:
     humiliated:
       name: Cranial

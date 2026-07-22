@@ -399,6 +399,10 @@ ol li, ul li {
   animation: result-pop-in 0.3s ease-out both;
 }
 
+.pop-in {
+  animation: result-pop-in 0.3s ease-out both;
+}
+
 .result-box-primary {
   padding: 15px;
   border-width: 3px;
@@ -648,6 +652,10 @@ ol li, ul li {
   color: white;
 }
 
+.btn-primary:hover {
+  background-color: #0056b3;
+}
+
 .btn-success {
   background-color: #28a745;
   color: white;
@@ -674,9 +682,9 @@ ol li, ul li {
 }
 
 .btn-chaos {
-  background-color: #6a0dad;
+  background-color: #9735dc;
   color: white;
-  border-color: #4a0080;
+  border-color: #2a0048;
 }
 
 .btn-chaos:hover {

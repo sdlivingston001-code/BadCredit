@@ -16,6 +16,10 @@ import { Icons } from './icons.js';
 import { LastingInjuriesEngine } from './lastingInjuriesEngine.js';
 import { animatedReplace } from './uiUtils.js';
 
+/** Animation stagger delays (ms). */
+const STAGGER_MS = 150;
+const ADDITIONAL_STAGGER_MS = 180;
+
 export const InjuryRenderer = {
 
   /** Static warning messages used for convalescence / recovery badges. */
@@ -133,7 +137,7 @@ export const InjuryRenderer = {
 
       const injDiv = this.createInjuryBox(injuryResult.injury, injColour, rollLabel, injuryResult.randomRoll);
       if (index > 0) injDiv.classList.add('mt-10');
-      injDiv.style.animationDelay = `${(index + 1) * 180}ms`;
+      injDiv.style.animationDelay = `${(index + 1) * ADDITIONAL_STAGGER_MS}ms`;
       additionalContainer.appendChild(injDiv);
 
       if (injuryResult.injury.convalescence === 1) hasConvalescence = true;
@@ -157,11 +161,14 @@ export const InjuryRenderer = {
    */
   createMutationCheckSection(injury) {
     const section = document.createElement('div');
-    section.className = 'mutation-check-section mt-20';
+    section.className = 'mutation-check-section pop-in mt-20';
+    section.style.display = 'none';
+
+    const mutation = LastingInjuriesEngine.getMutation(injury.id);
 
     const btn = document.createElement('button');
     btn.className = 'btn btn-chaos';
-    btn.innerHTML = `Corpse Grinder Cult / Helot Chaos Cults / Chaos Corrupted:<br>Check for Mutation \u2014 ${injury.name}`;
+    btn.innerHTML = `Corpse Grinder Cult, Helot Chaos Cults, or Chaos Corrupted:<br>${injury.name}${mutation ? ` \u2014 ${mutation.name} Mutation` : ''}`;
     btn.addEventListener('click', () => {
       section.innerHTML = '';
       section.appendChild(this.buildMutationTestPanel(injury));
@@ -208,6 +215,7 @@ export const InjuryRenderer = {
 
       if (testResult.success) {
         const mutBox = this.createInjuryBox(mutation, 'purple');
+        mutBox.classList.add('mt-10');
         resultContainer.innerHTML = `<div class="mutation-roll-result mutation-success">D6: ${testResult.roll}${bonusText}${totalText} &mdash; Mutation! Apply this instead:</div>`;
         resultContainer.appendChild(mutBox);
 
@@ -229,30 +237,58 @@ export const InjuryRenderer = {
     return panel;
   },
 
+  // ── Private helpers ─────────────────────────────────────────────────────
+
+  // Determines which convalescence badges to suppress so that only one
+  // recovery warning is shown regardless of how many injuries carry it.
+  // outerHasRecovery covers e.g. an outcome-level intoRecovery flag.
+  _resolveRecoverySuppressions(primaryInjury, additionalInjuries, outerHasRecovery = false) {
+    const primaryHasRecovery = primaryInjury?.intoRecovery === 1;
+    const additionalHasRecovery = (additionalInjuries || []).some(a => a.injury?.intoRecovery === 1);
+    return {
+      suppressAdditionalConvalescence: primaryHasRecovery || outerHasRecovery,
+      primaryForWarnings: (additionalHasRecovery || outerHasRecovery) && !primaryHasRecovery
+        ? { ...primaryInjury, convalescence: 0 }
+        : primaryInjury,
+    };
+  },
+
+  // Filter a flat array of injury objects to those eligible for a mutation check.
+  _getMutationEligible(injuries) {
+    return injuries.filter(inj => inj && inj.id && LastingInjuriesEngine.isMutationEligible(inj.id));
+  },
+
+  // Append hidden, staggered mutation-check sections to a container.
+  _appendMutationSections(eligibleInjuries, container) {
+    eligibleInjuries.forEach((inj, i) => {
+      const section = this.createMutationCheckSection(inj);
+      section.style.animationDelay = `${(i + 1) * STAGGER_MS}ms`;
+      container.appendChild(section);
+    });
+  },
+
+  // ── Public API ───────────────────────────────────────────────────────────
+
   // Appends additional injuries, status warnings, glitch count, and mutation checks
   // to an already-created injury box.
-  // injuryBox      – the primary result-box element (additional injuries + warnings go here)
+  // injuryBox        – the primary result-box element (additional injuries + warnings go here)
   // mutationContainer – the element that receives sibling mutation check sections
   appendInjuryResultContent(result, injuryBox, mutationContainer, { isGlitchMode = false } = {}) {
-    const additionalLabel = isGlitchMode ? 'Glitch' : 'Roll';
+    const { suppressAdditionalConvalescence, primaryForWarnings } = this._resolveRecoverySuppressions(
+      result.injury,
+      result.additionalInjuries
+    );
 
-    // Pre-compute holistic recovery state across all injuries so that convalescence
-    // warnings are suppressed wherever a recovery warning will appear.
-    const primaryHasRecovery = result.injury?.intoRecovery === 1;
-    const additionalHasRecovery = (result.additionalInjuries || []).some(a => a.injury?.intoRecovery === 1);
-
-    // If the primary injury goes Into Recovery, suppress convalescence on additional injuries.
-    this.displayAdditionalInjuries(result.additionalInjuries, injuryBox, additionalLabel, primaryHasRecovery);
-
-    // If any additional injury goes Into Recovery, suppress convalescence on the primary.
-    const primaryForWarnings = additionalHasRecovery && !primaryHasRecovery
-      ? { ...result.injury, convalescence: 0 }
-      : result.injury;
+    this.displayAdditionalInjuries(
+      result.additionalInjuries, injuryBox,
+      isGlitchMode ? 'Glitch' : 'Roll',
+      suppressAdditionalConvalescence
+    );
     this.appendStatusWarnings(primaryForWarnings, injuryBox);
 
     if (isGlitchMode) {
-      const allResults = [result.injury, ...(result.additionalInjuries || []).map(i => i.injury)];
-      const glitchCount = allResults.filter(i => i.glitch === 1).length;
+      const allInjuries = [result.injury, ...(result.additionalInjuries || []).map(i => i.injury)];
+      const glitchCount = allInjuries.filter(i => i.glitch === 1).length;
       if (glitchCount > 0) {
         const countDiv = document.createElement('div');
         countDiv.className = 'glitch-count-note mt-10';
@@ -260,15 +296,13 @@ export const InjuryRenderer = {
         injuryBox.appendChild(countDiv);
       }
     } else {
-      const eligible = [result.injury, ...(result.additionalInjuries || []).map(a => a.injury)]
-        .filter(inj => inj && inj.id && LastingInjuriesEngine.isMutationEligible(inj.id));
-      eligible.forEach(inj => mutationContainer.appendChild(this.createMutationCheckSection(inj)));
+      const allInjuries = [result.injury, ...(result.additionalInjuries || []).map(a => a.injury)];
+      this._appendMutationSections(this._getMutationEligible(allInjuries), mutationContainer);
     }
   },
 
-  // Renders a complete rogue-doc result (outcome box + stabilised injury + warnings + mutations)
-  // into containerEl, replacing its contents.
-  renderRogueDocResult(result, containerEl) {
+  // Builds the complete rogue-doc result DOM subtree without animating.
+  _buildRogueDocWrapper(result) {
     const colour = result.outcome.colour || 'grey';
     const resultDiv = document.createElement('div');
     resultDiv.className = `result-box result-box-${colour} result-box-primary mt-20`;
@@ -290,23 +324,16 @@ export const InjuryRenderer = {
       );
       resultDiv.appendChild(injuryContainer);
 
-      // Pre-compute holistic recovery state so convalescence is suppressed wherever
-      // a recovery warning will appear (additional injuries, primary, or outcome-level).
-      const primaryStabilisedHasRecovery = result.stabilisedInjury.injury?.intoRecovery === 1;
-      const additionalHasRecovery = (result.stabilisedInjury.additionalInjuries || [])
-        .some(a => a.injury?.intoRecovery === 1);
       const outcomeHasRecovery = result.outcome.intoRecovery === 1 && colour !== 'black';
-
-      // Suppress additional convalescence if primary stabilised injury or outcome carries recovery.
+      const { suppressAdditionalConvalescence, primaryForWarnings } = this._resolveRecoverySuppressions(
+        result.stabilisedInjury.injury,
+        result.stabilisedInjury.additionalInjuries,
+        outcomeHasRecovery
+      );
       this.displayAdditionalInjuries(
         result.stabilisedInjury.additionalInjuries, resultDiv, 'D66',
-        primaryStabilisedHasRecovery || outcomeHasRecovery
+        suppressAdditionalConvalescence
       );
-
-      // Suppress primary stabilised convalescence if any additional or outcome carries recovery.
-      const primaryForWarnings = (additionalHasRecovery || outcomeHasRecovery) && !primaryStabilisedHasRecovery
-        ? { ...result.stabilisedInjury.injury, convalescence: 0 }
-        : result.stabilisedInjury.injury;
       this.appendStatusWarnings(primaryForWarnings, resultDiv);
     }
 
@@ -327,14 +354,73 @@ export const InjuryRenderer = {
     const isGlitchMode = ['spyrer_hunting_rig_glitches', 'spyrer_hunting_rig_glitches_core']
       .includes(typeof LastingInjuriesEngine !== 'undefined' ? LastingInjuriesEngine.currentMode : '');
     if (!isGlitchMode && result.stabilisedInjury) {
-      const eligible = [
+      const allInjuries = [
         result.stabilisedInjury.injury,
         ...(result.stabilisedInjury.additionalInjuries || []).map(a => a.injury)
-      ].filter(inj => inj && inj.id && LastingInjuriesEngine.isMutationEligible(inj.id));
-      eligible.forEach(inj => wrapper.appendChild(this.createMutationCheckSection(inj)));
+      ];
+      this._appendMutationSections(this._getMutationEligible(allInjuries), wrapper);
     }
 
-    animatedReplace(containerEl, wrapper);
+    return wrapper;
+  },
+
+  // Renders a complete rogue-doc result into containerEl, replacing its contents.
+  renderRogueDocResult(result, containerEl) {
+    return animatedReplace(containerEl, this._buildRogueDocWrapper(result));
+  },
+
+  // Renders a cyberteknika test result into container (replaces its contents with cogitating → result).
+  renderCyberteknikaResult(injury, cybName, container) {
+    const result = LastingInjuriesEngine.rollCyberteknikaTest();
+    if (!result) return;
+
+    const cybData = LastingInjuriesEngine.injuriesData?.cyberteknika_exceptions;
+    const threshold = cybData?.test?.threshold ?? 4;
+    const statusText = result.success ? `Pass (${threshold}+)` : 'Fail';
+    const comment = result.success
+      ? (cybData?.test?.pass_comment || '')
+      : (cybData?.test?.fail_comment || '');
+    const bonusText = result.bonus > 0 ? ` + ${result.bonus} = ${result.total}` : '';
+
+    return animatedReplace(container, `
+      <div class="result-box result-box-blue mt-20">
+        <h3 class="result-heading mt-0 mb-0">${injury.name} &#x2192; ${cybName} Archaeo-Cyberteknika</h3>
+        <div class="result-effect mt-10"><b>${statusText}</b> &mdash; D6: ${result.roll}${bonusText}</div>
+        ${comment ? `<div class="mt-10">${comment}</div>` : ''}
+      </div>
+    `);
+  },
+
+  // Builds Van Saar Archaeo-Cyberteknika roll buttons into container for any eligible injuries in result.
+  renderCyberteknikaButtons(result, container) {
+    if (!container) return;
+    container.innerHTML = '';
+
+    const mode = LastingInjuriesEngine.currentMode;
+    const incompatibleModes = ['spyrer_hunting_rig_glitches', 'spyrer_hunting_rig_glitches_core', 'ironman_lasting_injuries'];
+    if (incompatibleModes.includes(mode)) return;
+
+    const cybData = LastingInjuriesEngine.injuriesData?.cyberteknika_exceptions;
+    if (!cybData) return;
+
+    const allInjuries = [result.injury, ...(result.additionalInjuries || []).map(i => i.injury)];
+    const eligible = allInjuries.filter(inj => LastingInjuriesEngine.isCyberteknikaEligible(inj?.id));
+
+    eligible.forEach((injury, i) => {
+      const cybName = cybData.cyberteknika?.[injury.id]?.name || 'Archaeo-Cyberteknika';
+      const resultDiv = document.createElement('div');
+      const btn = document.createElement('button');
+      btn.className = 'btn btn-primary pop-in mt-20';
+      btn.style.animationDelay = `${i * 150}ms`;
+      btn.innerHTML = `Van Saar: <br>${injury.name} &#x2014; ${cybName} Archaeo-Cyberteknika`;
+      btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        await this.renderCyberteknikaResult(injury, cybName, resultDiv);
+        btn.remove();
+      });
+      container.appendChild(btn);
+      container.appendChild(resultDiv);
+    });
   }
 
 };

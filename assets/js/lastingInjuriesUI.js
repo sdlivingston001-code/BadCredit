@@ -17,7 +17,7 @@ import { TimerUtil } from './timer.js';
 import { LastingInjuriesEngine } from './lastingInjuriesEngine.js';
 import { InjuryRenderer } from './injuryRenderer.js';
 import { fetchJSON } from './dataLoader.js';
-import { animatedReplace } from './uiUtils.js';
+import { animatedReplace, delay, moveMutationSections } from './uiUtils.js';
 
 export const LastingInjuriesUI = {
   injuriesData: null,
@@ -95,6 +95,8 @@ export const LastingInjuriesUI = {
     }
     const cybResults = document.getElementById('cyberteknika-results');
     if (cybResults) cybResults.innerHTML = '';
+    const mutResults = document.getElementById('mutation-results');
+    if (mutResults) mutResults.innerHTML = '';
     this.renderInjuryTable();
   },
 
@@ -174,10 +176,17 @@ export const LastingInjuriesUI = {
         ${failComment ? `<b>Fail:</b> ${failComment}` : ''}
       </p>` : '';
 
-    const rows = cybData.included_injuries.map(id => {
-      const name = allResults[id] || id;
-      return `<tr><td><b>${name}</b></td></tr>`;
-    }).join('');
+    // Group injuries by their cyberteknika implant name
+    const groups = {};
+    cybData.included_injuries.forEach(id => {
+      const cybName = cybData.cyberteknika?.[id]?.name || '';
+      if (!groups[cybName]) groups[cybName] = [];
+      groups[cybName].push(allResults[id] || id);
+    });
+
+    const rows = Object.entries(groups).map(([cybName, injuries]) =>
+      `<tr><td style="text-align:center"><b>${cybName}</b></td><td style="text-align:center">${injuries.join(', ')}</td></tr>`
+    ).join('');
 
     const section = document.createElement('div');
     section.className = 'mt-20';
@@ -186,8 +195,8 @@ export const LastingInjuriesUI = {
       <p class="text-base mt-0 mb-0">If a <b>Van Saar</b> fighter with at least one <b>Archaeo-Cyberteknika</b> implant suffers one of the injuries below, roll a D6.</p>
       ${modifiersHtml}
       ${outcomesHtml}
-      <table>
-        <thead><tr><th>Eligible Lasting Injuries</th></tr></thead>
+      <table style="table-layout:fixed;width:100%">
+        <thead><tr><th style="width:50%;text-align:center">Archaeo-Cyberteknika</th><th style="width:50%;text-align:center">Eligible Lasting Injury</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
     `;
@@ -241,27 +250,6 @@ export const LastingInjuriesUI = {
     container.appendChild(section);
   },
 
-  rollAndDisplayCyberteknikaResult(injury, cybName, container) {
-    const result = LastingInjuriesEngine.rollCyberteknikaTest();
-    if (!result) return;
-
-    const cybData = LastingInjuriesEngine.injuriesData?.cyberteknika_exceptions;
-    const threshold = cybData?.test?.threshold ?? 4;
-    const statusText = result.success ? `Pass (${threshold}+)` : 'Fail';
-    const comment = result.success
-      ? (cybData?.test?.pass_comment || '')
-      : (cybData?.test?.fail_comment || '');
-    const bonusText = result.bonus > 0 ? ` + ${result.bonus} = ${result.total}` : '';
-
-    animatedReplace(container, `
-      <div class="result-box result-box-blue mt-20">
-        <h3 class="result-heading mt-0 mb-0">${injury.name} &#x2192; ${cybName} Archaeo-Cyberteknika</h3>
-        <div class="result-effect mt-10"><b>${statusText}</b> &mdash; D6: ${result.roll}${bonusText}</div>
-        ${comment ? `<div class="mt-10">${comment}</div>` : ''}
-      </div>
-    `);
-  },
-
   collectInjuryRolls(result) {
     if (!result || result.roll === 'Error') return [];
     const modeData = LastingInjuriesEngine.getCurrentModeData();
@@ -291,9 +279,15 @@ export const LastingInjuriesUI = {
     this.displayResult(result);
   },
 
-  displayResult(result) {
+  async displayResult(result) {
     const resultsContainer = document.getElementById("lasting-injuries-results");
     if (!resultsContainer) return;
+
+    // Clear secondary check buttons immediately so they don't linger during cogitation
+    const cybContainer = document.getElementById('cyberteknika-results');
+    if (cybContainer) cybContainer.innerHTML = '';
+    const mutContainer = document.getElementById('mutation-results');
+    if (mutContainer) mutContainer.innerHTML = '';
 
     const colour = result.injury.colour || "grey";
     const isGlitchMode = ['spyrer_hunting_rig_glitches', 'spyrer_hunting_rig_glitches_core'].includes(LastingInjuriesEngine.currentMode);
@@ -311,39 +305,15 @@ export const LastingInjuriesUI = {
     const wrapper = document.createElement('div');
     wrapper.appendChild(resultDiv);
     InjuryRenderer.appendInjuryResultContent(result, resultDiv, wrapper, { isGlitchMode });
-    animatedReplace(resultsContainer, wrapper);
+    await animatedReplace(resultsContainer, wrapper);
+    await delay(350);
 
-    this.updateCyberteknikaVisibility(result);
-  },
+    InjuryRenderer.renderCyberteknikaButtons(result, document.getElementById('cyberteknika-results'));
 
-  updateCyberteknikaVisibility(result) {
-    const container = document.getElementById('cyberteknika-results');
-    if (!container) return;
-    container.innerHTML = '';
-
-    const mode = LastingInjuriesEngine.currentMode;
-    const incompatibleModes = ['spyrer_hunting_rig_glitches', 'spyrer_hunting_rig_glitches_core', 'ironman_lasting_injuries'];
-    if (incompatibleModes.includes(mode)) return;
-
-    const cybData = LastingInjuriesEngine.injuriesData?.cyberteknika_exceptions;
-    if (!cybData) return;
-
-    const allInjuries = [result.injury, ...(result.additionalInjuries || []).map(i => i.injury)];
-    const eligible = allInjuries.filter(inj => LastingInjuriesEngine.isCyberteknikaEligible(inj?.id));
-
-    eligible.forEach(injury => {
-      const cybName = cybData.cyberteknika?.[injury.id]?.name || 'Archaeo-Cyberteknika';
-      const resultDiv = document.createElement('div');
-      const btn = document.createElement('button');
-      btn.className = 'btn btn-primary mt-20';
-      btn.textContent = `Roll Archaeo-Cyberteknika Test \u2014 ${injury.name} (${cybName})`;
-      btn.addEventListener('click', () => {
-        btn.disabled = true;
-        this.rollAndDisplayCyberteknikaResult(injury, cybName, resultDiv);
-      });
-      container.appendChild(btn);
-      container.appendChild(resultDiv);
-    });
+    if (mutContainer) {
+      await delay(350);
+      moveMutationSections(resultsContainer, mutContainer);
+    }
   },
 
 };
