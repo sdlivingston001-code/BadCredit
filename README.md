@@ -14,7 +14,7 @@ Built with **Jekyll 4** and vanilla JavaScript; hosted on **GitHub Pages**.
 | **Loot Caskets** | `tools/lootCasket.html` | Smash or bypass loot caskets; handles nested sub-tables and card-suit draws. |
 | **XP Advancements** | `tools/xpTables.html` | User-choice promotions and 2D6 random advancement rolls with full skill roller. |
 | **Post-Battle Sequence** | `tools/post-battle.html` | Guided workflow: succumb, escape, ransom, critical-injury treatment, and a step checklist. |
-| **Meat for the Grinder** | `tools/scenario_MeatForTheGrinder.html` | Scavenged weapon roller, weapon-profile tables, fighter skills, and weapon traits for the scenario. |
+| **Meat for the Grinder** | `tools/scenarios/scenario_MeatForTheGrinder.html` | Scavenged weapon roller, weapon-profile tables, fighter skills, and weapon traits for the scenario. |
 | **Campaign Viewer** | `tools/campaignViewer.html` | Live read-only viewer for Munda Manager campaigns (fetched via CORS proxy, cached in localStorage). |
 | **Icon Dictionary** | `tools/icons.html` | Developer reference grid of all Phosphor icons used in the app. |
 

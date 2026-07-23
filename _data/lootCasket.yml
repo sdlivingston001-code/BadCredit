@@ -46,12 +46,12 @@ d6fancy:
     opulent_jewellery:
       values: [2]
       name: Opulent Jewellery
-      fixedeffect: "Necromunda Core Rulebook (2023), p301.<br>Dazzle Rogue Docs for cheap treatment - Add Opulent Jewellery to your stash."
+      fixedeffect: "Necromunda Core Rulebook (2023), p301.<br>You may re-roll the dice when determining the fee the Rogue Doc charges for the Medical Escort post battle action. The re-roll must be accepted even if it is worse than the original roll."
     servo_skull:
       values: [3]
       name: Servo Skull
       randomeffect: d3skull
-      fixedeffect: "Necromunda Core Rulebook (2023), p302<br>Everybody needs a friend... Find out what kind of friend you get!"
+      fixedeffect: "Necromunda Core Rulebook (2023), p302.<br>Everybody needs a friend... Find out what kind of friend you get!"
     suspensor_harness:
       values: [4]
       name: Suspensor Harness
@@ -71,15 +71,15 @@ d3skull:
     sensor_servo_skull:
       values: [1]
       name: Sensor Skull
-      fixedeffect: "Necromunda Core Rulebook (2023), p303.<br>Add Sensor Skull to your stash.<br><br>This servo-skull acts as a bio-scanner and improves the Aim (basic) action"
+      fixedeffect: "Necromunda Core Rulebook (2023), p303.<br>Add a Sensor Skull to your stash.<br><br>This servo-skull acts as a bio-scanner and improves the Aim (basic) action"
     medi_servo_skull:
       values: [2]
       name: Medi Skull
-      fixedeffect: "Necromunda Core Rulebook (2023), p303.<br>Add Medi Skull to your stash.<br><br>This servo-skull improves the Recovery roll of the fighter it is equipped to."
+      fixedeffect: "Necromunda Core Rulebook (2023), p303.<br>Add a Medi Skull to your stash.<br><br>This servo-skull improves the Recovery roll of the fighter it is equipped to."
     gun_servo_skull:
       values: [3]
       name: Gun Skull
-      fixedeffect: "Necromunda Core Rulebook (2023), p303.<br>Add Gun Skull to your stash.<br><br>BS 5+ miniature gun platform with a Compact autopistol (Necromunda Core Rulebook (2023), p264.)"
+      fixedeffect: "Necromunda Core Rulebook (2023), p303.<br>Add a Gun Skull to your stash.<br><br>BS 5+ miniature gun platform with a Compact autopistol (Necromunda Core Rulebook (2023), p264.)"
 
 d66drugs:
   sides: d66
@@ -87,15 +87,15 @@ d66drugs:
     frenzon:
       values: [11-13]
       name: Frenzon
-      fixedeffect: "Necromunda Core Rulebook (2023), p295.<br>Become a reckless berserker!"
+      fixedeffect: "Necromunda Core Rulebook (2023), p295.<br>Add a dose of Frenzon to your gang stash."
     ghast:
       values: [14-16]
       name: Ghast
-      fixedeffect: "Necromunda Core Rulebook (2023), p295.<br>Enjoy the Wyrd!"
+      fixedeffect: "Necromunda Core Rulebook (2023), p295.<br>Add a dose of Ghast to your gang stash."
     icrotic_slime:
       values: [21-23]
       name: Icroctic Slime
-      fixedeffect: "Necromunda Core Rulebook (2023), p296.<br>Exchange some grey matter for a stat boost!"
+      fixedeffect: "Necromunda Core Rulebook (2023), p296.<br>Add a dose of Icroctic Slime to your gang stash."
     kalma:
       values: [24-26]
       name: Kalma
@@ -109,31 +109,31 @@ d66drugs:
     slaut:
       values: [34-36]
       name: Slaut
-      fixedeffect: "Necromunda Core Rulebook (2023), p297.<br>Ninja in a pill!"
+      fixedeffect: "Necromunda Core Rulebook (2023), p297.<br>Add a dose of Slaut to your gang stash."
     spur:
       values: [41-43]
       name: Spur
-      fixedeffect: "Necromunda Core Rulebook (2023), p297.<br>Instant speed!"
+      fixedeffect: "Necromunda Core Rulebook (2023), p297.<br>Add a dose of Spur to your gang stash."
     stinger_mould:
       values: [44-46]
       name: Stinger Mould
-      fixedeffect: "Necromunda Core Rulebook (2023), p297.<br>Repair your body!"
+      fixedeffect: "Necromunda Core Rulebook (2023), p297.<br>Add a dose of Stinger Mould to your gang stash."
     wild_snake:
       values: [51-53]
       name: Wild Snake
-      fixedeffect: "Necromunda Core Rulebook (2023), p292.<br>Liquid courage!"
+      fixedeffect: "Necromunda Core Rulebook (2023), p292.<br>Add a dose of Wild Snake to your gang stash."
     second_best:
       values: [54-56]
       name: Second Best
-      fixedeffect: "Necromunda Core Rulebook (2023), p295.<br>Liquid courage with a wobble!"
+      fixedeffect: "Necromunda Core Rulebook (2023), p295.<br>Add a dose of Second Best to your gang stash."
     stimm_slug_stash:
       values: [61-63]
       name: Stimm Slug Stash
-      fixedeffect: "Necromunda Core Rulebook (2023), p291.<br>Risky physical enhancement!"
+      fixedeffect: "Necromunda Core Rulebook (2023), p291.<br>Add a Stimm Slug Stash to your gang stash."
     lho_sticks:
       values: [64-66]
       name: Lho Sticks
-      fixedeffect: "Necromunda Core Rulebook (2023), p295.<br>Become cool... Necromunda Noir cool... to idiots."
+      fixedeffect: "Necromunda Core Rulebook (2023), p295.<br>Add Lho Sticks to your gang stash."
 
 d6ammo:
   sides: 6

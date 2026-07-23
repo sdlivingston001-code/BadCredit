@@ -12,11 +12,11 @@
  *             scenario_MeatForTheGrinderEngine.js
  */
 
-import { TimerUtil } from './timer.js';
+import { TimerUtil } from '../timer.js';
 import { scenario_MeatForTheGrinderEngine } from './scenario_MeatForTheGrinderEngine.js';
-import { fetchJSON } from './dataLoader.js';
-import { SkillsRenderer } from './skillsRenderer.js';
-import { animatedReplace } from './uiUtils.js';
+import { fetchJSON } from '../dataLoader.js';
+import { SkillsRenderer } from '../skillsRenderer.js';
+import { animatedReplace } from '../uiUtils.js';
 
 export const scenario_MeatForTheGrinderUI = {
   async init(jsonPath, traitsJsonPath, skillsJsonPath) {

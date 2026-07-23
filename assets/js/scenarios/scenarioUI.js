@@ -8,7 +8,7 @@
  */
 
 import { ScenarioEngine } from './scenarioEngine.js';
-import { fetchJSON } from './dataLoader.js';
+import { fetchJSON } from '../dataLoader.js';
 
 export const ScenarioUI = {
 

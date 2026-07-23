@@ -24,7 +24,7 @@ title: BadCredit
 
 ---
 ## Scenario Tools
-<span id="idx-sotw"></span>[Meat for the Grinder]({{ site.baseurl }}/tools/scenario_MeatForTheGrinder.html)<br><br>
+<span id="idx-sotw"></span>[Meat for the Grinder]({{ site.baseurl }}/tools/scenarios/scenario_MeatForTheGrinder.html)<br><br>
 
 <script type="module">
   import { Icons } from '{{ "/assets/js/icons.js" | relative_url }}';

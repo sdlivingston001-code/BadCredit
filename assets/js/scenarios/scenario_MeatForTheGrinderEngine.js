@@ -9,7 +9,7 @@
  * Depends on: dice.js (Dice)
  */
 
-import { Dice } from './dice.js';
+import { Dice } from '../dice.js';
 
 export const scenario_MeatForTheGrinderEngine = {
   data: null,
