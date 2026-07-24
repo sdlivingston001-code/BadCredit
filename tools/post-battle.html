@@ -22,13 +22,12 @@ title: "Post Battle Sequence"
     <option value="spyrer_hunting_rig_glitches_core">Spyrer Hunting Rig Glitches — Core Rules (D66)</option>
   </select>
 </div>
+<p>The rules below reflect the campaign House rules.</p>
 
 <hr class="hr-dark" style="margin: 30px 0;">
+<h1>**Immediately after the game**</h1>
 
-<h1>Immediately after the game</h1>
-<p>The rules here reflect campaign House rules.</p>
-
-<h2>1. Wrap-Up ("Main" game only)</h2>
+<h2>1. Wrap-Up</h2>
 <h3>A. Succumbing to Injuries</h3>
 <p>If a fighter was:</p>
 <ul>
@@ -36,7 +35,6 @@ title: "Post Battle Sequence"
   <li>Prone &amp; Seriously Injured when they fled the battle (e.g. after a gang had bottled out)</li>
 </ul>
 <p>Roll 1D6, on a 1 or 2 they suffer a Lasting Injury.</p>
-
 
 <button id="pb-roll-succumb">Did the fighter succumb to their injuries?</button>
 
@@ -47,9 +45,7 @@ title: "Post Battle Sequence"
 <div id="pb-injury-results" class="mt-15"></div>
 <div id="pb-injury-cyberteknika"></div>
 <div id="pb-injury-mutation"></div>
-
-
-
+<br>
 <h3>B. Did Captured fighters escape?</h3>
 <p>For each friendly fighter that suffered a lasting injury of <b>CAPTURED</b>, test to see if they escape.</p>
 
@@ -64,7 +60,7 @@ title: "Post Battle Sequence"
 <button id="pb-roll-escape" style="margin-top:10px;">Roll to Escape</button>
 
 <div id="pb-escape-results" class="mt-15"></div>
-
+<br>
 <h3>C. Ransoming Captured fighters</h3>
 <p>Fighters are always released back to their gangs after the battle. The question is whether they will have all their body parts...</p>
 <ul>
@@ -80,21 +76,60 @@ title: "Post Battle Sequence"
 <div id="pb-ransom-injury-results" class="mt-15"></div>
 <div id="pb-ransom-injury-cyberteknika"></div>
 <div id="pb-ransom-injury-mutation"></div>
-
-<h3>D. Treat Critical Injuries</h3>
-<p>House rules simplify the treatment of critical injuries (they no longer require a Post Battle Action). Typical reasons for suffering a Critical Injury include:</p>
+<br>
+<h3>D. Claim Guilder Bounties</h3>
+<p>If fighting the "Bountied Gang" then you can earn additional credits from <b>ONE</b> of the following options:</p>
 <ul>
-  <li><b>Out of Action</b> during the battle</li>
-  <li><b>Succumbed to Injuries</b> in Wrap-Up</li>
-  <li><b>Release from Captivity</b> without Ransom / Prisoner Exchange</li>
+  <li><b>100 credits</b> if at least one Leader or Champion was <b>killed</b> (includes if they die during treatment for Critical Injuries).</li>
+  <li><b>50 credits</b> if at least one Leader or Champion went <b>Out of Action</b>.</li>
+</ul>
+<p>The 100 / 50 credits are paid by local guilders (not your opponent).</p>
+<br>
+<h2>2. Receive Scenario Rewards</h2>
+<p>Follow the scenario rules as normal.</p>
+<br>
+<h2>3. Assign / Reassign Territories</h2>
+<p>The Arbitrator will give guidance.</p>
+<br>
+<h2>4. Collect Territory Income/Boons</h2>
+<p>The Arbitrator will give guidance.</p>
+<p>If generating income, the campaign uses a simplified set of territory rules:
+<span id="idx-income"></span><a href="{{ site.baseurl }}/tools/territory.html">Income & Boons</a></p>
+
+
+
+<br>
+<h3>E. Clean House (Memorable Deaths)</h3>
+<ul>
+  <li>Delete dead fighters from the roster.</li>
+  <li>Add their equipment (except armour) to the gang stash <b>if and only if</b> at the end of the battle there was at least one non-dead friendly fighter still present on the battlefield</li>
 </ul>
 
+
+<hr class="hr-dark" style="margin: 30px 0;">
+
+<h1>**At Players' Leisure**</h1>
+<h2>Post Battle Actions</h2>
+<p>The campaign does not require individual champions/leaders to perform each action.</p>
+<p>The following actions have been <b>removed</b>: Sell to Guilders, Claim Bounties, Dispose of Captives</p>
+
+<p>The following actions can be taken in any order:</p>
+<ul>
+  <li>F. Medical Escort</li>
+  <li>G. Visit the Trading Post</li>
+  <li>H. Gang specific actions</li>
+</ul>
+
+
+<br>
+<h3>F. Treat Critical Injuries</h3>
+Any fighter can drag any critically injured fighter to a Rogue Doc for treatment (i.e. this action does not require a fighter with the <b>Gang Hierarchy(X)</b> rule).
 <div class="selector-wrapper">
   <label class="selector-label" for="pb-rogue-doc-mode">Select Treatment Mode:</label>
   <select id="pb-rogue-doc-mode" class="select-input">
     <option value="trading_post_rogue_doc" selected>Medical Escort — House Rules</option>
-    <option value="trading_post_rogue_doc_core">Medical Escort — Core Rules</option>
     <option value="hanger_on_rogue_doc">Hanger-on (Patch-Up) — House Rules</option>
+    <option value="trading_post_rogue_doc_core">Medical Escort — Core Rules</option>
     <option value="hanger_on_rogue_doc_core">Hanger-on (Patch-Up) — Core Rules</option>
   </select>
 </div>
@@ -109,50 +144,69 @@ title: "Post Battle Sequence"
 <div id="pb-critical-injury-cyberteknika"></div>
 <div id="pb-critical-injury-mutation"></div>
 
+<br>
+<h3>G. Visit the Trading Post</h3>
+<p>This single roll represents the best effort of the gang over the days/weeks between fights to source rare and illegal equipment.</p>
+<p>Once Medical Escort actions have been resolved all fighters with the relevant rules can contribute to this check:</p>
 
 
-
-
-<h2>2. Assign / Reassign Territories ("Main" game only)</h2>
-<p>Gangs will be able to pick up a single territory each campaign period. Typically, the order of selection is determined by the outcome of the battle.</p>
-
-
-<h2>3. Receive Rewards ("Main" game only)</h2>
-<p>Follow the scenario rules collect income, reputation, and other rewards as normal.</p>
-<p>Do not generate income from territories during this phase.</p>
-
-<h2>Guilder Bounties — Performance Bonus (Any game)</h2>
-<p>If fighting the "Bountied Gang" then you can earn additional credits from <b>ONE</b> of the following options:</p>
+<br>
+<h3>H. Gang / Alliance / Territory / Hanger-on... Post-Battle Actions</h3>
+<p>Examples of gang actions:</p>
 <ul>
-  <li><b>100 credits</b> if at least one Leader or Champion was <b>killed</b> (includes if they die during treatment for Critical Injuries).</li>
-  <li><b>50 credits</b> if at least one Leader or Champion went <b>Out of Action</b>.</li>
+  <li>Join a cult</li>
+  <li>Install / repair Archaeotech-Cybernetika</li>
+  <li>Chem-Alchemy</li>
+  <li>...</li>
 </ul>
-<p>The 100 / 50 credits are paid by local guilders (not your opponent).</p>
+<p>Remember that <b>Into Recovery</b> and <b>Convalescence</b> have been removed in this campaign.</p>
 
 
-<hr class="hr-dark" style="margin: 30px 0;">
-
-<h2>Standard Post Battle Steps</h2>
-<p>Track your progress through the standard post-battle sequence. Check off each step as you complete it.</p>
-
-<div id="post-battle-checklist"></div>
-
-<h1>At Players' Leisure</h1>
-
-<h2>Post Battle Actions</h2>
-<p>The following actions have been <b>removed</b>:</p>
-<ul>
-  <li>Sell to Guilders</li>
-  <li>Claim Bounties</li>
-  <li>Dispose of Captives</li>
-</ul>
-
+<br>
 <h2>Update Roster</h2>
 <p>As normal, in this order:</p>
+<ul>
+  <li>I. Clean House (Died from Critical Injury)</li>
+  <li>J. Distribute Equipment</li>
+  <li>K. Purchase Advancements</li>
+</ul>
+
+<br>
+<h3>I. Clean House (Died from Critical Injury)</h3>
+<ul>
+  <li>Delete dead fighters from the roster.</li>
+  <li>Add their equipment (except armour) to the gang stash
+</ul>
+
+<br>
+<h3>J. Distribute Equipment</h3>
+<p>Any items in the gang stash can be distributed among the gang members.</p>
+<p>Be careful distributing weapons as not all fighter profiles allow all weapons (either restricted by class / source). For example:</p>
+<ul>
+  <li>Heavy weapons are typically restricted to leaders / champions</li>
+  <li>Special weapons are typically restricted to leaders / champions / specialists</li>
+  <li>Gangers are typically allowed Basic, Pistol, and Close Combat weapons from the Trading Post</li>
+  <li>Prospects are typically restricted to their own equipment list plus some classes of Trading Post weapons</li>
+  <li>Juves are typically restricted to non-special non-heavy weapons from their own equipment list (i.e. not from the Trading Post)</li>
+</ul>
+<p>Typically weapons are not allowed to be removed from fighters once allocated - if you are providing a serious upgrade the arbitrator may make an exception.</p>
+
+
+<br>
+<h3>K. Purchase Advancements</h3>
+<p>The campaign uses a Lost Zone inspired advancement system (no stat increases, easier access to skills):
+<span id="idx-xp"></span><a href="{{ site.baseurl }}/tools/xpTables.html">Experience</a></p>
+
+
+
 
 <script type="module">
   import { PostBattleUI } from '{{ "/assets/js/postBattleUI.js" | relative_url }}';
   PostBattleUI.init("{{ '/data/lastingInjuries.json' | relative_url }}");
 </script>
 
-<!-- Convalescence rolls if playing with Post Battle Actions, old battle wounds / cracked power cells -->
+<script type="module">
+  import { Icons } from '{{ "/assets/js/icons.js" | relative_url }}';
+  document.getElementById('idx-income').innerHTML = Icons.moneyWavy + ' ';
+  document.getElementById('idx-xp').innerHTML = Icons.militaryMedal + ' ';
+</script>

@@ -301,7 +301,7 @@ export const PostBattleUI = {
     div.className = 'death-box';
     div.innerHTML = `
       <h2 class="mt-0">${Icons.skull} Fighter Dies ${Icons.skull}</h2>
-      <p class="text-base mb-0">Without medical treatment, the fighter succumbs to their injuries and dies.<br><br>You recover their equipment.</p>
+      <p class="text-base mb-0">Without medical treatment, the fighter succumbs to their injuries and dies.<br><br>You recover their equipment (except armour).</p>
     `;
     animatedReplace(container, div);
   },
