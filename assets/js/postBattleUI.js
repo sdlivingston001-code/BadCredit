@@ -91,6 +91,12 @@ export const PostBattleUI = {
       criticalBtn.addEventListener('click', () => this.onResolveCriticalInjury());
     }
 
+    // Trading Post rarity / illegal level roll
+    const rarityBtn = document.getElementById('pb-roll-rarity');
+    if (rarityBtn) {
+      rarityBtn.addEventListener('click', () => this.onRollRarityLevel());
+    }
+
     // Draw / Lost are mutually exclusive
     const drawBox = document.getElementById('pb-cap-draw');
     const lostBox = document.getElementById('pb-cap-lost');
@@ -103,6 +109,95 @@ export const PostBattleUI = {
   initTimers() {
     TimerUtil.init('page-roll-info', 'postBattleLastRun');
     TimerUtil.setupPageCleanup();
+  },
+
+  async onRollRarityLevel() {
+    const alignment = document.getElementById('pb-tp-alignment')?.value ?? 'lawabiding';
+    const leader     = document.getElementById('pb-tp-leader')?.checked ?  2 : 0;
+    const champions  = parseInt(document.getElementById('pb-tp-champions')?.value  || '0', 10);
+    const savvy      = parseInt(document.getElementById('pb-tp-savvy')?.value      || '0', 10);
+    const rep        = parseInt(document.getElementById('pb-tp-rep')?.value        || '0', 10);
+    const repMod     = Math.floor(rep / 10);
+    const underhive  = parseInt(document.getElementById('pb-tp-underhive')?.value  || '0', 10) * 2;
+    const modifier   = leader + champions + savvy + repMod + underhive;
+
+    const result = PostBattleEngine.rollRarityLevel(modifier);
+    result.alignment = alignment;
+    this._lastRarityResult = result;
+
+    const whisperContainer = document.getElementById('pb-rarity-whisper');
+    if (whisperContainer) whisperContainer.innerHTML = '';
+
+    if (typeof TimerUtil !== 'undefined') {
+      const modStr = modifier >= 0 ? `+${modifier}` : `${modifier}`;
+      const isLawAbiding = alignment === 'lawabiding';
+      TimerUtil.markRun('postBattleLastRun', [
+        `[Trading Post] 2D6: [${result.die1}, ${result.die2}]`,
+        `Mod: ${modStr}`,
+        isLawAbiding ? `Rare: ${result.total} / Illegal: ${result.total - 4}` : `Total: ${result.total}`,
+      ]);
+    }
+
+    const container = document.getElementById('pb-rarity-results');
+    if (!container) return;
+    await animatedReplace(container, this._buildRarityResultDiv(result));
+
+    if (whisperContainer) {
+      const btn = document.createElement('button');
+      btn.className = 'btn btn-primary pop-in mt-20';
+      btn.textContent = 'Apply Whisper Merchant';
+      btn.addEventListener('click', () => {
+        btn.disabled = true;
+        this.onApplyWhisperMerchant();
+        btn.remove();
+      });
+      whisperContainer.appendChild(btn);
+    }
+  },
+
+  onApplyWhisperMerchant() {
+    if (!this._lastRarityResult) return;
+    const result = PostBattleEngine.applyWhisperMerchant(this._lastRarityResult);
+    this._lastRarityResult = result;
+
+    if (typeof TimerUtil !== 'undefined') {
+      const d1Label = result.effectiveDie1 !== result.die1 ? `${result.effectiveDie1}*` : `${result.die1}`;
+      const d2Label = result.effectiveDie2 !== result.die2 ? `${result.effectiveDie2}*` : `${result.die2}`;
+      const modStr  = result.modifier >= 0 ? `+${result.modifier}` : `${result.modifier}`;
+      const isLawAbiding = result.alignment === 'lawabiding';
+      TimerUtil.recordRolls('postBattleLastRun', [
+        `[+Whisper] 2D6: [${d1Label}, ${d2Label}]`,
+        `Mod: ${modStr}`,
+        isLawAbiding ? `Rare: ${result.total} / Illegal: ${result.total - 4}` : `Total: ${result.total}`,
+      ]);
+    }
+
+    const container = document.getElementById('pb-rarity-results');
+    if (!container) return;
+    animatedReplace(container, this._buildRarityResultDiv(result));
+  },
+
+  _buildRarityResultDiv(result) {
+    const d1Html = result.whisperMerchant && result.effectiveDie1 !== result.die1
+      ? `<b>${result.effectiveDie1}*</b>` : `${result.effectiveDie1}`;
+    const d2Html = result.whisperMerchant && result.effectiveDie2 !== result.die2
+      ? `<b>${result.effectiveDie2}*</b>` : `${result.effectiveDie2}`;
+    const modStr      = result.modifier >= 0 ? `+${result.modifier}` : `${result.modifier}`;
+    const whisperNote = result.whisperMerchant
+      ? ' <span style="font-size:0.85em;">(*Whisper Merchant)</span>' : '';
+
+    const isLawAbiding = result.alignment === 'lawabiding';
+    const heading = isLawAbiding
+      ? `Rare: ${result.total} &nbsp;&ndash;&ndash;&nbsp; Illegal: ${result.total - 4}`
+      : `Rarity / Illegal Level: ${result.total}`;
+
+    const box = document.createElement('div');
+    box.className = 'result-box result-box-blue result-box-primary mt-20';
+    box.innerHTML = `
+      <h3 class="result-heading mt-0 mb-0">${heading}</h3>
+      <div class="result-effect mt-10">2D6: [${d1Html}, ${d2Html}] ${modStr} = ${result.total}${whisperNote}</div>
+    `;
+    return box;
   },
 
   onRollEscape() {

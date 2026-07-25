@@ -26,6 +26,37 @@ export const PostBattleEngine = {
   },
 
   /**
+   * Roll 2D6 + modifier for the Trading Post Rarity / Illegal item level.
+   * If whisperMerchant is true, the lower of the two dice is replaced with 6.
+   * @param {number} modifier - Sum of all applicable modifiers.
+   * @param {boolean} whisperMerchant - Whether the Whisper Merchant replaces one die.
+   * @returns {{ die1: number, die2: number, effectiveDie1: number, effectiveDie2: number,
+   *             modifier: number, diceTotal: number, total: number, whisperMerchant: boolean }}
+   */
+  rollRarityLevel(modifier) {
+    const die1 = Dice.d6();
+    const die2 = Dice.d6();
+    const diceTotal = die1 + die2;
+    const total = diceTotal + modifier;
+    return { die1, die2, effectiveDie1: die1, effectiveDie2: die2, modifier, diceTotal, total, whisperMerchant: false };
+  },
+
+  /**
+   * Apply the Whisper Merchant rule to an existing rarity roll, replacing the
+   * lower die with 6. Call after rollRarityLevel when the player reveals a
+   * Whisper Merchant.
+   * @param {{ die1: number, die2: number, modifier: number }} prevResult
+   */
+  applyWhisperMerchant(prevResult) {
+    const { die1, die2, modifier } = prevResult;
+    const effectiveDie1 = die1 <= die2 ? 6 : die1;
+    const effectiveDie2 = die1 <= die2 ? die2 : 6;
+    const diceTotal = effectiveDie1 + effectiveDie2;
+    const total = diceTotal + modifier;
+    return { ...prevResult, effectiveDie1, effectiveDie2, diceTotal, total, whisperMerchant: true };
+  },
+
+  /**
    * Roll an escape test for a captured fighter.
    * @param {number} modifier - Sum of checked condition modifiers.
    * @returns {{ roll: number, modifier: number, total: number, natural6: boolean, escaped: boolean }}
