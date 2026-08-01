@@ -27,9 +27,8 @@ export const PostBattleEngine = {
 
   /**
    * Roll 2D6 + modifier for the Trading Post Rarity / Illegal item level.
-   * If whisperMerchant is true, the lower of the two dice is replaced with 6.
+   * To apply a Whisper Merchant after the roll, call applyWhisperMerchant(result).
    * @param {number} modifier - Sum of all applicable modifiers.
-   * @param {boolean} whisperMerchant - Whether the Whisper Merchant replaces one die.
    * @returns {{ die1: number, die2: number, effectiveDie1: number, effectiveDie2: number,
    *             modifier: number, diceTotal: number, total: number, whisperMerchant: boolean }}
    */

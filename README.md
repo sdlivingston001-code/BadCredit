@@ -85,6 +85,16 @@ index.md                 Landing page with links to all tools
 
 All `<script>` and `<link>` tags in the layout append `?v={{ site.time | date: '%s' }}` so browsers always fetch the latest assets after a deploy.
 
+### Documentation conventions
+
+- **JavaScript** — All Engine and UI modules use JSDoc: a file-level header block (description, key behaviors, `Depends on:`) plus per-method `@param`/`@returns` blocks. Follow this style for any new module or method.
+- **YAML data** — Files under `_data/` (e.g. `territories.yml`, `gangs.yml`, `xpTables.yml`, `weaponTraits.yml`, `fighterSkills.yml`, `_data/scenarios/*.yml`) have a header comment describing their schema/structure — read that first when adding or changing entries.
+
+### Known limitations
+
+- **Naming conventions are mixed by design**: YAML/JSON data uses `snake_case` keys (matching Necromunda source-book terminology), while JavaScript uses `camelCase`. This boundary is intentional and not something to "fix" — don't rename data keys to match JS style.
+- **Error handling is intentionally minimal** at `fetch()`/JSON-parse boundaries — this is a personal dev tool used at the table, not a production service, so failures are logged/shown inline rather than exhaustively guarded against.
+
 ---
 
 ## Tech Stack

@@ -23,6 +23,14 @@ import { animatedReplace } from './uiUtils.js';
 export const XPTablesUI = {
   xpData: null,
 
+  /**
+   * Load XP table data and render every section of the tool (user-choice
+   * advancements, skill roller, skill tables, random advancement table,
+   * skills reference). Also exposes `testAdvancement()`/`testSkillTable()`
+   * on `window` for console testing.
+   * @param {string} jsonPath - Path to xpTables.json.
+   * @returns {Promise<void>}
+   */
   async init(jsonPath) {
     try {
       this.xpData = await fetchJSON(jsonPath);
@@ -67,6 +75,7 @@ export const XPTablesUI = {
     }
   },
 
+  /** Wire the "Roll Advancement" button to `rollAdvancement()`. */
   bindEvents() {
     const button = document.getElementById("roll-advancement");
     if (button) {
@@ -74,6 +83,7 @@ export const XPTablesUI = {
     }
   },
 
+  /** Initialize the "time since last run" display for this tool. */
   initTimer() {
     if (typeof TimerUtil !== 'undefined') {
       TimerUtil.init('page-roll-info', 'xpTablesLastRun');
@@ -81,6 +91,11 @@ export const XPTablesUI = {
     }
   },
 
+  /**
+   * Render the static user-choice advancement table (cost/benefit reference
+   * for Leaders, Champions, Brutes, etc.), with a "Roll for Skill" button
+   * on rows that require a skill-table roll.
+   */
   displayUserChoiceAdvancements() {
     const container = document.getElementById("user-choice-advancements");
     if (!container || !this.xpData.advancements_userchoice) return;
@@ -105,6 +120,7 @@ export const XPTablesUI = {
     });
   },
 
+  /** Render the "Random Skill Generator" buttons (normal / exotic beast) and wire their dialogs. */
   renderSkillRoller() {
     const container = document.getElementById('skill-roller');
     if (!container || !this.xpData || !this.xpData.skills) return;
@@ -127,6 +143,12 @@ export const XPTablesUI = {
     });
   },
 
+  /**
+   * Show a modal skill-table picker (grouped by unaffiliated/affiliated,
+   * optionally filtered to only tables containing exotic-beast entries),
+   * then roll on the chosen table via `rollSkillFromSelector()`.
+   * @param {boolean} [exoticBeastMode=false] - Restrict the table list to skills usable by Exotic Beasts.
+   */
   showSkillRollerDialog(exoticBeastMode = false) {
     const skills = this.xpData.skills;
 
@@ -200,6 +222,14 @@ export const XPTablesUI = {
     select.addEventListener('keydown', (e) => { if (e.key === 'Enter') confirm(); });
   },
 
+  /**
+   * Roll on a single skill table selected from the skill-roller dialog and
+   * render the result. Handles three table shapes: D6 (with optional cost),
+   * D66 (values-range lookup), and exotic-beast filtered D6 (re-rolls until
+   * an exotic-beast-eligible entry is hit).
+   * @param {string} selectedKey - Key of the skill table in `xpData.skills`.
+   * @param {boolean} [isExoticBeast=false] - Whether to only accept exotic-beast entries.
+   */
   rollSkillFromSelector(selectedKey, isExoticBeast = false) {
     const tableData = this.xpData && this.xpData.skills && this.xpData.skills[selectedKey];
     if (!tableData) return;
@@ -260,6 +290,7 @@ export const XPTablesUI = {
     }
   },
 
+  /** Render the grid of buttons linking to each skill table (used for direct-roll access outside the advancement flow). */
   displaySkillTables() {
     const container = document.getElementById("skill-tables-list");
     if (!container) return;
@@ -275,6 +306,7 @@ export const XPTablesUI = {
     this._bindSkillTableButtons(container);
   },
 
+  /** Render the skill-table button grid into the results area (shown after clicking "Roll for Skill" on an advancement row). */
   showSkillTableSelector() {
     const container = document.getElementById("xp-tables-results");
     if (!container) return;
@@ -289,12 +321,21 @@ export const XPTablesUI = {
     container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   },
 
+  /**
+   * @param {Object} tableData - A single skill table entry.
+   * @returns {boolean} True if any D6 entry in the table is flagged `exotic_beast: true`.
+   */
   _hasExoticBeastSkills(tableData) {
     return Object.entries(tableData)
       .some(([k, v]) => !isNaN(k) && v && typeof v === 'object' && v.exotic_beast === true);
   },
 
-  // Finds the first entry in a results array whose values range includes the given roll.
+  /**
+   * Find the first D66 results entry whose `values` range includes the given roll.
+   * @param {Object[]} results - D66 table `results` array.
+   * @param {number} roll - The D66 roll to match.
+   * @returns {Object|null} The matching entry, or null.
+   */
   _findEntryByValues(results, roll) {
     for (const entry of results) {
       let values = entry.values;
@@ -304,18 +345,28 @@ export const XPTablesUI = {
     return null;
   },
 
+  /**
+   * @param {Object[]} [skillTables] - List of `{id, name}` skill tables; defaults to all tables.
+   * @returns {string} HTML for one `<button data-table-id>` per skill table.
+   */
   _skillButtonsHTML(skillTables = XPTablesEngine.getSkillTables()) {
     return skillTables
       .map(t => `<button class="btn-skill" data-table-id="${t.id}">${t.name}</button>`)
       .join('');
   },
 
+  /**
+   * Wire click handlers on every `[data-table-id]` button within `container`
+   * so it rolls the corresponding skill table via `rollSkillTable()`.
+   * @param {HTMLElement} container
+   */
   _bindSkillTableButtons(container) {
     container.querySelectorAll('[data-table-id]').forEach(btn => {
       btn.addEventListener('click', () => this.rollSkillTable(btn.dataset.tableId));
     });
   },
 
+  /** Roll the 2D6 random advancement table, record it in the run timer, and display the result. */
   rollAdvancement() {
     const advancementResult = XPTablesEngine.rollAdvancement();
     if (typeof TimerUtil !== 'undefined') {
@@ -327,11 +378,19 @@ export const XPTablesUI = {
     this.displayAdvancementResult(advancementResult);
   },
 
+  /**
+   * Roll a named skill table via the engine and display the result.
+   * @param {string} skillTableName - Key in `xpData.skills`/`xpData` (e.g. 'skill_agility').
+   */
   rollSkillTable(skillTableName) {
     const skillResult = XPTablesEngine.rollSkillTable(skillTableName);
     this.displaySkillResult(skillResult);
   },
 
+  /**
+   * Render the result of a random advancement roll into the results area.
+   * @param {Object} advancementResult - Result from `XPTablesEngine.rollAdvancement()` or `.testRoll()`.
+   */
   displayAdvancementResult(advancementResult) {
     const resultsContainer = document.getElementById("xp-tables-results");
     if (!resultsContainer) return;
@@ -355,6 +414,10 @@ export const XPTablesUI = {
     resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   },
 
+  /**
+   * Render the result of a skill-table roll (title + result box + "already have" footnote).
+   * @param {Object} skillResult - Result from `XPTablesEngine.rollSkillTable()` or `.testSkillTable()`.
+   */
   displaySkillResult(skillResult) {
     const resultsContainer = document.getElementById("xp-tables-results");
     if (!resultsContainer) return;
@@ -393,6 +456,10 @@ export const XPTablesUI = {
     resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   },
 
+  /**
+   * Render a collapsible reference table for every skillset in `xpData.skills`,
+   * auto-detecting D6 vs D66 shape and whether cost/exotic-beast columns are needed.
+   */
   renderSkillsReferenceTable() {
     const container = document.getElementById('skills-reference-table');
     if (!container || !this.xpData || !this.xpData.skills) return;
@@ -463,6 +530,12 @@ export const XPTablesUI = {
     container.innerHTML = sections;
   },
 
+  /**
+   * @param {Object} result - The rolled advancement entry (`advancement`, optional `ratingIncrease`).
+   * @param {number[]} rolls - Individual dice values rolled.
+   * @param {number} total - Sum of `rolls`.
+   * @returns {HTMLDivElement} A blue result box describing the advancement.
+   */
   createAdvancementResultBox(result, rolls, total) {
     const ratingHtml = result.ratingIncrease != null
       ? `<div class="result-effect">Rating: +${result.ratingIncrease}</div>`
@@ -476,6 +549,7 @@ export const XPTablesUI = {
     return div;
   },
 
+  /** Render the static 2D6 → advancement reference table. */
   displayRandomAdvancementsTable() {
     const container = document.getElementById("random-advancement-table");
     if (!container) return;
@@ -500,6 +574,12 @@ export const XPTablesUI = {
     `;
   },
 
+  /**
+   * @param {Object} result - The rolled skill entry (must have a `name`).
+   * @param {number[]} rolls - Individual dice values rolled.
+   * @param {number} total - Sum of `rolls`.
+   * @returns {HTMLDivElement} A green result box naming the rolled skill.
+   */
   createSkillResultBox(result, rolls, total) {
     const div = document.createElement('div');
     div.className = 'result-box result-box-green';

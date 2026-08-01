@@ -1,3 +1,11 @@
+# weaponTraits.yml
+#
+# weapon_traits.<TraitName> - One entry per weapon trait (Blaze, Disarm,
+#   Knockback, etc.). `name` is the display heading; `description` is raw
+#   HTML (rendered as-is) explaining the rule, referenced from the
+#   scavenged-weapon table in scenario_MeatForTheGrinder.yml and rendered
+#   as a collapsible reference section by scenario_MeatForTheGrinderUI.js.
+
 weapon_traits:
   Blaze:
     name: Blaze

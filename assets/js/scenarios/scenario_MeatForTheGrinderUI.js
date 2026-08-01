@@ -19,6 +19,15 @@ import { SkillsRenderer } from '../skillsRenderer.js';
 import { animatedReplace } from '../uiUtils.js';
 
 export const scenario_MeatForTheGrinderUI = {
+  /**
+   * Load scenario/traits/skills data, wire up events/timer, and render the
+   * weapon profile table, roll reference table, and (if available)
+   * weapon-trait and fighter-skill reference sections.
+   * @param {string} jsonPath - Path to scenario_MeatForTheGrinder.json.
+   * @param {string} [traitsJsonPath] - Optional path to weaponTraits.json.
+   * @param {string} [skillsJsonPath] - Optional path to fighterSkills.json.
+   * @returns {Promise<void>}
+   */
   async init(jsonPath, traitsJsonPath, skillsJsonPath) {
     try {
       const [data, traitsData, skillsData] = await Promise.all([
@@ -47,16 +56,25 @@ export const scenario_MeatForTheGrinderUI = {
     }
   },
 
+  /** Wire the "Roll Scavenged Weapon" button. */
   bindEvents() {
     const button = document.getElementById('roll-scavenged-weapon');
     if (button) button.addEventListener('click', () => this.doRoll());
   },
 
+  /** Initialize the "time since last run" display for this tool. */
   initTimer() {
     TimerUtil.init('page-roll-info', 'scenario_MeatForTheGrinderLastRun');
     TimerUtil.setupPageCleanup();
   },
 
+  /**
+   * Normalize a weapon profile so its stat block (RngS/RngL/Str/AP/etc.) is
+   * always at the top level, whether the YAML nested it under a sub-key
+   * (e.g. multi-profile weapons) or defined it directly on the profile.
+   * @param {Object} profile - A single weapon profile entry.
+   * @returns {Object} The profile with stats flattened to the top level.
+   */
   getProfileStats(profile) {
     if (profile.RngS !== undefined || profile.RngL !== undefined) return profile;
     for (const [key, val] of Object.entries(profile)) {
@@ -102,11 +120,21 @@ export const scenario_MeatForTheGrinderUI = {
     ).join('');
   },
 
+  /**
+   * Render the fighter-skills reference section, restricted to the skills
+   * relevant to this scenario (True Grit, Iron Jaw, Unstoppable).
+   * @param {Object} skillsData - Parsed fighterSkills.json.
+   */
   renderFighterSkills(skillsData) {
     const container = document.getElementById('fighter-skills-container');
     SkillsRenderer.renderSkills(skillsData, container, ['True Grit', 'Iron Jaw', 'Unstoppable']);
   },
 
+  /**
+   * Render the full scavenged-weapon profiles table, including multi-profile
+   * weapons (grouped with header/first/mid/last row styling) via `getProfileStats()`.
+   * @param {Object} data - Scenario data with `scavenged_weapon_table`.
+   */
   renderWeaponTable(data) {
     const container = document.getElementById('weapon-profiles-table');
     if (!container) return;
@@ -152,6 +180,7 @@ export const scenario_MeatForTheGrinderUI = {
     `;
   },
 
+  /** Roll 2D6 on the scavenged weapon table, record it in the run timer, and display the result. */
   doRoll() {
     const container = document.getElementById('scavenged-weapons-results');
     if (!container) return;

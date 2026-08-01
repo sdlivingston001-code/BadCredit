@@ -1,3 +1,23 @@
+# gangs.yml
+#
+# One top-level key per gang (used as the `<gangId>` suffix for territory
+# overrides in territories.yml, e.g. `income_cawdor`). Fields:
+#   name             - Display name shown in the gang selector.
+#   dominionGangId   - The canonical Dominion-campaign house/gang ID used to
+#                      key gang-specific overrides elsewhere. For "legacy"
+#                      gangs (Venators, Outcasts, Secundan Incursion) this
+#                      is literally the string "legacy" — see below.
+#   legacy_venator, legacy_outcast, legacy_secundan_incursion
+#                    - Set to 1 on a normal house entry to mark it as a
+#                      valid house affiliation for that legacy gang type.
+#                      territoryUI.js reads these flags to populate the
+#                      "Select House Affiliation" dropdown shown when a
+#                      legacy gang is selected.
+#
+# Legacy gangs (dominionGangId: legacy) don't have their own territory
+# rules; the player picks a house affiliation at runtime and that house's
+# rules are used instead (see territoryUI.js `updateLegacySelector`).
+
 cawdor: #House of faith
   name: House Cawdor
   dominionGangId: cawdor

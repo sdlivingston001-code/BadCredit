@@ -1,3 +1,11 @@
+# 9_borderDispute.yml
+#
+# Scenario definition, keyed by section (battle_type, battlefield, crews,
+# deployment, etc.). Values are typically short enum tokens (e.g.
+# `setup: standard`) resolved to full display text via scenario_defaults.yml,
+# or free-text/HTML shown as-is (e.g. `restrictions`, `steps`).
+# See scenario_defaults.yml for the list of valid tokens per field.
+
 id: 9_borderDispute
 number: 9
 name: Border Dispute

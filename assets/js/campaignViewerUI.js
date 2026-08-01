@@ -29,6 +29,16 @@ export const CampaignViewerUI = {
   localGangs: null,
   campaignIdInput: null,
 
+  /**
+   * Wire the campaign-ID input and refresh button, load local
+   * territories/gangs data (used for validation sections), and start the
+   * cache-age timer display.
+   * @param {string} containerId - Element ID to render campaign data into.
+   * @param {string} loadButtonId - Element ID of the "Load"/"Refresh" button.
+   * @param {string} timerContainerId - Element ID for the cache-age timer text.
+   * @param {string} campaignIdInputId - Element ID of the campaign ID `<input>`.
+   * @returns {Promise<void>}
+   */
   async init(containerId, loadButtonId, timerContainerId, campaignIdInputId) {
     this.containerId = containerId;
     this.refreshButton = document.getElementById(loadButtonId);
@@ -59,6 +69,11 @@ export const CampaignViewerUI = {
     this.initTimer();
   },
 
+  /**
+   * Validate and persist the campaign ID from the input field (via
+   * `CampaignViewerEngine.setCampaignId()`), then trigger a refresh.
+   * Alerts the user if the field is empty or not a valid UUID.
+   */
   setCampaignId() {
     const newId = this.campaignIdInput.value.trim();
     if (!newId) {
@@ -72,6 +87,11 @@ export const CampaignViewerUI = {
     this.refresh();
   },
 
+  /**
+   * Fetch and store `data/gangs.json` for the gang-type validation section.
+   * Sets `this.localGangs` to `[]`-shaped array data, or leaves it unset on failure.
+   * @returns {Promise<void>}
+   */
   async loadLocalGangs() {
     try {
       const baseUrl = window.location.pathname.includes('/BadCredit/') ? '/BadCredit' : '';
@@ -89,6 +109,12 @@ export const CampaignViewerUI = {
     }
   },
 
+  /**
+   * Fetch and store `data/territories.json` for the territory-mapping
+   * validation section. Sets `this.localTerritories` to array data, or
+   * leaves it unset on failure.
+   * @returns {Promise<void>}
+   */
   async loadLocalTerritories() {
     try {
       const baseUrl = window.location.pathname.includes('/BadCredit/') ? '/BadCredit' : '';
@@ -106,6 +132,7 @@ export const CampaignViewerUI = {
     }
   },
 
+  /** Start a 1-second interval updating the cache-age/cooldown timer display. */
   initTimer() {
     if (!this.timerContainer) return;
 
@@ -116,6 +143,10 @@ export const CampaignViewerUI = {
     }, 1000);
   },
 
+  /**
+   * Update the timer text to show either the remaining rate-limit cooldown
+   * (and disable the refresh button) or how long ago data was last fetched.
+   */
   updateTimerDisplay() {
     if (!this.timerContainer) return;
 
@@ -151,6 +182,11 @@ export const CampaignViewerUI = {
     }
   },
 
+  /**
+   * Fetch campaign data (cached or fresh, per the engine's cooldown logic)
+   * and render it, or show a rate-limit/error message.
+   * @returns {Promise<void>}
+   */
   async loadAndDisplay() {
     const container = document.getElementById(this.containerId);
     if (!container) return;
@@ -183,6 +219,12 @@ export const CampaignViewerUI = {
     this.updateTimerDisplay();
   },
 
+  /**
+   * Force-refresh campaign data from the API (bypassing the cache), after
+   * checking the 15-minute cooldown. Shows a loading state, then renders
+   * the result or an error/rate-limit message.
+   * @returns {Promise<void>}
+   */
   async refresh() {
     // Check if we can refresh
     const timeRemaining = CampaignViewerEngine.getTimeUntilNextFetch();
@@ -230,6 +272,13 @@ export const CampaignViewerUI = {
     }
   },
 
+  /**
+   * Render every campaign data section into `container`: cache notice,
+   * overview, stats, gang leaderboard, territory control, and (if local
+   * data loaded) the territory/gang mapping validation sections.
+   * @param {HTMLElement} container - Element to render all sections into.
+   * @param {boolean} [fromCache=false] - Whether the data came from the local cache (shows a notice banner).
+   */
   displayCampaignData(container, fromCache = false) {
     container.innerHTML = '';
 
@@ -276,6 +325,10 @@ export const CampaignViewerUI = {
     }
   },
 
+  /**
+   * @param {Object} campaignInfo - `{ campaign_name, campaign_type_name, status }` from the engine.
+   * @returns {HTMLDivElement} Section with campaign name heading and a type/status info box.
+   */
   createCampaignOverview(campaignInfo) {
     const section = document.createElement('div');
     section.className = 'mb-20';
@@ -296,6 +349,10 @@ export const CampaignViewerUI = {
     return section;
   },
 
+  /**
+   * @param {Object} stats - Aggregated stats from `CampaignViewerEngine.getCampaignStats()`.
+   * @returns {HTMLDivElement} Section listing gang/member/wealth/territory totals.
+   */
   createStatsSection(stats) {
     const section = document.createElement('div');
     section.className = 'mb-20';
@@ -320,6 +377,9 @@ export const CampaignViewerUI = {
     return section;
   },
 
+  /**
+   * @returns {HTMLDivElement} Section listing every gang sorted by rating, with medal icons for the top 3.
+   */
   createGangsLeaderboard() {
     const section = document.createElement('div');
     section.className = 'mb-20';
@@ -358,6 +418,9 @@ export const CampaignViewerUI = {
     return section;
   },
 
+  /**
+   * @returns {HTMLDivElement} Section listing controlled territories (with owning gang) and unclaimed territories.
+   */
   createTerritorySection() {
     const section = document.createElement('div');
     section.className = 'mb-20';
@@ -412,6 +475,13 @@ export const CampaignViewerUI = {
     return section;
   },
 
+  /**
+   * Compare API territory names against `this.localTerritories` (via
+   * `CampaignViewerEngine.validateTerritoryMappings()`) and render a
+   * summary plus lists of valid/unmapped territories, to catch data drift
+   * between Munda Manager and this repo's territories.yml.
+   * @returns {HTMLDivElement}
+   */
   createTerritoryValidationSection() {
     const section = document.createElement('div');
     section.className = 'mb-20';
@@ -467,6 +537,13 @@ export const CampaignViewerUI = {
     return section;
   },
 
+  /**
+   * Compare API gang types against `this.localGangs` (via
+   * `CampaignViewerEngine.validateGangMappings()`) and render a summary
+   * plus lists of valid/unmapped gang types, to catch data drift between
+   * Munda Manager and this repo's gangs.yml.
+   * @returns {HTMLDivElement}
+   */
   createGangValidationSection() {
     const section = document.createElement('div');
     section.className = 'mb-20';

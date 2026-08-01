@@ -25,6 +25,13 @@ import { animatedReplace, delay, moveMutationSections } from './uiUtils.js';
 
 export const PostBattleUI = {
 
+  /**
+   * Load injury data for use by the Succumb/Ransom/Critical Injury
+   * sections, wire up events/timer, and expose `testInjury(roll)` on
+   * `window` for console testing.
+   * @param {string} jsonPath - Path to lastingInjuries.json.
+   * @returns {Promise<void>}
+   */
   async init(jsonPath) {
     try {
       const data = await fetchJSON(jsonPath);
@@ -48,6 +55,12 @@ export const PostBattleUI = {
     }
   },
 
+  /**
+   * Wire every button/selector on the post-battle sequence page: injury
+   * mode selector, succumb roll, injury resolve, escape roll, ransom
+   * injury, critical injury treatment, Trading Post rarity roll, and the
+   * mutually-exclusive "Draw"/"Lost" capture checkboxes.
+   */
   bindEvents() {
     // Mode selector → update LastingInjuriesEngine
     const modeSelector = document.getElementById('pb-injury-mode');
@@ -106,11 +119,19 @@ export const PostBattleUI = {
     }
   },
 
+  /** Initialize the "time since last run" display and register cleanup on page navigation. */
   initTimers() {
     TimerUtil.init('page-roll-info', 'postBattleLastRun');
     TimerUtil.setupPageCleanup();
   },
 
+  /**
+   * Read all Trading Post modifier inputs (leader, champions, savvy,
+   * reputation, underhive), roll 2D6 + modifier via `PostBattleEngine`,
+   * record it in the run timer, display the result, and show an
+   * "Apply Whisper Merchant" button to reroll one die as a 6.
+   * @returns {Promise<void>}
+   */
   async onRollRarityLevel() {
     const alignment = document.getElementById('pb-tp-alignment')?.value ?? 'lawabiding';
     const leader     = document.getElementById('pb-tp-leader')?.checked ?  2 : 0;
@@ -155,6 +176,11 @@ export const PostBattleUI = {
     }
   },
 
+  /**
+   * Apply the Whisper Merchant bonus (replace the lower die with a 6) to
+   * the last rarity roll, record the adjustment in the run timer, and
+   * re-render the result.
+   */
   onApplyWhisperMerchant() {
     if (!this._lastRarityResult) return;
     const result = PostBattleEngine.applyWhisperMerchant(this._lastRarityResult);
@@ -177,6 +203,10 @@ export const PostBattleUI = {
     animatedReplace(container, this._buildRarityResultDiv(result));
   },
 
+  /**
+   * @param {Object} result - Rarity roll result from `PostBattleEngine.rollRarityLevel()`/`.applyWhisperMerchant()`.
+   * @returns {HTMLDivElement} Result box showing dice, modifier, and rare/illegal totals.
+   */
   _buildRarityResultDiv(result) {
     const d1Html = result.whisperMerchant && result.effectiveDie1 !== result.die1
       ? `<b>${result.effectiveDie1}*</b>` : `${result.effectiveDie1}`;
@@ -200,6 +230,11 @@ export const PostBattleUI = {
     return box;
   },
 
+  /**
+   * Read the capture-condition checkboxes (draw, lost, webbed, skinblade),
+   * roll the escape test via `PostBattleEngine`, record it in the run
+   * timer, and display the outcome (escaped / captured).
+   */
   onRollEscape() {
     const draw      = document.getElementById('pb-cap-draw')?.checked     ? -1 : 0;
     const lost      = document.getElementById('pb-cap-lost')?.checked     ? -2 : 0;
@@ -238,6 +273,12 @@ export const PostBattleUI = {
     animatedReplace(container, div);
   },
 
+  /**
+   * Roll the Succumb test, record it in the run timer, display the
+   * outcome, and show/hide the "Resolve Lasting Injury" button based on
+   * whether the fighter succumbed.
+   * @returns {Promise<void>}
+   */
   async onRollSuccumb() {
     const { roll, succumbed } = PostBattleEngine.rollSuccumb();
 
@@ -271,6 +312,7 @@ export const PostBattleUI = {
     }
   },
 
+  /** Roll a lasting injury for a succumbed fighter, record it in the run timer, and display the result in the main injury panel. */
   onResolveInjury() {
     const result = LastingInjuriesEngine.resolveInjury();
 
@@ -284,6 +326,7 @@ export const PostBattleUI = {
     this.displayInjuryResult(result, 'pb-injury-results', 'pb-injury-cyberteknika', 'pb-injury-mutation');
   },
 
+  /** Roll a lasting injury for a ransomed/captured fighter, record it in the run timer, and display the result in the ransom injury panel. */
   onResolveRansomInjury() {
     const result = LastingInjuriesEngine.resolveInjury();
 
@@ -297,6 +340,15 @@ export const PostBattleUI = {
     this.displayInjuryResult(result, 'pb-ransom-injury-results', 'pb-ransom-injury-cyberteknika', 'pb-ransom-injury-mutation');
   },
 
+  /**
+   * Flatten a resolved injury result into a list of roll-history strings
+   * for the run timer (main roll, any type-specific random-effect roll,
+   * and any additional injuries).
+   * @param {Object} result - Result from `LastingInjuriesEngine.resolveInjury()`.
+   * @param {string} diceLabel - 'D6' or 'D66', matching the current injury mode.
+   * @param {string} [prefix=''] - Optional label prefix (e.g. '[Ransom]').
+   * @returns {string[]} Roll descriptions for the timer history.
+   */
   buildInjuryRolls(result, diceLabel, prefix = '') {
     const firstRoll = prefix ? `${prefix} ${diceLabel}: ${result.roll}` : `${diceLabel}: ${result.roll}`;
     const rolls = [firstRoll];
@@ -323,6 +375,11 @@ export const PostBattleUI = {
     return rolls;
   },
 
+  /**
+   * Handle the "Resolve Critical Injury" button: if the selected Rogue Doc
+   * mode has a credit cost, show the cost-confirmation panel first;
+   * otherwise resolve treatment immediately (free Hanger-on variant).
+   */
   onResolveCriticalInjury() {
     if (typeof TimerUtil !== 'undefined') {
       TimerUtil.markRun('postBattleLastRun', ['[Critical Injury]']);
@@ -342,6 +399,12 @@ export const PostBattleUI = {
     }
   },
 
+  /**
+   * Roll and display the Rogue Doc treatment cost, with buttons to proceed
+   * (pay and resolve treatment) or refuse (fighter dies).
+   * @param {string} mode - Rogue Doc variant key (e.g. 'trading_post_rogue_doc').
+   * @param {string|null} [gangId=null] - Gang-specific cost override key (e.g. 'genestealer_cult'), or null.
+   */
   showCriticalInjuryCost(mode, gangId = null) {
     const costResult = LastingInjuriesEngine.calculateRogueDocCost(mode, gangId);
     const container = document.getElementById('pb-critical-injury-results');
@@ -383,6 +446,7 @@ export const PostBattleUI = {
     animatedReplace(container, costDiv);
   },
 
+  /** Render the "Fighter Dies" outcome shown when treatment is refused, clearing any leftover cyberteknika/mutation check panels. */
   displayCriticalFighterDeath() {
     const container = document.getElementById('pb-critical-injury-results');
     if (!container) return;
@@ -401,6 +465,14 @@ export const PostBattleUI = {
     animatedReplace(container, div);
   },
 
+  /**
+   * Animate in the Rogue Doc treatment result (via `InjuryRenderer`),
+   * record all associated rolls in the run timer, then reveal the
+   * cyberteknika test button and move any mutation-check sections into
+   * their own panel.
+   * @param {Object} result - Result from `LastingInjuriesEngine.resolveRogueDoc()`.
+   * @returns {Promise<void>}
+   */
   async displayCriticalRogueDocResult(result) {
     const container = document.getElementById('pb-critical-injury-results');
     if (!container) return;
@@ -427,6 +499,12 @@ export const PostBattleUI = {
     }
   },
 
+  /**
+   * Flatten a Rogue Doc treatment result into roll-history strings for the
+   * run timer (cost roll, treatment roll, and any stabilised-injury rolls).
+   * @param {Object} result - Result from `LastingInjuriesEngine.resolveRogueDoc()`.
+   * @returns {string[]}
+   */
   buildCriticalRogueDocRolls(result) {
     const rolls = ['[Critical Injury]'];
     if (result.cost !== null && result.cost !== undefined) {
@@ -448,6 +526,17 @@ export const PostBattleUI = {
     return rolls;
   },
 
+  /**
+   * Shared renderer for both the main Lasting Injury panel and the Ransom
+   * injury panel: animates in the result box, then reveals the
+   * cyberteknika test button and moves any mutation-check sections into
+   * their own panel.
+   * @param {Object} result - Result from `LastingInjuriesEngine.resolveInjury()`.
+   * @param {string} [containerId='pb-injury-results'] - Element ID to render the result into.
+   * @param {?string} [cyberteknikaContainerId=null] - Element ID for the cyberteknika test button, if applicable.
+   * @param {?string} [mutationContainerId=null] - Element ID to move mutation-check sections into, if applicable.
+   * @returns {Promise<void>}
+   */
   async displayInjuryResult(result, containerId = 'pb-injury-results', cyberteknikaContainerId = null, mutationContainerId = null) {
     const container = document.getElementById(containerId);
     if (!container) return;

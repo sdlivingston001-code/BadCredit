@@ -1,3 +1,21 @@
+# xpTables.yml
+#
+# advancements_userchoice - Static reference table of XP-spend options
+#   (cost, advancement text, ratingIncrease). Rows with a `sides` field
+#   get a "Roll for Skill" button in the UI, linking to a skill table below.
+#
+# advancements_random - The 2D6 random advancement table (`results`), each
+#   entry keyed by an internal ID with `values` (matching roll(s)),
+#   `advancement` text, and `ratingIncrease`.
+#
+# skills.<skillTableName> - One entry per skill table (e.g. skill_agility).
+#   `gang` and `class` classify the table for the skill-roller dialog's
+#   grouping/labels. `sides` is either a number (D6 table, entries keyed
+#   1-6) or "d66" (D66 table, entries live under `results` with a
+#   `values` range). Individual skill entries may include `cost` (credits),
+#   `exotic_beast: true` (usable by Exotic Beast fighters), and
+#   `conditional_special` (extra text shown for certain classes, e.g. Wyrd).
+
 advancements_userchoice:
   choose_primary_skill:
     cost: 5

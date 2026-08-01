@@ -22,6 +22,12 @@ import { animatedReplace, delay, moveMutationSections } from './uiUtils.js';
 export const LastingInjuriesUI = {
   injuriesData: null,
 
+  /**
+   * Load injury data, wire up events/timer, and render the initial injury
+   * table. Also exposes `testInjury(roll)` on `window` for console testing.
+   * @param {string} jsonPath - Path to lastingInjuries.json.
+   * @returns {Promise<void>}
+   */
   async init(jsonPath) {
     try {
       this.injuriesData = await fetchJSON(jsonPath);
@@ -54,6 +60,7 @@ export const LastingInjuriesUI = {
     }
   },
 
+  /** Wire the mode selector's change event and the "Resolve Injury" button. */
   bindEvents() {
     // Mode selector change event
     const modeSelector = document.getElementById("injury-mode-selector");
@@ -74,6 +81,7 @@ export const LastingInjuriesUI = {
 
   },
 
+  /** Initialize the "time since last run" display and register cleanup on page navigation. */
   initTimers() {
     const timerContainer = document.getElementById("page-roll-info");
     if (timerContainer && typeof TimerUtil !== 'undefined') {
@@ -86,6 +94,11 @@ export const LastingInjuriesUI = {
     }
   },
 
+  /**
+   * Switch the active injury mode, clear any previous result/reference
+   * panels, and re-render the injury table for the new mode.
+   * @param {string} mode - Key matching a top-level entry in the injury data.
+   */
   changeMode(mode) {
     LastingInjuriesEngine.setMode(mode);
     // Clear previous results when switching modes
@@ -100,6 +113,11 @@ export const LastingInjuriesUI = {
     this.renderInjuryTable();
   },
 
+  /**
+   * Render the full injury reference table for the current mode (roll,
+   * name, effect, and optional status/glitch columns), followed by the
+   * cyberteknika and mutation reference tables.
+   */
   renderInjuryTable() {
     const container = document.getElementById('injury-table-container');
     if (!container || !LastingInjuriesEngine.injuriesData) return;
@@ -147,6 +165,12 @@ export const LastingInjuriesUI = {
     this.renderMutationTable(container);
   },
 
+  /**
+   * Render the Archaeo-Cyberteknika reference table (Van Saar-only rule):
+   * lists which injuries can trigger which implant test, grouped by implant.
+   * No-op for Spyrer/Ironman modes or if no cyberteknika data is configured.
+   * @param {HTMLElement} container - Element to append the reference section to.
+   */
   renderCyberteknikaTable(container) {
     const mode = LastingInjuriesEngine.currentMode;
     if (mode === 'spyrer_hunting_rig_glitches' || mode === 'spyrer_hunting_rig_glitches_core' || mode === 'ironman_lasting_injuries') return;
@@ -203,6 +227,12 @@ export const LastingInjuriesUI = {
     container.appendChild(section);
   },
 
+  /**
+   * Render the Chaos Mutation reference table: lists which injuries can
+   * convert into which mutation on a D6 test. No-op for Spyrer/Ironman modes
+   * or if no mutation exception data is configured.
+   * @param {HTMLElement} container - Element to append the reference section to.
+   */
   renderMutationTable(container) {
     const mode = LastingInjuriesEngine.currentMode;
     if (mode === 'spyrer_hunting_rig_glitches' || mode === 'spyrer_hunting_rig_glitches_core' || mode === 'ironman_lasting_injuries') return;
@@ -250,6 +280,13 @@ export const LastingInjuriesUI = {
     container.appendChild(section);
   },
 
+  /**
+   * Flatten a resolved injury result into a list of roll-history strings
+   * for the run timer (main roll, any random-effect roll, and any
+   * recursively-rolled additional injuries).
+   * @param {Object} result - Result from `LastingInjuriesEngine.resolveInjury()`.
+   * @returns {string[]} Roll descriptions, e.g. `["D66: 23", "Additional 1: 45"]`.
+   */
   collectInjuryRolls(result) {
     if (!result || result.roll === 'Error') return [];
     const modeData = LastingInjuriesEngine.getCurrentModeData();
@@ -269,6 +306,7 @@ export const LastingInjuriesUI = {
     return rolls;
   },
 
+  /** Roll a lasting injury for the current mode, record it in the run timer, and display the result. */
   resolveInjury() {
     const result = LastingInjuriesEngine.resolveInjury();
     if (typeof TimerUtil !== 'undefined') {
@@ -279,6 +317,13 @@ export const LastingInjuriesUI = {
     this.displayResult(result);
   },
 
+  /**
+   * Animate in the injury result box (name, fixed/random effects, any
+   * additional-injury boxes), then reveal the cyberteknika test button and
+   * move any mutation-check sections into their own panel.
+   * @param {Object} result - Result from `LastingInjuriesEngine.resolveInjury()` or `.testRoll()`.
+   * @returns {Promise<void>}
+   */
   async displayResult(result) {
     const resultsContainer = document.getElementById("lasting-injuries-results");
     if (!resultsContainer) return;

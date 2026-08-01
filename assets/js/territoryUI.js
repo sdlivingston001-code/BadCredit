@@ -35,6 +35,14 @@ export const TerritoryUI = {
   gangs: null,
   lastingInjuriesData: null,
 
+  /**
+   * Load territory/gang/injury data and render the full tool UI.
+   * @param {string} jsonPath - Path to territories.json.
+   * @param {string} gangsPath - Path to gangs.json.
+   * @param {string} [lastingInjuriesPath] - Optional path to lastingInjuries.json
+   *   (needed for the "collapsed dome" event's injury roll).
+   * @returns {Promise<void>}
+   */
   async init(jsonPath, gangsPath, lastingInjuriesPath) {
     try {
       this.territories = await fetchJSON(jsonPath);
@@ -73,11 +81,14 @@ export const TerritoryUI = {
     }
   },
 
+  /** Index `this.territories` by id into `this.territoryMap` for quick lookup. */
   buildTerritoryMap() {
     this.territories.forEach(t => {
       this.territoryMap[t.id] = t;
     });
   },
+
+  /** Render the gang `<select>` dropdown and wire its change handler. */
   renderGangSelector() {
     const container = document.getElementById('territory-container');
     if (!container) return;
@@ -108,6 +119,13 @@ export const TerritoryUI = {
     });
   },
 
+  /**
+   * If the selected gang is a "legacy" placeholder (Venators, Outcasts,
+   * Secundan Incursion), render a second dropdown so the player can pick
+   * which house's special rules their legacy gang uses. Removes the
+   * dropdown entirely for non-legacy gangs.
+   * @param {string|null} selectedGangKey - Key of the gang chosen in the main selector.
+   */
   updateLegacySelector(selectedGangKey) {
     const container = document.getElementById("territory-container");
     if (!container) return;
@@ -160,6 +178,11 @@ export const TerritoryUI = {
     }
   },
 
+  /**
+   * (Re)render the territory checkbox list, grouped by level and sorted
+   * alphabetically. Preserves any currently-checked boxes and their
+   * per-territory count inputs across re-renders (e.g. after a gang change).
+   */
   renderCheckboxes() {
     const container = document.getElementById("territory-container");
     if (!container) return;
@@ -255,6 +278,12 @@ export const TerritoryUI = {
     });
   },
 
+  /**
+   * Wire the "Resolve Territories" button: validates gang selection,
+   * prompts for any per-territory user input (suit guess, dice count,
+   * fighter count), calls `TerritoryEngine.resolve_all()`, resolves any
+   * triggered special events, and renders the results.
+   */
   bindEvents() {
     const button = document.getElementById("resolve-territories");
     if (!button) return;
@@ -381,6 +410,11 @@ export const TerritoryUI = {
     });
   },
 
+  /**
+   * Create (once) and insert the hidden warning `<div>` shown when the
+   * player tries to resolve territories without selecting a gang.
+   * @returns {HTMLDivElement}
+   */
   createWarningDiv() {
     const warningDiv = document.createElement("div");
     warningDiv.id = "gang-selection-warning";
@@ -394,11 +428,20 @@ export const TerritoryUI = {
     return warningDiv;
   },
 
+  /**
+   * @returns {string[]} IDs of all currently-checked territory checkboxes (no duplicates from count inputs).
+   */
   getSelectedTerritoryIds() {
     const checkboxes = document.querySelectorAll(".territory-checkbox:checked");
     return Array.from(checkboxes).map(cb => cb.value);
   },
 
+  /**
+   * Like `getSelectedTerritoryIds()`, but repeats each ID according to its
+   * count input, so a territory checked with count=3 appears 3 times
+   * (used for territories the player controls multiple copies of).
+   * @returns {string[]} Territory IDs, duplicated per their count input.
+   */
   getSelectedTerritoriesWithCounts() {
     const checkboxes = document.querySelectorAll(".territory-checkbox:checked");
     const result = [];
@@ -417,6 +460,7 @@ export const TerritoryUI = {
     return result;
   },
 
+  /** Initialize the "time since last run" display for this tool. */
   initTimer() {
     if (typeof TimerUtil !== 'undefined') {
       TimerUtil.init('page-roll-info', 'territoryLastRun');
@@ -424,7 +468,11 @@ export const TerritoryUI = {
     }
   },
 
-  // Show a custom dialog for suit selection with colored suits
+  /**
+   * Show a modal card-suit picker (for deck-based/gambling-den income).
+   * @param {string} territoryName - Displayed in the dialog title.
+   * @returns {Promise<string|null>} The chosen suit symbol (♠♥♦♣), or null if cancelled.
+   */
   showSuitSelectionDialog(territoryName) {
     return new Promise((resolve) => {
       // Create modal overlay
@@ -489,6 +537,13 @@ export const TerritoryUI = {
     });
   },
 
+  /**
+   * Show a modal prompting for the gang's total fighter count, used to
+   * randomly pick which fighter is affected by an event (e.g. Refuse Drift).
+   * @param {string} territoryName - Displayed in the dialog title.
+   * @param {string} contextMessage - Explanatory text shown above the input.
+   * @returns {Promise<number|null>} The entered fighter count, or null if cancelled.
+   */
   showFighterCountDialog(territoryName, contextMessage) {
     return new Promise((resolve) => {
       const overlay = document.createElement('div');
@@ -544,6 +599,12 @@ export const TerritoryUI = {
     });
   },
 
+  /**
+   * Show a modal for the "Collapsed Dome" event: collects fighter count and
+   * the injury table to roll on (house rules / core / ironman).
+   * @param {string} territoryName - Displayed in the dialog title.
+   * @returns {Promise<{totalFighters: number, injuryMode: string}|null>} Chosen values, or null if cancelled.
+   */
   showCollapsedDomeInjuryDialog(territoryName) {
     return new Promise((resolve) => {
       const overlay = document.createElement('div');
@@ -611,6 +672,15 @@ export const TerritoryUI = {
     });
   },
 
+  /**
+   * Show a generic modal number-input dialog (used for territories with a
+   * player-chosen dice count, e.g. "How many dice to roll for income?").
+   * @param {string} territoryName - Displayed in the dialog title.
+   * @param {string} message - Prompt text (may contain `<br>`-converted newlines).
+   * @param {number} min - Minimum accepted value.
+   * @param {number} max - Maximum accepted value.
+   * @returns {Promise<number|null>} The entered value, or null if cancelled.
+   */
   showNumberInputDialog(territoryName, message, min, max) {
     return new Promise((resolve) => {
       const overlay = document.createElement('div');
@@ -663,7 +733,16 @@ export const TerritoryUI = {
     });
   },
 
-  // Helper: Create a results section with title and list of items
+  /**
+   * Build a `<div>` with a heading and a `<ul>` listing one line per
+   * territory result that has data for `propertyName` (e.g. "income").
+   * @param {string} title - Section heading text.
+   * @param {string} icon - Inline SVG icon markup shown next to the heading.
+   * @param {Object[]} results - Per-territory resolution results.
+   * @param {string} propertyName - Key on each result to read (e.g. 'income', 'recruit').
+   * @param {?Function} [formatter] - Optional `(data, result) => string` to customize the description text.
+   * @returns {HTMLDivElement}
+   */
   createResultSection(title, icon, results, propertyName, formatter = null) {
     const section = document.createElement("div");
     section.innerHTML = `<h3>${icon} ${title}</h3>`;
@@ -690,7 +769,13 @@ export const TerritoryUI = {
     return section;
   },
 
-  // Helper: Create "without rules" list items
+  /**
+   * Build `<li>` elements listing territories that lack a given rule
+   * category (e.g. "No income"), for the collapsible "Territories Without
+   * Rules" summary section.
+   * @param {{label: string, territories: string[]}[]} categoriesWithout
+   * @returns {HTMLLIElement[]}
+   */
   createWithoutRulesItems(categoriesWithout) {
     const items = [];
     categoriesWithout.forEach(({ label, territories }) => {
@@ -703,6 +788,22 @@ export const TerritoryUI = {
     return items;
   },
 
+  /**
+   * Render the full resolution results: special events (with any rolled
+   * injuries/misses), income total + special effects, and one section per
+   * rule category (recruit, reputation, gear, etc.), plus a collapsible
+   * list of territories that had no rule for each category.
+   * @param {Object[]} results - Per-territory resolution results from `TerritoryEngine.resolve_all()`.
+   * @param {string[]} territoriesWithoutIncome
+   * @param {string[]} territoriesWithoutRecruit
+   * @param {string[]} territoriesWithoutFixedRecruit
+   * @param {string[]} territoriesWithoutReputation
+   * @param {string[]} territoriesWithoutFixedGear
+   * @param {string[]} territoriesWithoutBattleSpecialRules
+   * @param {string[]} territoriesWithoutTradingSpecialRules
+   * @param {string[]} territoriesWithoutScenarioSelectionSpecialRules
+   * @param {Object[]} territoriesWithEvents - Territories whose events (e.g. Collapsed Dome) need manual resolution.
+   */
   displayResults(results, territoriesWithoutIncome, territoriesWithoutRecruit, territoriesWithoutFixedRecruit, territoriesWithoutReputation, territoriesWithoutFixedGear, territoriesWithoutBattleSpecialRules, territoriesWithoutTradingSpecialRules, territoriesWithoutScenarioSelectionSpecialRules, territoriesWithEvents) {
     const resultsContainer = document.getElementById("territory-results");
     if (!resultsContainer) return;
@@ -843,7 +944,12 @@ export const TerritoryUI = {
     }
   },
 
-  // Describe income config accurately from resolved fields
+  /**
+   * Build a human-readable description of a resolved income config for the
+   * reference table (dice formula, deck draw, conditional bonus, event text).
+   * @param {Object|null} rawConfig - Raw (possibly schema-referencing) income block.
+   * @returns {string|null} HTML description, or null if no config given.
+   */
   describeIncome(rawConfig) {
     if (!rawConfig) return null;
     const c = (typeof TerritorySchemas !== 'undefined' && TerritorySchemas.resolveProperty)
@@ -874,7 +980,12 @@ export const TerritoryUI = {
     return parts.join('<br>');
   },
 
-  // Describe recruit config with full outcomes table
+  /**
+   * Build a human-readable description of a resolved recruit config,
+   * including the full success-count → outcome table, for the reference table.
+   * @param {Object|null} rawConfig - Raw (possibly schema-referencing) recruit block.
+   * @returns {string|null} HTML description, or null if no config given.
+   */
   describeRecruit(rawConfig) {
     if (!rawConfig) return null;
     const c = (typeof TerritorySchemas !== 'undefined' && TerritorySchemas.resolveProperty)
@@ -889,7 +1000,13 @@ export const TerritoryUI = {
     return parts.join('<br>');
   },
 
-  // Render the collapsible territory reference table
+  /**
+   * Render the collapsible territory reference table, grouped by level,
+   * listing every rule category for every campaign territory. When a gang
+   * is selected, gang-specific overrides are shown in place of the base
+   * rule and flagged with a "(Gang Override)" tag.
+   * @param {string|null} [selectedGang=null] - Selected gang's dominion ID, or null.
+   */
   renderReferenceTable(selectedGang = null) {
     const container = document.getElementById('territory-reference');
     if (!container) return;

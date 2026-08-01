@@ -1,4 +1,12 @@
-﻿fighter_skills:
+﻿# fighterSkills.yml
+#
+# fighter_skills.<Category>.<SkillName> - Skills grouped by category
+#   (currently only Agility, holding the skills relevant to the Meat for
+#   the Grinder scenario: True Grit, Iron Jaw, Unstoppable). `number` is
+#   the skill's display order within its category; `description` is raw
+#   HTML rendered as-is in the fighter-skills reference section.
+
+fighter_skills:
   Agility:
     Catfall:
       number: 1

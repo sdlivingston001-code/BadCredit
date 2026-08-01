@@ -1,3 +1,26 @@
+# territories.yml
+#
+# One top-level key per territory (used as its `id`). Common fields:
+#   name             - Display name.
+#   level            - Territory tier (1-3), used to group the selector UI.
+#   income           - Income block; either `{ schema: <name> }` (see
+#                      territorySchemas.js for available schemas and their
+#                      defaults) or an inline override of schema fields
+#                      (count/sides/multiplier/addition/event/etc.).
+#   random_recruit   - Recruit block; same schema-reference pattern as
+#                      `income`, resolved against TerritorySchemas.recruitSchemas.
+#   reputation, battle_special_rules, trading_special_rules,
+#   scenario_selection_special_rules, fixed_recruit, fixed_gear
+#                    - Free-text rule blocks rendered as-is.
+#   campaign         - 1 to include this territory in the tool, 0 to exclude.
+#
+# Gang-specific overrides:
+#   Append `_<gangId>` to any of the above keys (e.g. `income_cawdor`,
+#   `random_recruit_corpse_grinder_cult`) to override that property only
+#   when the matching gang is selected. `<gangId>` matches a key in gangs.yml
+#   (or its `dominionGangId`). TerritorySchemas.resolveTerritory() applies
+#   these overrides automatically.
+
 settlement:
   name: Settlement
   level: 1

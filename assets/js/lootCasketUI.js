@@ -23,6 +23,13 @@ import { animatedReplace } from './uiUtils.js';
 export const LootCasketUI = {
   lootData: null,
 
+  /**
+   * Load loot table data, wire up events/timer, and render the reference
+   * tables. Also exposes `testLootCasket(roll)` and `testNestedTable(name, roll)`
+   * on `window` for console testing.
+   * @param {string} jsonPath - Path to lootCasket.json.
+   * @returns {Promise<void>}
+   */
   async init(jsonPath) {
     try {
       this.lootData = await fetchJSON(jsonPath);
@@ -75,6 +82,7 @@ export const LootCasketUI = {
     }
   },
 
+  /** Render collapsible reference tables for the main loot casket roll and every nested sub-table (drugs, ammo, fancy loot, servo skull). */
   renderReferenceTables() {
     const container = document.getElementById('loot-table-container');
     if (!container || !this.lootData) return;
@@ -112,6 +120,7 @@ export const LootCasketUI = {
     }).join('');
   },
 
+  /** Wire the "Smash Open" and "Bypass Lock" buttons. */
   bindEvents() {
     const smashBtn = document.getElementById("resolve-loot-casket-smash");
     if (smashBtn) {
@@ -123,6 +132,7 @@ export const LootCasketUI = {
     }
   },
 
+  /** Initialize the "time since last run" display for this tool. */
   initTimer() {
     if (typeof TimerUtil !== 'undefined') {
       TimerUtil.init('page-roll-info', 'lootCasketLastRun');
@@ -130,6 +140,15 @@ export const LootCasketUI = {
     }
   },
 
+  /**
+   * Build a colored result box for a loot table entry (main table or a
+   * nested sub-table).
+   * @param {Object} result - Table entry (`name`, optional `fixedeffect`, `colour`).
+   * @param {number} roll - The roll that produced this result (unused directly, kept for signature symmetry with callers).
+   * @param {string|null} [tableName=null] - Nested table key, if this result came from a sub-table.
+   * @param {number|null} [rawRoll=null] - Pre-adjustment roll (e.g. before the Smash Open -1 penalty), shown as "raw → adjusted" if different.
+   * @returns {HTMLDivElement}
+   */
   createResultBox(result, roll, tableName = null, rawRoll = null) {
     const colour = result.colour || "grey";
     const table = tableName ? this.lootData[tableName] : this.lootData.loot_casket_roll;
@@ -148,6 +167,11 @@ export const LootCasketUI = {
     return div;
   },
 
+  /**
+   * Build an info box describing an income roll and its credit total.
+   * @param {Object} incomeResult - `{ sides, roll, multiplier, amount }` from the engine.
+   * @returns {HTMLDivElement}
+   */
   createIncomeBox(incomeResult) {
     const incomeDiv = document.createElement("div");
     incomeDiv.className = "info-box income-box";
@@ -166,6 +190,13 @@ export const LootCasketUI = {
     return incomeDiv;
   },
 
+  /**
+   * Recursively render a nested-table effect: a reroll notice, a
+   * "Roll the dice" button for a pending nested roll, or (once rolled) the
+   * nested result box plus any further-nested effect beneath it.
+   * @param {Object} randomEffect - `{ type: 'reroll'|'pending_roll'|'nested_table', ... }`.
+   * @param {HTMLElement} parentDiv - Element to append the rendered effect to.
+   */
   displayNestedEffect(randomEffect, parentDiv) {
     if (!randomEffect) return;
 
@@ -207,6 +238,13 @@ export const LootCasketUI = {
     }
   },
 
+  /**
+   * Roll a pending nested table (triggered by clicking "Roll the dice"),
+   * record the roll(s) in the run timer, and replace the button with the
+   * result (including any reroll history and further nesting).
+   * @param {string} tableName - Key of the nested table to roll on.
+   * @param {HTMLElement} containerDiv - Element whose contents get replaced with the result.
+   */
   rollNestedTable(tableName, containerDiv) {
     const result = LootCasketEngine.rollNestedTable(tableName);
 
@@ -250,6 +288,7 @@ export const LootCasketUI = {
     }
   },
 
+  /** Roll the "Smash Open" method (D6 - 1, min 1), record it in the run timer, and display the result. */
   openLootCasketSmash() {
     const lootResult = LootCasketEngine.smashOpenLootCasket();
     if (typeof TimerUtil !== 'undefined') {
@@ -263,6 +302,7 @@ export const LootCasketUI = {
     this.displayLootCasketResult(lootResult);
   },
 
+  /** Roll the "Bypass Lock" method (plain D6, no penalty), record it in the run timer, and display the result. */
   openLootCasketBypass() {
     const lootResult = LootCasketEngine.openLootCasketBypass();
     if (typeof TimerUtil !== 'undefined') {
@@ -275,6 +315,11 @@ export const LootCasketUI = {
     this.displayLootCasketResult(lootResult);
   },
 
+  /**
+   * Render the full loot casket result: main result box, income box (if
+   * any), and any nested-table effect chain.
+   * @param {Object} lootResult - Result from `LootCasketEngine.smashOpenLootCasket()` or `.openLootCasketBypass()`.
+   */
   displayLootCasketResult(lootResult) {
     const resultsContainer = document.getElementById("loot-casket-results");
     if (!resultsContainer) return;
